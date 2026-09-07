@@ -8,13 +8,26 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { getOwnedBusiness } from "./stripe-connect.server";
+import { getOwnedBusiness, findOwnedBusiness } from "./stripe-connect.server";
 
 export const getConnectStatus = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .inputValidator((i: unknown) => z.object({ businessId: z.string().uuid().optional() }).parse(i ?? {}))
   .handler(async ({ data, context }) => {
-    const biz = await getOwnedBusiness(context.supabase, context.userId, data.businessId);
+    const biz = await findOwnedBusiness(context.supabase, context.userId, data.businessId);
+    if (!biz) {
+      return {
+        businessId: null as string | null,
+        businessName: null as string | null,
+        stripeConfigured: false,
+        stripeAccountId: null as string | null,
+        chargesEnabled: false,
+        payoutsEnabled: false,
+        requirementsDue: [] as string[],
+        commissionRate: 0.2,
+        noBusiness: true,
+      };
+    }
     const { getStripe } = await import("./stripe.server");
     const stripe = getStripe();
 
