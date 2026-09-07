@@ -82,17 +82,17 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({ meta: [{ title: "Dashboard — FISH-X.COM Bookings & Marketplace" }] }),
   loader: async ({ context }) => {
     try {
-      // Only the identity data needed to decide WHICH dashboard to show is
-      // awaited. Persona data is warmed in the background so the shell paints
-      // immediately instead of waiting on a chain of server round trips.
-      const [rolesRaw, businessesRaw] = await Promise.all([
-        context.queryClient.ensureQueryData(myRolesQO),
-        context.queryClient.ensureQueryData(myBusinessesQO),
-      ]);
-      void context.queryClient.prefetchQuery(myProfileQO);
-      const roles = Array.isArray(rolesRaw) ? rolesRaw : [];
-      const businesses = Array.isArray(businessesRaw) ? businessesRaw : [];
+      // One request returns roles, businesses and profile together, then the
+      // persona data is warmed in the background so the shell paints straight
+      // away instead of waiting on a chain of server round trips.
+      const boot = await context.queryClient.ensureQueryData(bootstrapQO);
+      const roles = Array.isArray(boot?.roles) ? boot.roles : [];
+      const businesses = Array.isArray(boot?.businesses) ? boot.businesses : [];
+      context.queryClient.setQueryData(myRolesQO.queryKey, roles);
+      context.queryClient.setQueryData(myBusinessesQO.queryKey, businesses);
+      context.queryClient.setQueryData(myProfileQO.queryKey, boot?.profile ?? null);
       const primary = hasPrimaryRole(roles);
+
 
       if (businesses.length === 0) {
         void context.queryClient.prefetchQuery({
