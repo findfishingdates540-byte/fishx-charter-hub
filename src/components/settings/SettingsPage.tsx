@@ -242,6 +242,19 @@ function SecurityCard() {
   const [pw2, setPw2] = useState("");
   const [msg, setMsg] = useState("");
   const [busy, setBusy] = useState(false);
+  const [newEmail, setNewEmail] = useState("");
+  const [emailMsg, setEmailMsg] = useState("");
+  const [emailBusy, setEmailBusy] = useState(false);
+
+  const submitEmail = async () => {
+    setEmailMsg("");
+    if (!/^\S+@\S+\.\S+$/.test(newEmail.trim())) return setEmailMsg("Enter a valid email address.");
+    setEmailBusy(true);
+    const { error } = await supabase.auth.updateUser({ email: newEmail.trim() });
+    setEmailBusy(false);
+    if (error) return setEmailMsg(error.message);
+    setEmailMsg("Check your new inbox for the confirmation link.");
+  };
 
   const submit = async () => {
     setMsg("");
@@ -311,6 +324,43 @@ function SecurityCard() {
           >
             {busy ? "Saving…" : "Update password"}
           </button>
+        </div>
+      </div>
+
+      <div style={{ background: V.card, border: `1px solid ${V.line}`, borderRadius: 20, padding: 26 }}>
+        <div style={{ fontFamily: V.serif, fontSize: 18, fontWeight: 600, marginBottom: 18 }}>
+          Change sign-in email
+        </div>
+        <div style={{ display: "grid", gap: 14, maxWidth: 420 }}>
+          <input
+            type="email"
+            value={newEmail}
+            onChange={(e) => setNewEmail(e.target.value)}
+            placeholder="new@email.com"
+            style={field}
+          />
+          {emailMsg && <div style={{ fontSize: 13, color: V.tmut }}>{emailMsg}</div>}
+          <button
+            onClick={submitEmail}
+            disabled={emailBusy}
+            style={{
+              justifySelf: "start",
+              background: "transparent",
+              border: `1px solid ${V.line}`,
+              borderRadius: 12,
+              padding: "11px 22px",
+              fontSize: 13,
+              fontWeight: 700,
+              color: V.ink,
+              cursor: emailBusy ? "default" : "pointer",
+            }}
+          >
+            {emailBusy ? "Sending…" : "Update email"}
+          </button>
+          <div style={{ fontSize: 12.5, color: V.tmut }}>
+            We'll email a confirmation link to the new address. The change takes effect once you
+            click it.
+          </div>
         </div>
       </div>
 

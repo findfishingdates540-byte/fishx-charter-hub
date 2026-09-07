@@ -197,6 +197,46 @@ function VisibilityCard({
   );
 }
 
+function AddMemberRow({ businessId, onDone }: { businessId: string; onDone: () => void }) {
+  const add = useServerFn(addTeamMemberByEmail);
+  const [email, setEmail] = useState("");
+  const [role, setRole] = useState<"owner" | "manager" | "staff">("staff");
+  const m = useMutation({
+    mutationFn: () => add({ data: { businessId, email: email.trim(), role } }),
+    onSuccess: () => {
+      setEmail("");
+      onDone();
+    },
+  });
+
+  return (
+    <div style={{ display: "grid", gap: 8, marginBottom: 6 }}>
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+        <input
+          style={{ ...input, flex: "1 1 220px" }}
+          placeholder="Teammate's Fish-X email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
+        <select style={{ ...input, width: 140 }} value={role} onChange={(e) => setRole(e.target.value as any)}>
+          <option value="staff">Crew</option>
+          <option value="manager">Manager</option>
+          <option value="owner">Owner</option>
+        </select>
+        <button
+          disabled={!email.trim() || m.isPending}
+          onClick={() => m.mutate()}
+          style={btn("primary")}
+        >
+          {m.isPending ? "Adding…" : "Add"}
+        </button>
+      </div>
+      {m.error && <Muted tone="bad">{String((m.error as Error).message)}</Muted>}
+      {m.isSuccess && !m.isPending && <Muted>Teammate added.</Muted>}
+    </div>
+  );
+}
+
 /* -------------------------------- profile -------------------------------- */
 
 type ProfileDraft = {
@@ -604,6 +644,7 @@ function TeamCard({
   return (
     <Card eyebrow="Access" title="Team & roles">
       <div style={{ display: "grid", gap: 10 }}>
+        {isOwner && <AddMemberRow businessId={businessId} onDone={invalidate} />}
         {team.map((m) => (
           <div
             key={m.id}
