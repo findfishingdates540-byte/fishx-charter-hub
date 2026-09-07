@@ -14,6 +14,7 @@ import {
   updateBusinessProfile,
   setBusinessPublished,
   updateTeamMemberRole,
+  addTeamMemberByEmail,
   removeTeamMember,
 } from "@/lib/business-settings.functions";
 import {
@@ -196,6 +197,46 @@ function VisibilityCard({
   );
 }
 
+function AddMemberRow({ businessId, onDone }: { businessId: string; onDone: () => void }) {
+  const add = useServerFn(addTeamMemberByEmail);
+  const [email, setEmail] = useState("");
+  const [role, setRole] = useState<"owner" | "manager" | "staff">("staff");
+  const m = useMutation({
+    mutationFn: () => add({ data: { businessId, email: email.trim(), role } }),
+    onSuccess: () => {
+      setEmail("");
+      onDone();
+    },
+  });
+
+  return (
+    <div style={{ display: "grid", gap: 8, marginBottom: 6 }}>
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+        <input
+          style={{ ...input, flex: "1 1 220px" }}
+          placeholder="Teammate's Fish-X email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
+        <select style={{ ...input, width: 140 }} value={role} onChange={(e) => setRole(e.target.value as any)}>
+          <option value="staff">Crew</option>
+          <option value="manager">Manager</option>
+          <option value="owner">Owner</option>
+        </select>
+        <button
+          disabled={!email.trim() || m.isPending}
+          onClick={() => m.mutate()}
+          style={btn("primary")}
+        >
+          {m.isPending ? "Adding…" : "Add"}
+        </button>
+      </div>
+      {m.error && <Muted tone="bad">{String((m.error as Error).message)}</Muted>}
+      {m.isSuccess && !m.isPending && <Muted>Teammate added.</Muted>}
+    </div>
+  );
+}
+
 /* -------------------------------- profile -------------------------------- */
 
 type ProfileDraft = {
@@ -227,6 +268,36 @@ function ProfileCard({ business, canEdit }: { business: any; canEdit: boolean })
     const a = (business.amenities_json ?? {}) as any;
     return Array.isArray(a?.list) ? a.list.join(", ") : "";
   });
+  const [gallery, setGallery] = useState<string[]>(() =>
+    Array.isArray(business.gallery_json) ? (business.gallery_json as string[]) : [],
+  );
+  const [highlights, setHighlights] = useState<string>(() =>
+    Array.isArray(business.highlights_json) ? (business.highlights_json as string[]).join(", ") : "",
+  );
+  const [yearFounded, setYearFounded] = useState<string>(() =>
+    business.year_founded ? String(business.year_founded) : "",
+  );
+  const [social, setSocial] = useState<Record<string, string>>(() => {
+    const s0 = (business.social_json ?? {}) as any;
+    return {
+      instagram: s0.instagram ?? "",
+      facebook: s0.facebook ?? "",
+      youtube: s0.youtube ?? "",
+      tiktok: s0.tiktok ?? "",
+    };
+  });
+  const [policies, setPolicies] = useState<Record<string, string>>(() => {
+    const p0 = (business.policies_json ?? {}) as any;
+    return {
+      cancellation: p0.cancellation ?? "",
+      payment_methods: p0.payment_methods ?? "",
+      languages: p0.languages ?? "",
+      rules: p0.rules ?? "",
+    };
+  });
+  const [faq, setFaq] = useState<Array<{ q: string; a: string }>>(() =>
+    Array.isArray(business.faq_json) ? (business.faq_json as any[]) : [],
+  );
 
   useEffect(() => setDraft(toDraft(business)), [business.id]);
 
@@ -241,6 +312,15 @@ function ProfileCard({ business, canEdit }: { business: any; canEdit: boolean })
             .split(",")
             .map((s) => s.trim())
             .filter(Boolean),
+          gallery: gallery.filter(Boolean),
+          highlights: highlights
+            .split(",")
+            .map((s) => s.trim())
+            .filter(Boolean),
+          year_founded: yearFounded.trim() ? Number(yearFounded.trim()) : null,
+          social,
+          policies,
+          faq: faq.filter((f) => f.q.trim() && f.a.trim()),
         },
       }),
     onSuccess: () => {
@@ -355,6 +435,153 @@ function ProfileCard({ business, canEdit }: { business: any; canEdit: boolean })
           />
         </Field>
 
+        <Field label="Photo gallery (shown on your public page)">
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(180px,1fr))", gap: 12 }}>
+            {[...gallery, ""].map((url, i) => (
+              <ImageUpload
+                key={`${i}-${url}`}
+                businessId={business.id}
+                label={url ? `Photo ${i + 1}` : "Add photo"}
+                value={url}
+                onChange={(v: string) =>
+                  setGallery((g) => {
+                    const next = [...g];
+                    if (i >= next.length) {
+                      if (v) next.push(v);
+                    } else if (v) next[i] = v;
+                    else next.splice(i, 1);
+                    return next.slice(0, 24);
+                  })
+                }
+                disabled={!canEdit}
+              />
+            ))}
+          </div>
+        </Field>
+
+        <Grid2>
+          <Field label="Highlights / specialties (comma separated)">
+            <input
+              style={input}
+              placeholder="Offshore tuna, Fly fishing, Family friendly"
+              value={highlights}
+              onChange={(e) => setHighlights(e.target.value)}
+              disabled={!canEdit}
+            />
+          </Field>
+          <Field label="Year founded">
+            <input
+              style={input}
+              placeholder="1998"
+              inputMode="numeric"
+              value={yearFounded}
+              onChange={(e) => setYearFounded(e.target.value.replace(/[^0-9]/g, "").slice(0, 4))}
+              disabled={!canEdit}
+            />
+          </Field>
+        </Grid2>
+
+        <Field label="Social links">
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(200px,1fr))", gap: 10 }}>
+            {(["instagram", "facebook", "youtube", "tiktok"] as const).map((k) => (
+              <input
+                key={k}
+                style={input}
+                placeholder={`${k} link`}
+                value={social[k] ?? ""}
+                onChange={(e) => setSocial((s0) => ({ ...s0, [k]: e.target.value }))}
+                disabled={!canEdit}
+              />
+            ))}
+          </div>
+        </Field>
+
+        <Grid2>
+          <Field label="Languages spoken">
+            <input
+              style={input}
+              placeholder="English, Spanish"
+              value={policies.languages ?? ""}
+              onChange={(e) => setPolicies((p) => ({ ...p, languages: e.target.value }))}
+              disabled={!canEdit}
+            />
+          </Field>
+          <Field label="Payment methods accepted">
+            <input
+              style={input}
+              placeholder="Card, bank transfer, cash on the dock"
+              value={policies.payment_methods ?? ""}
+              onChange={(e) => setPolicies((p) => ({ ...p, payment_methods: e.target.value }))}
+              disabled={!canEdit}
+            />
+          </Field>
+        </Grid2>
+
+        <Field label="Cancellation policy">
+          <textarea
+            style={{ ...input, minHeight: 88, resize: "vertical", lineHeight: 1.55 }}
+            placeholder="Free cancellation up to 7 days before departure…"
+            value={policies.cancellation ?? ""}
+            onChange={(e) => setPolicies((p) => ({ ...p, cancellation: e.target.value }))}
+            disabled={!canEdit}
+          />
+        </Field>
+
+        <Field label="Good to know / house rules">
+          <textarea
+            style={{ ...input, minHeight: 88, resize: "vertical", lineHeight: 1.55 }}
+            placeholder="Arrive 30 minutes early, bring sunscreen, no glass bottles on board."
+            value={policies.rules ?? ""}
+            onChange={(e) => setPolicies((p) => ({ ...p, rules: e.target.value }))}
+            disabled={!canEdit}
+          />
+        </Field>
+
+        <Field label="Frequently asked questions">
+          <div style={{ display: "grid", gap: 10 }}>
+            {faq.map((row, i) => (
+              <div key={i} style={{ display: "grid", gap: 6 }}>
+                <div style={{ display: "flex", gap: 8 }}>
+                  <input
+                    style={{ ...input, flex: 1 }}
+                    placeholder="Question"
+                    value={row.q}
+                    onChange={(e) =>
+                      setFaq((f) => f.map((r, j) => (j === i ? { ...r, q: e.target.value } : r)))
+                    }
+                    disabled={!canEdit}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setFaq((f) => f.filter((_, j) => j !== i))}
+                    disabled={!canEdit}
+                    style={btn("ghost")}
+                  >
+                    Remove
+                  </button>
+                </div>
+                <textarea
+                  style={{ ...input, minHeight: 70, resize: "vertical" }}
+                  placeholder="Answer"
+                  value={row.a}
+                  onChange={(e) =>
+                    setFaq((f) => f.map((r, j) => (j === i ? { ...r, a: e.target.value } : r)))
+                  }
+                  disabled={!canEdit}
+                />
+              </div>
+            ))}
+            <button
+              type="button"
+              onClick={() => setFaq((f) => [...f, { q: "", a: "" }])}
+              disabled={!canEdit || faq.length >= 12}
+              style={btn("ghost")}
+            >
+              + Add question
+            </button>
+          </div>
+        </Field>
+
         {m.error && <Muted tone="bad">{String((m.error as Error).message)}</Muted>}
 
         <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
@@ -417,6 +644,7 @@ function TeamCard({
   return (
     <Card eyebrow="Access" title="Team & roles">
       <div style={{ display: "grid", gap: 10 }}>
+        {isOwner && <AddMemberRow businessId={businessId} onDone={invalidate} />}
         {team.map((m) => (
           <div
             key={m.id}

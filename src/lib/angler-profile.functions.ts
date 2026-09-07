@@ -47,7 +47,9 @@ export const updateMyProfile = createServerFn({ method: "POST" })
           .max(2000)
           .refine((v) => v === "" || /^(https?:\/\/|\/)/.test(v), "Invalid image URL")
           .optional(),
-
+        home_port: z.string().max(120).optional(),
+        favorite_species: z.string().max(160).optional(),
+        bio: z.string().max(600).optional(),
       })
       .parse(input),
   )
@@ -61,6 +63,9 @@ export const updateMyProfile = createServerFn({ method: "POST" })
         display_name: norm(data.display_name),
         phone: norm(data.phone),
         avatar_url: norm(data.avatar_url),
+        home_port: norm(data.home_port),
+        favorite_species: norm(data.favorite_species),
+        bio: norm(data.bio),
         updated_at: new Date().toISOString(),
       },
       { onConflict: "id" },

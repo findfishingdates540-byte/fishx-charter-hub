@@ -184,12 +184,18 @@ export function AnglerAccount({ embedded = false }: { embedded?: boolean } = {})
   const [displayName, setDisplayName] = useState(p?.display_name ?? "");
   const [phone, setPhone] = useState(p?.phone ?? "");
   const [avatarUrl, setAvatarUrl] = useState(p?.avatar_url ?? "");
+  const [homePort, setHomePort] = useState((p as any)?.home_port ?? "");
+  const [species, setSpecies] = useState((p as any)?.favorite_species ?? "");
+  const [bio, setBio] = useState((p as any)?.bio ?? "");
 
   const dirty =
     fullName !== (p?.full_name ?? "") ||
     displayName !== (p?.display_name ?? "") ||
     phone !== (p?.phone ?? "") ||
-    avatarUrl !== (p?.avatar_url ?? "");
+    avatarUrl !== (p?.avatar_url ?? "") ||
+    homePort !== ((p as any)?.home_port ?? "") ||
+    species !== ((p as any)?.favorite_species ?? "") ||
+    bio !== ((p as any)?.bio ?? "");
 
   const saveMut = useMutation({
     mutationFn: () =>
@@ -199,6 +205,9 @@ export function AnglerAccount({ embedded = false }: { embedded?: boolean } = {})
           display_name: displayName,
           phone,
           avatar_url: avatarUrl,
+          home_port: homePort,
+          favorite_species: species,
+          bio,
         },
       }),
     onSuccess: () => {
@@ -375,6 +384,37 @@ export function AnglerAccount({ embedded = false }: { embedded?: boolean } = {})
               readOnly
               placeholder="—"
               style={{ ...inputStyle, color: V.tmut, cursor: "not-allowed" }}
+            />
+          </div>
+          <div>
+            {label("Home port / city")}
+            <input
+              value={homePort}
+              onChange={(e) => setHomePort(e.target.value)}
+              maxLength={120}
+              placeholder="Key West, FL"
+              style={inputStyle}
+            />
+          </div>
+          <div>
+            {label("Species you chase")}
+            <input
+              value={species}
+              onChange={(e) => setSpecies(e.target.value)}
+              maxLength={160}
+              placeholder="Tarpon, permit, mahi"
+              style={inputStyle}
+            />
+          </div>
+          <div style={{ gridColumn: "1 / -1" }}>
+            {label("About you")}
+            <textarea
+              value={bio}
+              onChange={(e) => setBio(e.target.value)}
+              maxLength={600}
+              rows={4}
+              placeholder="A short intro captains and shops will see when you book."
+              style={{ ...inputStyle, minHeight: 104, resize: "vertical", lineHeight: 1.55 }}
             />
           </div>
           <div style={{ gridColumn: "1 / -1" }}>
