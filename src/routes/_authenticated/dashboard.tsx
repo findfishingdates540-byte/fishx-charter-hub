@@ -70,8 +70,10 @@ function pickPrimaryBusiness(
 
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
-  validateSearch: (search: Record<string, unknown>): { tab?: string } =>
-    typeof search.tab === "string" ? { tab: search.tab } : {},
+  validateSearch: (search: Record<string, unknown>): { tab?: string; as?: string } => ({
+    ...(typeof search.tab === "string" ? { tab: search.tab } : {}),
+    ...(search.as === "angler" ? { as: "angler" as const } : {}),
+  }),
   head: () => ({ meta: [{ title: "Dashboard — FISH-X.COM Bookings & Marketplace" }] }),
   loader: async ({ context }) => {
     try {
@@ -167,19 +169,25 @@ function Dashboard() {
   const { data: profile } = useSuspenseQuery(myProfileQO);
   const navigate = useNavigate();
   const primaryRole = hasPrimaryRole(roles);
+  const { as } = Route.useSearch();
+  // Someone who signed up for a business but only wants to book trips can opt
+  // out of setup; anglers must never be pushed into operator onboarding.
+  const anglerMode = as === "angler" || roles.includes("angler");
 
   useEffect(() => {
     if (
+      !anglerMode &&
       isOperatorRole(primaryRole) &&
       businesses.length === 0
     ) {
       navigate({ to: "/onboarding", replace: true });
     }
-  }, [primaryRole, businesses, navigate]);
+  }, [primaryRole, businesses, navigate, anglerMode]);
 
   return <Suspense fallback={null}>{renderDashboard()}</Suspense>;
 
   function renderDashboard() {
+    if (anglerMode && businesses.length === 0) return <AnglerDashboard />;
     if (primaryRole === "angler" && businesses.length === 0) return <AnglerDashboard />;
     if (primaryRole === "captain") return <CaptainDashboard />;
 
