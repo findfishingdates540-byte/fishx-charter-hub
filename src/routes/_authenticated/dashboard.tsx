@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useSuspenseQuery, useQuery, queryOptions } from "@tanstack/react-query";
+import { useSuspenseQuery, queryOptions } from "@tanstack/react-query";
 import { lazy, Suspense } from "react";
 
 import { getMyRoles, hasPrimaryRole, getMyProfile, getMyBootstrap, roleCategoryKey, isOperatorRole } from "@/lib/auth.functions";
