@@ -386,6 +386,37 @@ export function AnglerAccount({ embedded = false }: { embedded?: boolean } = {})
               style={{ ...inputStyle, color: V.tmut, cursor: "not-allowed" }}
             />
           </div>
+          <div>
+            {label("Home port / city")}
+            <input
+              value={homePort}
+              onChange={(e) => setHomePort(e.target.value)}
+              maxLength={120}
+              placeholder="Key West, FL"
+              style={inputStyle}
+            />
+          </div>
+          <div>
+            {label("Species you chase")}
+            <input
+              value={species}
+              onChange={(e) => setSpecies(e.target.value)}
+              maxLength={160}
+              placeholder="Tarpon, permit, mahi"
+              style={inputStyle}
+            />
+          </div>
+          <div style={{ gridColumn: "1 / -1" }}>
+            {label("About you")}
+            <textarea
+              value={bio}
+              onChange={(e) => setBio(e.target.value)}
+              maxLength={600}
+              rows={4}
+              placeholder="A short intro captains and shops will see when you book."
+              style={{ ...inputStyle, minHeight: 104, resize: "vertical", lineHeight: 1.55 }}
+            />
+          </div>
           <div style={{ gridColumn: "1 / -1" }}>
             {label("Profile photo")}
             <AvatarUpload
