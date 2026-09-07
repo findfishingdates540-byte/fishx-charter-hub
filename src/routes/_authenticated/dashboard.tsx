@@ -169,19 +169,25 @@ function Dashboard() {
   const { data: profile } = useSuspenseQuery(myProfileQO);
   const navigate = useNavigate();
   const primaryRole = hasPrimaryRole(roles);
+  const { as } = Route.useSearch();
+  // Someone who signed up for a business but only wants to book trips can opt
+  // out of setup; anglers must never be pushed into operator onboarding.
+  const anglerMode = as === "angler" || roles.includes("angler");
 
   useEffect(() => {
     if (
+      !anglerMode &&
       isOperatorRole(primaryRole) &&
       businesses.length === 0
     ) {
       navigate({ to: "/onboarding", replace: true });
     }
-  }, [primaryRole, businesses, navigate]);
+  }, [primaryRole, businesses, navigate, anglerMode]);
 
   return <Suspense fallback={null}>{renderDashboard()}</Suspense>;
 
   function renderDashboard() {
+    if (anglerMode && businesses.length === 0) return <AnglerDashboard />;
     if (primaryRole === "angler" && businesses.length === 0) return <AnglerDashboard />;
     if (primaryRole === "captain") return <CaptainDashboard />;
 
