@@ -126,7 +126,17 @@ const CANCELLATION_RULES: Array<[string, string]> = [
 ];
 
 
-export function BookingFlow({ serviceId, baseId }: { serviceId: string; baseId?: string }) {
+export function BookingFlow({
+  serviceId,
+  baseId,
+  initialSlotId,
+  initialParty,
+}: {
+  serviceId: string;
+  baseId?: string;
+  initialSlotId?: string;
+  initialParty?: number;
+}) {
   const navigate = useNavigate();
   const { data: svc } = useSuspenseQuery(checkoutQuery(serviceId));
   const business = svc.business as { id: string; slug: string; name: string; city: string | null; region: string | null; logo_url: string | null; hero_url: string | null; deposit_rate?: number | null; commission_rate?: number | null } | null;
@@ -137,15 +147,18 @@ export function BookingFlow({ serviceId, baseId }: { serviceId: string; baseId?:
   } | null;
 
   const qc = useQueryClient();
-  const [step, setStep] = useState<Step>("detail");
+  const openSlots = svc.openSlots ?? [];
+  /** A departure carried over from a storefront booking form skips straight to extras. */
+  const preSlot = initialSlotId && openSlots.some((s: any) => s.id === initialSlotId) ? initialSlotId : "";
+  const [step, setStep] = useState<Step>(preSlot ? "extras" : "detail");
   const [takenSlot, setTakenSlot] = useState<{ label: string } | null>(null);
   const [payBlocked, setPayBlocked] = useState<string | null>(null);
 
-  const openSlots = svc.openSlots ?? [];
-  // Nothing is pre-picked: the angler chooses a departure on the dates page.
-  const [slotId, setSlotId] = useState("");
+  // Nothing is pre-picked unless the angler already chose a departure elsewhere.
+  const [slotId, setSlotId] = useState(preSlot);
   const slot = openSlots.find((s) => s.id === slotId) ?? null;
-  const [party, setParty] = useState(2);
+  const [party, setParty] = useState(Math.max(1, initialParty ?? 2));
+
 
   const addons = (svc as any).addons as Array<{
     id: string; title: string; description: string | null; price_cents: number; unit: "per_trip" | "per_person";
