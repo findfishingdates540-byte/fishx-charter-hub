@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router";
+import { BrandLogo } from "@/components/brand/BrandLogo";
 import { MarinaServiceRequest } from "@/components/profile/MarinaServiceRequest";
 import { useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
@@ -221,8 +222,7 @@ export function OperatorProfile({
       <header style={{ position: "sticky", top: 0, zIndex: 40, background: "rgba(9,27,44,.94)", backdropFilter: "saturate(140%) blur(12px)", borderBottom: "1px solid rgba(255,255,255,.1)", color: "#F0F2F5" }}>
         <div style={{ maxWidth: 1160, margin: "0 auto", padding: "0 28px", height: 62, display: "flex", alignItems: "center", gap: 24 }}>
           <Link to="/" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none", color: "#F0F2F5" }}>
-            <span style={{ width: 11, height: 11, background: "#2DE2F2", transform: "rotate(45deg)", display: "inline-block", borderRadius: 1 }} />
-            <span style={{ fontFamily: "'Outfit', Georgia, serif", fontWeight: 600, fontSize: 20, letterSpacing: ".02em", whiteSpace: "nowrap" }}>FISH-X.COM</span>
+            <BrandLogo size="md" accent="#2DE2F2" color="#F0F2F5" />
           </Link>
           <Link to="/discover" style={{ display: "inline-flex", alignItems: "center", gap: 7, color: "#92A0AB", textDecoration: "none", fontSize: 13, fontWeight: 500 }}>
             <span>←</span> Back to directory

@@ -3,6 +3,7 @@
  * Pixel-close to the DC template, wired to live Supabase data.
  */
 import { useMemo, useState, useEffect, Suspense } from "react";
+import { BrandLogo } from "@/components/brand/BrandLogo";
 import { Link, useNavigate, useSearch } from "@tanstack/react-router";
 import { useSuspenseQuery, queryOptions } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -110,8 +111,7 @@ export function AnglerDashboard() {
       <header style={{ position: "sticky", top: 0, zIndex: 30, background: "var(--navy)", color: "var(--ond)" }}>
         <div className="ang-topbar" style={{ maxWidth: 1160, margin: "0 auto", padding: "0 28px", height: 66, display: "flex", alignItems: "center", gap: 28 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
-            <span style={{ width: 11, height: 11, background: "var(--sand)", transform: "rotate(45deg)", display: "inline-block", borderRadius: 1, flexShrink: 0 }} />
-            <span style={{ fontFamily: "var(--sans)", fontWeight: 700, fontSize: 18, letterSpacing: "-0.01em", whiteSpace: "nowrap" }}>FISH-X.COM</span>
+            <BrandLogo size="md" accent="var(--sand)" color="var(--ond)" />
           </div>
           <nav className="ang-topnav" style={{ display: "flex", alignItems: "center", gap: 6 }}>
             {(["home", "trips", "explore", "wallet", "orders"] as Tab[]).map((t) => (
