@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useSuspenseQuery, useQuery, queryOptions } from "@tanstack/react-query";
 import { lazy, Suspense } from "react";
 
-import { getMyRoles, hasPrimaryRole, getMyProfile, roleCategoryKey, isOperatorRole } from "@/lib/auth.functions";
+import { getMyRoles, hasPrimaryRole, getMyProfile, getMyBootstrap, roleCategoryKey, isOperatorRole } from "@/lib/auth.functions";
 import { getMyBusinesses } from "@/lib/my-businesses.functions";
 import { DashboardFrame } from "@/components/DashboardFrame";
 // Each persona dashboard is a large surface; loading only the one the signed-in
@@ -30,6 +30,12 @@ import { getCaptainDashboard } from "@/lib/captain-dashboard.functions";
 import { getMarinaOverview } from "@/lib/marina.functions";
 import { getShopOverview } from "@/lib/tackle.functions";
 import { getGuideOverview } from "@/lib/guide.functions";
+
+const bootstrapQO = queryOptions({
+  queryKey: ["my-bootstrap"],
+  queryFn: () => getMyBootstrap(),
+  staleTime: 5 * 60_000,
+});
 
 const myRolesQO = queryOptions({
   queryKey: ["my-roles"],
@@ -179,11 +185,10 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
 // (categoryTemplate removed — verticals now use React components below.)
 
 function Dashboard() {
-  const { data: rolesRaw } = useSuspenseQuery(myRolesQO);
-  const { data: businessesRaw } = useSuspenseQuery(myBusinessesQO);
-  const roles = Array.isArray(rolesRaw) ? rolesRaw : [];
-  const businesses = Array.isArray(businessesRaw) ? businessesRaw : [];
-  const { data: profile } = useQuery(myProfileQO);
+  const { data: boot } = useSuspenseQuery(bootstrapQO);
+  const roles = Array.isArray(boot?.roles) ? boot.roles : [];
+  const businesses = Array.isArray(boot?.businesses) ? boot.businesses : [];
+  const profile = boot?.profile ?? null;
   const primaryRole = hasPrimaryRole(roles);
   const { as } = Route.useSearch();
   // Nobody is ever auto-pushed into operator setup. Setting up a business is

@@ -17,16 +17,19 @@ export const Route = createFileRoute("/_authenticated/messages")({
   validateSearch: (search: Record<string, unknown>) => searchSchema.parse(search),
   loaderDeps: ({ search }) => ({ booking: search.booking }),
   loader: async ({ context, deps }) => {
-    await context.queryClient.ensureQueryData({
+    // Threads and the open conversation load side by side instead of one
+    // after the other.
+    const threads = context.queryClient.ensureQueryData({
       queryKey: ["message-threads"],
       queryFn: () => listMessageThreads(),
     });
     if (deps.booking) {
-      await context.queryClient.ensureQueryData({
+      void context.queryClient.prefetchQuery({
         queryKey: ["thread", deps.booking],
         queryFn: () => getThread({ data: { bookingId: deps.booking! } }),
       });
     }
+    await threads;
   },
   head: () => ({
     meta: [
