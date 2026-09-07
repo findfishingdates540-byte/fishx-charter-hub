@@ -85,7 +85,7 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
     const roles = Array.isArray(rolesRaw) ? rolesRaw : [];
     const businesses = Array.isArray(businessesRaw) ? businessesRaw : [];
     const primary = hasPrimaryRole(roles);
-    if (primary === "angler" && businesses.length === 0) {
+    if (businesses.length === 0) {
       await Promise.all([
         context.queryClient.ensureQueryData({
           queryKey: ["angler-dashboard"],
