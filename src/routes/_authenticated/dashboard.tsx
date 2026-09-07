@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useSuspenseQuery, queryOptions } from "@tanstack/react-query";
+import { useSuspenseQuery, useQuery, queryOptions } from "@tanstack/react-query";
 import { lazy, Suspense } from "react";
 
 import { getMyRoles, hasPrimaryRole, getMyProfile, roleCategoryKey, isOperatorRole } from "@/lib/auth.functions";
@@ -34,17 +34,21 @@ import { getGuideOverview } from "@/lib/guide.functions";
 const myRolesQO = queryOptions({
   queryKey: ["my-roles"],
   queryFn: () => getMyRoles(),
+  staleTime: 5 * 60_000,
 });
 
 const myBusinessesQO = queryOptions({
   queryKey: ["my-businesses"],
   queryFn: () => getMyBusinesses(),
+  staleTime: 5 * 60_000,
 });
 
 const myProfileQO = queryOptions({
   queryKey: ["my-profile"],
   queryFn: () => getMyProfile(),
+  staleTime: 5 * 60_000,
 });
+
 
 /**
  * Pick the workspace that matches the signed-in operator.
@@ -78,40 +82,48 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({ meta: [{ title: "Dashboard — FISH-X.COM Bookings & Marketplace" }] }),
   loader: async ({ context }) => {
     try {
-    const [rolesRaw, businessesRaw] = await Promise.all([
-      context.queryClient.ensureQueryData(myRolesQO),
-      context.queryClient.ensureQueryData(myBusinessesQO),
-      context.queryClient.ensureQueryData(myProfileQO),
-    ]);
-    const roles = Array.isArray(rolesRaw) ? rolesRaw : [];
-    const businesses = Array.isArray(businessesRaw) ? businessesRaw : [];
-    const primary = hasPrimaryRole(roles);
-    if (businesses.length === 0) {
-      await Promise.all([
-        context.queryClient.ensureQueryData({
+      // Only the identity data needed to decide WHICH dashboard to show is
+      // awaited. Persona data is warmed in the background so the shell paints
+      // immediately instead of waiting on a chain of server round trips.
+      const [rolesRaw, businessesRaw] = await Promise.all([
+        context.queryClient.ensureQueryData(myRolesQO),
+        context.queryClient.ensureQueryData(myBusinessesQO),
+      ]);
+      void context.queryClient.prefetchQuery(myProfileQO);
+      const roles = Array.isArray(rolesRaw) ? rolesRaw : [];
+      const businesses = Array.isArray(businessesRaw) ? businessesRaw : [];
+      const primary = hasPrimaryRole(roles);
+
+      if (businesses.length === 0) {
+        void context.queryClient.prefetchQuery({
           queryKey: ["angler-dashboard"],
           queryFn: () => getAnglerDashboard(),
-        }),
-        context.queryClient.ensureQueryData({
+          staleTime: 60_000,
+        });
+        void context.queryClient.prefetchQuery({
           queryKey: ["angler-recos"],
           queryFn: () => listRecommendedCharters(),
-        }),
-      ]);
-      return;
-    }
-    if (isOperatorRole(primary) || businesses.length > 0) {
+          staleTime: 5 * 60_000,
+        });
+        void import("@/components/angler/AnglerDashboard");
+        return;
+      }
 
       const biz = pickPrimaryBusiness(businesses, primary) as { id: string; category_key: string } | undefined;
       const key = biz?.category_key ?? roleCategoryKey(primary);
       if (!biz || !key || key === "charter") {
-        await context.queryClient.ensureQueryData({
+        void import("@/components/captain/CaptainDashboard");
+        void context.queryClient.prefetchQuery({
           queryKey: ["captain-dashboard"],
           queryFn: () => getCaptainDashboard(),
+          staleTime: 60_000,
         });
       } else if (key === "marina" || key === "lodge") {
-        await context.queryClient.ensureQueryData({
+        void import("@/components/marina/MarinaDashboard");
+        void context.queryClient.prefetchQuery({
           queryKey: ["marina-overview", biz.id],
           queryFn: () => getMarinaOverview({ data: { businessId: biz.id } }),
+          staleTime: 60_000,
         });
       } else if (
         key === "tackle_shop" ||
@@ -119,17 +131,20 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
         key === "gear_mfg" ||
         key === "apparel"
       ) {
-        await context.queryClient.ensureQueryData({
+        void import("@/components/tackle/ShopDashboard");
+        void context.queryClient.prefetchQuery({
           queryKey: ["shop-overview", biz.id],
           queryFn: () => getShopOverview({ data: { businessId: biz.id } }),
+          staleTime: 60_000,
         });
       } else if (key === "guide_service") {
-        await context.queryClient.ensureQueryData({
+        void import("@/components/guide/GuideDashboard");
+        void context.queryClient.prefetchQuery({
           queryKey: ["guide-overview", biz.id],
           queryFn: () => getGuideOverview({ data: { businessId: biz.id } }),
+          staleTime: 60_000,
         });
       }
-    }
     } catch (e) {
       // Surface real failure reasons instead of crashing on raw Response
       // objects thrown by server functions (they have no .message).
@@ -142,6 +157,7 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
       throw e;
     }
   },
+
   component: Dashboard,
   errorComponent: ({ error }) => {
     const e = error as unknown;
@@ -167,7 +183,7 @@ function Dashboard() {
   const { data: businessesRaw } = useSuspenseQuery(myBusinessesQO);
   const roles = Array.isArray(rolesRaw) ? rolesRaw : [];
   const businesses = Array.isArray(businessesRaw) ? businessesRaw : [];
-  const { data: profile } = useSuspenseQuery(myProfileQO);
+  const { data: profile } = useQuery(myProfileQO);
   const primaryRole = hasPrimaryRole(roles);
   const { as } = Route.useSearch();
   // Nobody is ever auto-pushed into operator setup. Setting up a business is
@@ -175,7 +191,17 @@ function Dashboard() {
   // own dashboard.
   const anglerMode = as === "angler" || roles.includes("angler");
 
-  return <Suspense fallback={null}>{renderDashboard()}</Suspense>;
+  return (
+    <Suspense
+      fallback={
+        <div style={{ padding: 40, fontFamily: "Outfit, system-ui", opacity: 0.6 }}>
+          Loading your dashboard…
+        </div>
+      }
+    >
+      {renderDashboard()}
+    </Suspense>
+  );
 
   function renderDashboard() {
     if (anglerMode && businesses.length === 0) return <AnglerDashboard />;

@@ -5,11 +5,13 @@ import { supabase } from "@/integrations/supabase/client";
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
   beforeLoad: async ({ location }) => {
-    const { data, error } = await supabase.auth.getUser();
-    if (error || !data.user) {
+    // getSession() reads the cached session locally; getUser() costs a network
+    // round trip on every navigation, which delayed the dashboard paint.
+    const { data, error } = await supabase.auth.getSession();
+    if (error || !data.session?.user) {
       throw redirect({ to: "/auth", search: { redirect: location.href } });
     }
-    return { user: data.user };
+    return { user: data.session.user };
   },
   component: AuthedLayout,
 });
