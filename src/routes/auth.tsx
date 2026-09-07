@@ -218,7 +218,17 @@ function AuthPage() {
         });
         if (e2) throw e2;
       } else {
-        const intendedRole = vertical === "captain" ? "captain" : "business_owner";
+        // The vertical picked at signup becomes the account's role, so the
+        // operator always lands on the matching workspace.
+        const VERTICAL_ROLE: Record<string, string> = {
+          captain: "captain",
+          tackle: "tackle_shop",
+          marina: "marina",
+          manufacturer: "gear_mfg",
+          apparel: "apparel",
+          guide: "guide_service",
+        };
+        const intendedRole = VERTICAL_ROLE[vertical] ?? "business_owner";
         const { error: e2 } = await supabase.auth.signUp({
           email, password: pw,
           options: {
