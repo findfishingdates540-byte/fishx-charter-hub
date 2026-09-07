@@ -1,6 +1,7 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useSuspenseQuery, queryOptions } from "@tanstack/react-query";
-import { useEffect, lazy, Suspense } from "react";
+import { lazy, Suspense } from "react";
+
 import { getMyRoles, hasPrimaryRole, getMyProfile, roleCategoryKey, isOperatorRole } from "@/lib/auth.functions";
 import { getMyBusinesses } from "@/lib/my-businesses.functions";
 import { DashboardFrame } from "@/components/DashboardFrame";
