@@ -92,6 +92,29 @@ const profileInput = z.object({
   country: z.string().max(120).optional().nullable(),
   hours: z.record(z.string(), z.string()).optional(),
   amenities: z.array(z.string()).optional(),
+  gallery: z.array(z.string().max(2000)).max(24).optional(),
+  highlights: z.array(z.string().max(80)).max(12).optional(),
+  year_founded: z.number().int().min(1800).max(2100).nullable().optional(),
+  social: z
+    .object({
+      instagram: z.string().max(300).optional().nullable(),
+      facebook: z.string().max(300).optional().nullable(),
+      youtube: z.string().max(300).optional().nullable(),
+      tiktok: z.string().max(300).optional().nullable(),
+    })
+    .optional(),
+  policies: z
+    .object({
+      cancellation: z.string().max(2000).optional().nullable(),
+      payment_methods: z.string().max(300).optional().nullable(),
+      languages: z.string().max(200).optional().nullable(),
+      rules: z.string().max(2000).optional().nullable(),
+    })
+    .optional(),
+  faq: z
+    .array(z.object({ q: z.string().max(200), a: z.string().max(1200) }))
+    .max(12)
+    .optional(),
 });
 
 /** Update the public-facing business profile. Owners and managers only. */
@@ -119,6 +142,12 @@ export const updateBusinessProfile = createServerFn({ method: "POST" })
     };
     if (data.hours) patch.hours_json = data.hours;
     if (data.amenities) patch.amenities_json = { list: data.amenities };
+    if (data.gallery) patch.gallery_json = data.gallery.filter(Boolean);
+    if (data.highlights) patch.highlights_json = data.highlights.filter(Boolean);
+    if (data.social) patch.social_json = data.social;
+    if (data.policies) patch.policies_json = data.policies;
+    if (data.faq) patch.faq_json = data.faq.filter((f) => f.q.trim() && f.a.trim());
+    if (data.year_founded !== undefined) patch.year_founded = data.year_founded;
 
     const { data: row, error } = await supabase
       .from("businesses")
@@ -142,6 +171,45 @@ export const setBusinessPublished = createServerFn({ method: "POST" })
       .from("businesses")
       .update({ is_published: data.isPublished })
       .eq("id", data.businessId);
+    if (error) throw new Response(error.message, { status: 400 });
+    return { ok: true as const };
+  });
+
+/** Add an existing Fish-X user to the team by their sign-in email. Owners only. */
+export const addTeamMemberByEmail = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: unknown) =>
+    z
+      .object({
+        businessId: z.string().uuid(),
+        email: z.string().email(),
+        role: z.enum(["owner", "manager", "staff"]).default("staff"),
+      })
+      .parse(i),
+  )
+  .handler(async ({ data, context }) => {
+    await assertMember(context.supabase, context.userId, data.businessId, ["owner"]);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const email = data.email.trim().toLowerCase();
+    const { data: list, error: listErr } = await supabaseAdmin.auth.admin.listUsers({
+      page: 1,
+      perPage: 200,
+    });
+    if (listErr) throw new Response(listErr.message, { status: 500 });
+    const match = (list?.users ?? []).find((u: any) => (u.email ?? "").toLowerCase() === email);
+    if (!match)
+      throw new Response(
+        "No Fish-X account uses that email yet. Ask them to sign up first, then add them.",
+        { status: 404 },
+      );
+
+    const { error } = await context.supabase
+      .from("business_members")
+      .upsert(
+        { business_id: data.businessId, user_id: match.id, role: data.role },
+        { onConflict: "business_id,user_id" },
+      );
     if (error) throw new Response(error.message, { status: 400 });
     return { ok: true as const };
   });
