@@ -167,37 +167,21 @@ function Dashboard() {
   const roles = Array.isArray(rolesRaw) ? rolesRaw : [];
   const businesses = Array.isArray(businessesRaw) ? businessesRaw : [];
   const { data: profile } = useSuspenseQuery(myProfileQO);
-  const navigate = useNavigate();
   const primaryRole = hasPrimaryRole(roles);
   const { as } = Route.useSearch();
-  // Someone who signed up for a business but only wants to book trips can opt
-  // out of setup; anglers must never be pushed into operator onboarding.
+  // Nobody is ever auto-pushed into operator setup. Setting up a business is
+  // an explicit action from the dashboard, so anglers land straight on their
+  // own dashboard.
   const anglerMode = as === "angler" || roles.includes("angler");
-
-  useEffect(() => {
-    if (
-      !anglerMode &&
-      isOperatorRole(primaryRole) &&
-      businesses.length === 0
-    ) {
-      navigate({ to: "/onboarding", replace: true });
-    }
-  }, [primaryRole, businesses, navigate, anglerMode]);
 
   return <Suspense fallback={null}>{renderDashboard()}</Suspense>;
 
   function renderDashboard() {
     if (anglerMode && businesses.length === 0) return <AnglerDashboard />;
     if (primaryRole === "angler" && businesses.length === 0) return <AnglerDashboard />;
-    if (primaryRole === "captain") return <CaptainDashboard />;
+    if (businesses.length === 0) return <AnglerDashboard />;
+    if (primaryRole === "captain" && businesses.length > 0) return <CaptainDashboard />;
 
-    // Anyone who owns/belongs to a business gets the operator console for that
-    // vertical, even if their role row wasn't stamped as business_owner.
-    if (isOperatorRole(primaryRole) || businesses.length > 0) {
-      const biz = pickPrimaryBusiness(businesses, primaryRole) as
-        | { id: string; name: string; category_key: string }
-        | undefined;
-      if (!biz) return <DashboardFrame src="/dashboards/onboarding.html" title="Onboarding" />;
 
       const operatorName =
         profile?.display_name || profile?.full_name || "Operator";
