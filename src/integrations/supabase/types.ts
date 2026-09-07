@@ -2018,6 +2018,83 @@ export type Database = {
           },
         ]
       }
+      payout_reconciliations: {
+        Row: {
+          actual_cents: number
+          booking_id: string | null
+          business_id: string | null
+          created_at: string
+          delta_cents: number
+          detail: string | null
+          expected_cents: number
+          id: string
+          order_id: string | null
+          payout_id: string | null
+          run_date: string
+          scope: string
+          status: string
+        }
+        Insert: {
+          actual_cents?: number
+          booking_id?: string | null
+          business_id?: string | null
+          created_at?: string
+          delta_cents?: number
+          detail?: string | null
+          expected_cents?: number
+          id?: string
+          order_id?: string | null
+          payout_id?: string | null
+          run_date?: string
+          scope: string
+          status: string
+        }
+        Update: {
+          actual_cents?: number
+          booking_id?: string | null
+          business_id?: string | null
+          created_at?: string
+          delta_cents?: number
+          detail?: string | null
+          expected_cents?: number
+          id?: string
+          order_id?: string | null
+          payout_id?: string | null
+          run_date?: string
+          scope?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payout_reconciliations_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payout_reconciliations_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payout_reconciliations_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "product_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payout_reconciliations_payout_id_fkey"
+            columns: ["payout_id"]
+            isOneToOne: false
+            referencedRelation: "payouts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       payouts: {
         Row: {
           amount_cents: number
@@ -3221,6 +3298,7 @@ export type Database = {
         }[]
       }
       recompute_listing_metrics: { Args: never; Returns: number }
+      reconcile_payouts: { Args: { _run_date?: string }; Returns: Json }
       release_delivered_product_payouts: {
         Args: { _limit?: number }
         Returns: number
@@ -3466,6 +3544,13 @@ export type Database = {
         | "angler"
         | "business_owner"
         | "business_staff"
+        | "marina"
+        | "tackle_shop"
+        | "bait_shop"
+        | "gear_mfg"
+        | "apparel"
+        | "guide_service"
+        | "lodge"
       booking_status:
         | "inquiry"
         | "pending_payment"
@@ -3624,6 +3709,13 @@ export const Constants = {
         "angler",
         "business_owner",
         "business_staff",
+        "marina",
+        "tackle_shop",
+        "bait_shop",
+        "gear_mfg",
+        "apparel",
+        "guide_service",
+        "lodge",
       ],
       booking_status: [
         "inquiry",
