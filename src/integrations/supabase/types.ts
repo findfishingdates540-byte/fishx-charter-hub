@@ -899,8 +899,11 @@ export type Database = {
           deposit_rate: number
           description: string | null
           email: string | null
+          faq_json: Json
           fishx_business_id: string | null
+          gallery_json: Json
           hero_url: string | null
+          highlights_json: Json
           hours_json: Json
           id: string
           is_published: boolean
@@ -912,16 +915,19 @@ export type Database = {
           payout_delay_days: number
           payouts_enabled: boolean
           phone: string | null
+          policies_json: Json
           premium_until: string | null
           product_commission_rate: number
           region: string | null
           slug: string
+          social_json: Json
           stripe_account_id: string | null
           stripe_account_type: string
           tagline: string | null
           updated_at: string
           verified_at: string | null
           website: string | null
+          year_founded: number | null
         }
         Insert: {
           address?: string | null
@@ -936,8 +942,11 @@ export type Database = {
           deposit_rate?: number
           description?: string | null
           email?: string | null
+          faq_json?: Json
           fishx_business_id?: string | null
+          gallery_json?: Json
           hero_url?: string | null
+          highlights_json?: Json
           hours_json?: Json
           id?: string
           is_published?: boolean
@@ -949,16 +958,19 @@ export type Database = {
           payout_delay_days?: number
           payouts_enabled?: boolean
           phone?: string | null
+          policies_json?: Json
           premium_until?: string | null
           product_commission_rate?: number
           region?: string | null
           slug: string
+          social_json?: Json
           stripe_account_id?: string | null
           stripe_account_type?: string
           tagline?: string | null
           updated_at?: string
           verified_at?: string | null
           website?: string | null
+          year_founded?: number | null
         }
         Update: {
           address?: string | null
@@ -973,8 +985,11 @@ export type Database = {
           deposit_rate?: number
           description?: string | null
           email?: string | null
+          faq_json?: Json
           fishx_business_id?: string | null
+          gallery_json?: Json
           hero_url?: string | null
+          highlights_json?: Json
           hours_json?: Json
           id?: string
           is_published?: boolean
@@ -986,16 +1001,19 @@ export type Database = {
           payout_delay_days?: number
           payouts_enabled?: boolean
           phone?: string | null
+          policies_json?: Json
           premium_until?: string | null
           product_commission_rate?: number
           region?: string | null
           slug?: string
+          social_json?: Json
           stripe_account_id?: string | null
           stripe_account_type?: string
           tagline?: string | null
           updated_at?: string
           verified_at?: string | null
           website?: string | null
+          year_founded?: number | null
         }
         Relationships: [
           {
@@ -2548,27 +2566,36 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          bio: string | null
           created_at: string
           display_name: string | null
+          favorite_species: string | null
           full_name: string | null
+          home_port: string | null
           id: string
           phone: string | null
           updated_at: string
         }
         Insert: {
           avatar_url?: string | null
+          bio?: string | null
           created_at?: string
           display_name?: string | null
+          favorite_species?: string | null
           full_name?: string | null
+          home_port?: string | null
           id: string
           phone?: string | null
           updated_at?: string
         }
         Update: {
           avatar_url?: string | null
+          bio?: string | null
           created_at?: string
           display_name?: string | null
+          favorite_species?: string | null
           full_name?: string | null
+          home_port?: string | null
           id?: string
           phone?: string | null
           updated_at?: string
@@ -3198,8 +3225,11 @@ export type Database = {
           deposit_rate: number
           description: string | null
           email: string | null
+          faq_json: Json
           fishx_business_id: string | null
+          gallery_json: Json
           hero_url: string | null
+          highlights_json: Json
           hours_json: Json
           id: string
           is_published: boolean
@@ -3211,16 +3241,19 @@ export type Database = {
           payout_delay_days: number
           payouts_enabled: boolean
           phone: string | null
+          policies_json: Json
           premium_until: string | null
           product_commission_rate: number
           region: string | null
           slug: string
+          social_json: Json
           stripe_account_id: string | null
           stripe_account_type: string
           tagline: string | null
           updated_at: string
           verified_at: string | null
           website: string | null
+          year_founded: number | null
         }
         SetofOptions: {
           from: "*"
