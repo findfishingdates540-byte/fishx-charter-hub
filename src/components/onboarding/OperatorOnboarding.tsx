@@ -724,6 +724,12 @@ export function OperatorOnboarding() {
           })}
         </nav>
         <div className="mt-auto pt-6 text-[11.5px] text-[#92A0AB]">
+          <button
+            onClick={() => navigate({ to: "/dashboard", search: { as: "angler" } })}
+            className="mb-3 block text-left text-[12px] text-[#2DE2F2] underline bg-transparent border-0 cursor-pointer p-0"
+          >
+            I'm just here to book trips — skip for now
+          </button>
           Need a hand?{" "}
           <a href="mailto:captains@fish-x.com" className="text-[#2DE2F2] underline">
             captains@fish-x.com
