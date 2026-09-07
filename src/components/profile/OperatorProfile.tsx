@@ -1,6 +1,8 @@
 import { Link } from "@tanstack/react-router";
 import { BrandLogo } from "@/components/brand/BrandLogo";
 import { MarinaServiceRequest } from "@/components/profile/MarinaServiceRequest";
+import { StorefrontBooking } from "@/components/profile/StorefrontBooking";
+
 import { useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
@@ -674,40 +676,18 @@ export function OperatorProfile({
                 </div>
               </div>
             )}
-            <div style={{ background: "#14202B", border: "1px solid rgba(255,255,255,.07)", borderRadius: 20, padding: 24, boxShadow: "0 30px 60px -44px rgba(4,10,16,.62)" }}>
-              <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 16 }}>
-                <div>
-                  <span style={{ fontFamily: "'Outfit', Georgia, serif", fontSize: 27, fontWeight: 600 }}>
-                    {selected ? fmtPrice(selected.base_price_cents) : "—"}
-                  </span>
-                  <span style={{ fontSize: 12.5, color: "#92A0AB" }}> per trip</span>
-                </div>
-                <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 11, fontWeight: 700, color: "#2DE2F2", background: "rgba(45,226,242,.12)", borderRadius: 20, padding: "4px 10px" }}>
-                  <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#2DE2F2" }} />
-                  Escrow
-                </span>
-              </div>
-              {selected && (
-                <div style={{ padding: "10px 0", borderTop: "1px solid rgba(255,255,255,.06)", fontSize: 13, color: "#92A0AB", marginBottom: 14 }}>
-                  <div style={{ fontWeight: 700, color: "#F0F2F5", marginBottom: 4 }}>{selected.title}</div>
-                  {selected.description && <div>{selected.description.slice(0, 140)}{selected.description.length > 140 ? "…" : ""}</div>}
-                </div>
-              )}
-              {selected ? (
-                <Link
-                  to="/booking"
-                  search={{ service_id: selected.id }}
-                  style={{ display: "block", textAlign: "center", background: "#1C2936", color: "#F0F2F5", borderRadius: 12, padding: "14px 16px", fontSize: 13, fontWeight: 700, letterSpacing: ".14em", textTransform: "uppercase", textDecoration: "none" }}
-                >
-                  Request to book
-                </Link>
-              ) : (
-                <div style={{ padding: 14, textAlign: "center", color: "#92A0AB", fontSize: 13 }}>No bookable trips yet.</div>
-              )}
-              <div style={{ marginTop: 14, fontSize: 11.5, color: "#92A0AB", textAlign: "center" }}>
-                Funds held in escrow · Released 24 hrs after your trip
-              </div>
-            </div>
+            <StorefrontBooking
+              services={services.map((s) => ({
+                id: s.id,
+                title: s.title,
+                base_price_cents: s.base_price_cents,
+                capacity: s.capacity,
+                duration_minutes: s.duration_minutes,
+              }))}
+              selectedServiceId={selected?.id ?? null}
+              onSelectService={setSelectedServiceId}
+            />
+
 
             <div style={{ background: "#0D161F", color: "#F0F2F5", borderRadius: 20, padding: 22 }}>
               <div style={{ fontSize: 10.5, letterSpacing: ".18em", textTransform: "uppercase", color: "#2DE2F2", fontWeight: 700 }}>Contact</div>

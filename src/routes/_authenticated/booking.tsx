@@ -7,10 +7,14 @@ const search = z.object({
   /** The listing the angler originally opened — keeps page identity stable
    *  when they switch between trip packages of the same operator. */
   base: z.string().uuid().optional(),
+  /** Departure + party carried over from a storefront booking form. */
+  slot: z.string().uuid().optional(),
+  party: z.coerce.number().int().min(1).max(60).optional(),
   paid: z.string().optional(),
   canceled: z.string().optional(),
   booking_id: z.string().optional(),
 });
+
 
 
 export const Route = createFileRoute("/_authenticated/booking")({
@@ -53,7 +57,15 @@ function BookingError({ error }: { error: Error }) {
 }
 
 function RouteComponent() {
-  const { service_id, base } = Route.useSearch();
-  return <BookingFlow serviceId={service_id} baseId={base ?? service_id} />;
+  const { service_id, base, slot, party } = Route.useSearch();
+  return (
+    <BookingFlow
+      serviceId={service_id}
+      baseId={base ?? service_id}
+      initialSlotId={slot}
+      initialParty={party}
+    />
+  );
 }
+
 
