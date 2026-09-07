@@ -360,16 +360,17 @@ async function recipientEmail(admin: Admin, userId: string) {
 }
 
 /**
- * Send one transactional email. Wired to Lovable Emails when the project has
- * an email domain configured; a no-op (reported as `skipped`) otherwise, so a
- * missing email setup can never fail a booking.
+ * Send one transactional email via Resend.
+ *
+ * Falls back to `skipped` when Resend is not configured so a missing email
+ * setup can never fail a booking.
  */
 async function sendEmail(to: string, draft: NotificationDraft) {
-  const apiKey = process.env["LOVABLE_API_KEY"];
+  const apiKey = process.env["RESEND_API_KEY"];
   const from = process.env["EMAIL_FROM"];
   if (!apiKey || !from) return { sent: false, reason: "email_not_configured" };
 
-  const res = await fetch("https://api.lovable.dev/emails/send", {
+  const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
