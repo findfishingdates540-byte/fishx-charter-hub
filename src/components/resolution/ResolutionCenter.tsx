@@ -6,6 +6,7 @@
  * transition_booking RPC.
  */
 import { useRef, useState } from "react";
+import { BrandLogo } from "@/components/brand/BrandLogo";
 import { Link } from "@tanstack/react-router";
 import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -160,31 +161,7 @@ function Shell({ children, backTo }: { children: React.ReactNode; backTo?: strin
             <span>←</span> Back
           </Link>
           <div style={{ display: "flex", alignItems: "center", gap: 10, margin: "0 auto" }}>
-            <span
-              style={{
-                width: 10,
-                height: 10,
-                background: V.sand,
-                transform: "rotate(45deg)",
-                display: "inline-block",
-                borderRadius: 1,
-              }}
-            />
-            <span style={{ fontFamily: V.serif, fontWeight: 600, fontSize: 19, letterSpacing: ".02em", whiteSpace: "nowrap" }}>
-              FISH-X.COM
-            </span>
-            <span
-              style={{
-                fontSize: 11,
-                fontWeight: 700,
-                letterSpacing: ".16em",
-                textTransform: "uppercase",
-                color: V.sand,
-                marginLeft: 4,
-              }}
-            >
-              Resolution Center
-            </span>
+            <BrandLogo size="sm" accent={V.sand} />
           </div>
           <span
             style={{

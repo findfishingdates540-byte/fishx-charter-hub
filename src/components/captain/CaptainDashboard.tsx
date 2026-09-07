@@ -5,6 +5,7 @@
  * earnings, messages).
  */
 import { useState } from "react";
+import { BrandLogo } from "@/components/brand/BrandLogo";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery, useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -102,8 +103,7 @@ export function CaptainDashboard() {
       {/* SIDEBAR */}
       <aside className="fx-side" style={{ width: 256, flex: "none", background: "var(--navy)", color: "var(--ond)", display: "flex", flexDirection: "column", padding: "22px 16px", position: "sticky", top: 0, height: "100vh", borderRight: "1px solid rgba(255,255,255,.06)" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "6px 10px 22px" }}>
-          <span style={{ width: 11, height: 11, background: "var(--cyan)", transform: "rotate(45deg)", display: "inline-block", borderRadius: 1 }} />
-          <span style={{ fontFamily: "var(--serif)", fontWeight: 600, fontSize: 20, letterSpacing: ".02em", whiteSpace: "nowrap" }}>FISH-X.COM</span>
+          <BrandLogo size="md" accent="var(--cyan)" color="var(--ond)" />
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 11, background: "rgba(255,255,255,.04)", border: "1px solid var(--lined)", borderRadius: 13, padding: "11px 12px", marginBottom: 18 }}>
           <span style={{ width: 34, height: 34, borderRadius: 9, background: "rgba(45,226,242,.14)", display: "grid", placeItems: "center", color: "var(--cyan)", flex: "none", fontFamily: "var(--serif)", fontWeight: 600 }}>

@@ -1,4 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { BrandLogo } from "@/components/brand/BrandLogo";
 import { useEffect, useMemo, useState, type CSSProperties, type FormEvent, type PointerEvent } from "react";
 import { flushSync } from "react-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -295,8 +296,7 @@ function AuthPage() {
 
         <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <a href="/" style={{ display: "flex", alignItems: "center", gap: 11, textDecoration: "none", color: "var(--ond)" }}>
-            <span style={{ width: 11, height: 11, background: "var(--sand)", transform: "rotate(45deg)", display: "inline-block", borderRadius: 1 }} />
-            <span style={{ fontFamily: "var(--serif)", fontWeight: 600, fontSize: 21, letterSpacing: ".02em" }}>FISH-X.COM</span>
+            <BrandLogo size="md" accent="var(--sand)" color="var(--ond)" />
           </a>
           <a href="/" style={{ display: "inline-flex", alignItems: "center", gap: 7, color: "var(--ondmut)", textDecoration: "none", fontSize: 13, fontWeight: 500, border: "1px solid var(--lined)", borderRadius: 30, padding: "8px 14px" }}>
             <span>←</span> Back to site
