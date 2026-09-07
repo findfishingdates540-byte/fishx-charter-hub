@@ -1,8 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useSuspenseQuery, useQuery, queryOptions } from "@tanstack/react-query";
+import { useSuspenseQuery, queryOptions } from "@tanstack/react-query";
 import { lazy, Suspense } from "react";
 
-import { getMyRoles, hasPrimaryRole, getMyProfile, roleCategoryKey, isOperatorRole } from "@/lib/auth.functions";
+import { getMyRoles, hasPrimaryRole, getMyProfile, getMyBootstrap, roleCategoryKey, isOperatorRole } from "@/lib/auth.functions";
 import { getMyBusinesses } from "@/lib/my-businesses.functions";
 import { DashboardFrame } from "@/components/DashboardFrame";
 // Each persona dashboard is a large surface; loading only the one the signed-in
@@ -30,6 +30,12 @@ import { getCaptainDashboard } from "@/lib/captain-dashboard.functions";
 import { getMarinaOverview } from "@/lib/marina.functions";
 import { getShopOverview } from "@/lib/tackle.functions";
 import { getGuideOverview } from "@/lib/guide.functions";
+
+const bootstrapQO = queryOptions({
+  queryKey: ["my-bootstrap"],
+  queryFn: () => getMyBootstrap(),
+  staleTime: 5 * 60_000,
+});
 
 const myRolesQO = queryOptions({
   queryKey: ["my-roles"],
@@ -82,17 +88,17 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({ meta: [{ title: "Dashboard — FISH-X.COM Bookings & Marketplace" }] }),
   loader: async ({ context }) => {
     try {
-      // Only the identity data needed to decide WHICH dashboard to show is
-      // awaited. Persona data is warmed in the background so the shell paints
-      // immediately instead of waiting on a chain of server round trips.
-      const [rolesRaw, businessesRaw] = await Promise.all([
-        context.queryClient.ensureQueryData(myRolesQO),
-        context.queryClient.ensureQueryData(myBusinessesQO),
-      ]);
-      void context.queryClient.prefetchQuery(myProfileQO);
-      const roles = Array.isArray(rolesRaw) ? rolesRaw : [];
-      const businesses = Array.isArray(businessesRaw) ? businessesRaw : [];
+      // One request returns roles, businesses and profile together, then the
+      // persona data is warmed in the background so the shell paints straight
+      // away instead of waiting on a chain of server round trips.
+      const boot = await context.queryClient.ensureQueryData(bootstrapQO);
+      const roles = Array.isArray(boot?.roles) ? boot.roles : [];
+      const businesses = Array.isArray(boot?.businesses) ? boot.businesses : [];
+      context.queryClient.setQueryData(myRolesQO.queryKey, roles);
+      context.queryClient.setQueryData(myBusinessesQO.queryKey, businesses);
+      context.queryClient.setQueryData(myProfileQO.queryKey, boot?.profile ?? null);
       const primary = hasPrimaryRole(roles);
+
 
       if (businesses.length === 0) {
         void context.queryClient.prefetchQuery({
@@ -179,11 +185,10 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
 // (categoryTemplate removed — verticals now use React components below.)
 
 function Dashboard() {
-  const { data: rolesRaw } = useSuspenseQuery(myRolesQO);
-  const { data: businessesRaw } = useSuspenseQuery(myBusinessesQO);
-  const roles = Array.isArray(rolesRaw) ? rolesRaw : [];
-  const businesses = Array.isArray(businessesRaw) ? businessesRaw : [];
-  const { data: profile } = useQuery(myProfileQO);
+  const { data: boot } = useSuspenseQuery(bootstrapQO);
+  const roles = Array.isArray(boot?.roles) ? boot.roles : [];
+  const businesses = Array.isArray(boot?.businesses) ? boot.businesses : [];
+  const profile = boot?.profile ?? null;
   const primaryRole = hasPrimaryRole(roles);
   const { as } = Route.useSearch();
   // Nobody is ever auto-pushed into operator setup. Setting up a business is
