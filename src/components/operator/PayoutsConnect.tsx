@@ -104,6 +104,11 @@ export function PayoutsConnect({ businessId }: { businessId?: string }) {
         <div style={{ fontSize: 13, color: "#F87171" }}>
           Couldn't load payout status. Reload the page to try again.
         </div>
+      ) : s?.noBusiness ? (
+        <div style={{ fontSize: 13, color: "var(--tmut, #92A0AB)", lineHeight: 1.6 }}>
+          Set up your business profile first — once your business exists you can connect a bank
+          account here to receive payouts.
+        </div>
       ) : (
         <div
           style={{
