@@ -50,7 +50,7 @@ export const getBusinessProfile = createServerFn({ method: "GET" })
     const { data: biz, error } = await sb
       .from("businesses")
       .select(
-        "id,slug,name,category_key,tagline,description,hero_url,logo_url,website,phone,email,address,city,region,country,lat,lng,hours_json,amenities_json,verified_at,premium_until",
+        "id,slug,name,category_key,tagline,description,hero_url,logo_url,website,phone,email,address,city,region,country,lat,lng,hours_json,amenities_json,gallery_json,social_json,policies_json,highlights_json,faq_json,year_founded,verified_at,premium_until",
       )
       .eq("slug", data.slug)
       .eq("is_published", true)
@@ -191,7 +191,7 @@ export const getBusinessBySlug = createServerFn({ method: "GET" })
     const { data: biz, error } = await sb
       .from("businesses")
       .select(
-        "id,slug,name,category_key,tagline,description,hero_url,logo_url,website,phone,email,address,city,region,country,lat,lng,hours_json,amenities_json,verified_at,premium_until",
+        "id,slug,name,category_key,tagline,description,hero_url,logo_url,website,phone,email,address,city,region,country,lat,lng,hours_json,amenities_json,gallery_json,social_json,policies_json,highlights_json,faq_json,year_founded,verified_at,premium_until",
       )
       .eq("slug", data.slug)
       .eq("is_published", true)

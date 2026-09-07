@@ -209,6 +209,13 @@ export function OperatorProfile({
   const avg = ratingSummary.average ? ratingSummary.average.toFixed(2) : "—";
   const hours = normalizeHours((b as any).hours_json);
   const amenities = normalizeAmenities((b as any).amenities_json);
+  const gallery: string[] = Array.isArray((b as any).gallery_json) ? (b as any).gallery_json : [];
+  const highlights: string[] = Array.isArray((b as any).highlights_json) ? (b as any).highlights_json : [];
+  const social = ((b as any).social_json ?? {}) as Record<string, string>;
+  const policies = ((b as any).policies_json ?? {}) as Record<string, string>;
+  const faq: Array<{ q: string; a: string }> = Array.isArray((b as any).faq_json) ? (b as any).faq_json : [];
+  const yearFounded = (b as any).year_founded as number | null;
+  const socialLinks = Object.entries(social).filter(([, v]) => typeof v === "string" && v.trim());
   const labels = LABEL_BY_CATEGORY[b.category_key] ?? { services: "What we offer", blurb: "" };
   const isShop = ["tackle_shop", "bait_shop", "apparel", "gear_mfg"].includes(b.category_key);
 
@@ -288,10 +295,41 @@ export function OperatorProfile({
           {/* Left column */}
           <div style={{ display: "flex", flexDirection: "column", gap: 22 }}>
             {/* About */}
-            {b.description && (
+            {(b.description || highlights.length > 0 || yearFounded) && (
               <section style={{ background: "#14202B", border: "1px solid rgba(255,255,255,.07)", borderRadius: 20, padding: 26 }}>
                 <h2 style={sectionTitle}>About</h2>
-                <p style={{ color: "#92A0AB", lineHeight: 1.65, whiteSpace: "pre-wrap", margin: 0 }}>{b.description}</p>
+                {b.description && (
+                  <p style={{ color: "#92A0AB", lineHeight: 1.65, whiteSpace: "pre-wrap", margin: 0 }}>{b.description}</p>
+                )}
+                {yearFounded && (
+                  <p style={{ color: "#92A0AB", margin: "12px 0 0", fontSize: 13.5 }}>Operating since {yearFounded}</p>
+                )}
+                {highlights.length > 0 && (
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 16 }}>
+                    {highlights.map((h) => (
+                      <span key={h} style={{ background: "rgba(45,226,242,.12)", color: "#2DE2F2", borderRadius: 20, padding: "6px 12px", fontSize: 12.5, fontWeight: 600 }}>
+                        {h}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </section>
+            )}
+
+            {gallery.length > 0 && (
+              <section style={CARD}>
+                <h2 style={sectionTitle}>Photos</h2>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(180px,1fr))", gap: 10 }}>
+                  {gallery.map((src, i) => (
+                    <img
+                      key={`${i}-${src}`}
+                      src={src}
+                      alt={`${b.name} photo ${i + 1}`}
+                      loading="lazy"
+                      style={{ width: "100%", aspectRatio: "4 / 3", objectFit: "cover", borderRadius: 14, border: "1px solid rgba(255,255,255,.07)" }}
+                    />
+                  ))}
+                </div>
               </section>
             )}
 
@@ -516,6 +554,50 @@ export function OperatorProfile({
 
 
 
+            {(policies.cancellation || policies.rules || policies.languages || policies.payment_methods) && (
+              <section style={CARD}>
+                <h2 style={sectionTitle}>Good to know</h2>
+                <div style={{ display: "grid", gap: 14 }}>
+                  {policies.cancellation && (
+                    <div>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: "#F0F2F5", marginBottom: 4 }}>Cancellation policy</div>
+                      <p style={{ margin: 0, color: "#92A0AB", lineHeight: 1.6, whiteSpace: "pre-wrap" }}>{policies.cancellation}</p>
+                    </div>
+                  )}
+                  {policies.rules && (
+                    <div>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: "#F0F2F5", marginBottom: 4 }}>House rules</div>
+                      <p style={{ margin: 0, color: "#92A0AB", lineHeight: 1.6, whiteSpace: "pre-wrap" }}>{policies.rules}</p>
+                    </div>
+                  )}
+                  {policies.languages && (
+                    <div style={{ fontSize: 13.5, color: "#92A0AB" }}>
+                      <b style={{ color: "#F0F2F5" }}>Languages:</b> {policies.languages}
+                    </div>
+                  )}
+                  {policies.payment_methods && (
+                    <div style={{ fontSize: 13.5, color: "#92A0AB" }}>
+                      <b style={{ color: "#F0F2F5" }}>Payments accepted:</b> {policies.payment_methods}
+                    </div>
+                  )}
+                </div>
+              </section>
+            )}
+
+            {faq.length > 0 && (
+              <section style={CARD}>
+                <h2 style={sectionTitle}>Frequently asked</h2>
+                <div style={{ display: "grid", gap: 14 }}>
+                  {faq.map((f, i) => (
+                    <div key={i} style={{ borderTop: i ? "1px solid rgba(255,255,255,.07)" : "none", paddingTop: i ? 14 : 0 }}>
+                      <div style={{ fontSize: 14, fontWeight: 700, color: "#F0F2F5" }}>{f.q}</div>
+                      <p style={{ margin: "5px 0 0", color: "#92A0AB", lineHeight: 1.6, whiteSpace: "pre-wrap" }}>{f.a}</p>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+
             {/* Reviews */}
             <section style={{ background: "#14202B", border: "1px solid rgba(255,255,255,.07)", borderRadius: 20, padding: 26 }}>
               <div style={{ display: "flex", gap: 34, alignItems: "flex-start", flexWrap: "wrap", marginBottom: 24 }}>
@@ -574,6 +656,24 @@ export function OperatorProfile({
 
           {/* Right rail */}
           <aside style={{ display: "flex", flexDirection: "column", gap: 18, position: "sticky", top: 86, alignSelf: "flex-start" }}>
+            {socialLinks.length > 0 && (
+              <div style={{ background: "#14202B", border: "1px solid rgba(255,255,255,.07)", borderRadius: 20, padding: 20 }}>
+                <h2 style={{ ...sectionTitle, fontSize: 15 }}>Follow along</h2>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                  {socialLinks.map(([k, v]) => (
+                    <a
+                      key={k}
+                      href={/^https?:\/\//.test(v) ? v : `https://${v}`}
+                      target="_blank"
+                      rel="noreferrer noopener"
+                      style={{ background: "#1C2936", color: "#2DE2F2", borderRadius: 20, padding: "7px 13px", fontSize: 12.5, fontWeight: 700, textDecoration: "none", textTransform: "capitalize" }}
+                    >
+                      {k}
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
             <div style={{ background: "#14202B", border: "1px solid rgba(255,255,255,.07)", borderRadius: 20, padding: 24, boxShadow: "0 30px 60px -44px rgba(4,10,16,.62)" }}>
               <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 16 }}>
                 <div>
