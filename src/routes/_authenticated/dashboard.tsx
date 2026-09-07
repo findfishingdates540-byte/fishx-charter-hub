@@ -34,17 +34,21 @@ import { getGuideOverview } from "@/lib/guide.functions";
 const myRolesQO = queryOptions({
   queryKey: ["my-roles"],
   queryFn: () => getMyRoles(),
+  staleTime: 5 * 60_000,
 });
 
 const myBusinessesQO = queryOptions({
   queryKey: ["my-businesses"],
   queryFn: () => getMyBusinesses(),
+  staleTime: 5 * 60_000,
 });
 
 const myProfileQO = queryOptions({
   queryKey: ["my-profile"],
   queryFn: () => getMyProfile(),
+  staleTime: 5 * 60_000,
 });
+
 
 /**
  * Pick the workspace that matches the signed-in operator.
