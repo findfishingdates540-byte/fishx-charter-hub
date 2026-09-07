@@ -3,6 +3,7 @@
  * Provides sidebar + top bar + page frame in the Fish-X design system.
  */
 import { ReactNode } from "react";
+import { BrandLogo } from "@/components/brand/BrandLogo";
 import { Link } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { NotificationBell } from "@/components/notifications/NotificationBell";

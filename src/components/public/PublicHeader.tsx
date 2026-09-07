@@ -1,4 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
+import { BrandLogo } from "@/components/brand/BrandLogo";
 import { useEffect, useState, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -90,34 +91,7 @@ export function PublicHeader({
           to={signedIn ? "/dashboard" : "/"}
           style={{ display: "flex", alignItems: "center", gap: 11, textDecoration: "none", color: "#031029" }}
         >
-          <span
-            style={{
-              width: 11,
-              height: 11,
-              background: "var(--sand, #2DE2F2)",
-              transform: "rotate(45deg)",
-              display: "inline-block",
-              borderRadius: 1,
-            }}
-          />
-          <span style={{ display: "grid", lineHeight: 1.05 }}>
-            <span style={{ fontFamily: "var(--serif)", fontWeight: 600, fontSize: 21, letterSpacing: ".02em" }}>
-              FISH-X.COM
-            </span>
-            <span
-              style={{
-                fontFamily: "var(--sans)",
-                fontSize: 10,
-                fontWeight: 700,
-                letterSpacing: ".22em",
-                textTransform: "uppercase",
-                color: "var(--sand, #2DE2F2)",
-                marginTop: 3,
-              }}
-            >
-              Bookings &amp; Marketplace
-            </span>
-          </span>
+          <BrandLogo size="lg" accent="var(--sand, #2DE2F2)" color="#031029" />
         </Link>
 
         {!hideNav && (
