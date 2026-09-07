@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useSuspenseQuery, queryOptions } from "@tanstack/react-query";
 import { useEffect, lazy, Suspense } from "react";
-import { getMyRoles, hasPrimaryRole, getMyProfile } from "@/lib/auth.functions";
+import { getMyRoles, hasPrimaryRole, getMyProfile, roleCategoryKey, isOperatorRole } from "@/lib/auth.functions";
 import { getMyBusinesses } from "@/lib/my-businesses.functions";
 import { DashboardFrame } from "@/components/DashboardFrame";
 // Each persona dashboard is a large surface; loading only the one the signed-in
@@ -55,9 +55,14 @@ function pickPrimaryBusiness(
   primaryRole: string | null,
 ): any | undefined {
   const owned = businesses.filter((m) => m?.business);
-  if (primaryRole === "captain") {
-    const charter = owned.find((m) => (m.business.category_key ?? "charter") === "charter");
-    if (charter) return charter.business;
+  // The role chosen at signup decides the workspace, so an account that also
+  // belongs to another vertical never gets swapped into it.
+  const wantedCategory = roleCategoryKey(primaryRole);
+  if (wantedCategory) {
+    const match = owned.find(
+      (m) => (m.business.category_key ?? "charter") === wantedCategory,
+    );
+    if (match) return match.business;
   }
   const asOwner = owned.find((m) => m.role === "owner");
   return (asOwner ?? owned[0])?.business;
@@ -91,10 +96,10 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
       ]);
       return;
     }
-    if (primary === "captain" || primary === "business_owner" || businesses.length > 0) {
+    if (isOperatorRole(primary) || businesses.length > 0) {
 
       const biz = pickPrimaryBusiness(businesses, primary) as { id: string; category_key: string } | undefined;
-      const key = biz?.category_key;
+      const key = biz?.category_key ?? roleCategoryKey(primary);
       if (!biz || !key || key === "charter") {
         await context.queryClient.ensureQueryData({
           queryKey: ["captain-dashboard"],
@@ -165,7 +170,7 @@ function Dashboard() {
 
   useEffect(() => {
     if (
-      (primaryRole === "business_owner" || primaryRole === "captain") &&
+      isOperatorRole(primaryRole) &&
       businesses.length === 0
     ) {
       navigate({ to: "/onboarding", replace: true });
@@ -180,7 +185,7 @@ function Dashboard() {
 
     // Anyone who owns/belongs to a business gets the operator console for that
     // vertical, even if their role row wasn't stamped as business_owner.
-    if (primaryRole === "business_owner" || businesses.length > 0) {
+    if (isOperatorRole(primaryRole) || businesses.length > 0) {
       const biz = pickPrimaryBusiness(businesses, primaryRole) as
         | { id: string; name: string; category_key: string }
         | undefined;
@@ -188,7 +193,7 @@ function Dashboard() {
 
       const operatorName =
         profile?.display_name || profile?.full_name || "Operator";
-      const key = biz.category_key;
+      const key = biz.category_key ?? roleCategoryKey(primaryRole);
 
       if (!key || key === "charter") return <CaptainDashboard />;
       if (key === "marina" || key === "lodge")

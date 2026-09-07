@@ -19,14 +19,53 @@ export const getMyRoles = createServerFn({ method: "GET" })
     return (Array.isArray(data) ? data : []).map((r: { role: string }) => r.role);
   });
 
-export const hasPrimaryRole = (roles: unknown): "angler" | "business_owner" | "captain" | null => {
+export type VerticalRole =
+  | "captain"
+  | "marina"
+  | "lodge"
+  | "tackle_shop"
+  | "bait_shop"
+  | "gear_mfg"
+  | "apparel"
+  | "guide_service";
+
+export type PrimaryRole = VerticalRole | "business_owner" | "angler";
+
+/** Business category that each vertical role owns. */
+const ROLE_CATEGORY: Record<VerticalRole, string> = {
+  captain: "charter",
+  marina: "marina",
+  lodge: "lodge",
+  tackle_shop: "tackle_shop",
+  bait_shop: "bait_shop",
+  gear_mfg: "gear_mfg",
+  apparel: "apparel",
+  guide_service: "guide_service",
+};
+
+/** The business category a role should always land on, when it has one. */
+export const roleCategoryKey = (role: string | null): string | null =>
+  role && role in ROLE_CATEGORY ? ROLE_CATEGORY[role as VerticalRole] : null;
+
+/** True for any operator-side role (a vertical, or a legacy business owner). */
+export const isOperatorRole = (role: string | null): boolean =>
+  role === "business_owner" || roleCategoryKey(role) !== null;
+
+/**
+ * The signed-in user's routing role. A vertical role (chosen at signup) always
+ * wins so an account never flips between, say, captain and tackle shop.
+ */
+export const hasPrimaryRole = (roles: unknown): PrimaryRole | null => {
   if (!Array.isArray(roles)) {
     // Defensive: a transient server-fn/serialization hiccup (e.g. right after
     // sign-in) must not crash the dashboard with "roles.includes is not a function".
     console.error("hasPrimaryRole received non-array roles:", roles);
     return null;
   }
-  if (roles.includes("captain")) return "captain";
+  const vertical = (Object.keys(ROLE_CATEGORY) as VerticalRole[]).find((r) =>
+    roles.includes(r),
+  );
+  if (vertical) return vertical;
   if (roles.includes("business_owner")) return "business_owner";
   if (roles.includes("angler")) return "angler";
   return null;

@@ -11,6 +11,8 @@ import {
   decideVerification,
   resolveDispute,
   markPayoutPaid,
+  getPayoutReconciliation,
+  runPayoutReconciliation,
 } from "@/lib/admin.functions";
 
 export const Route = createFileRoute("/_authenticated/admin")({
@@ -91,7 +93,7 @@ const money = (c: number) =>
 
 const day = (s?: string | null) => (s ? new Date(s).toLocaleDateString() : "—");
 
-type Tab = "verifications" | "payouts" | "disputes";
+type Tab = "verifications" | "payouts" | "reconciliation" | "disputes";
 
 function AdminConsole() {
   const fetchOverview = useServerFn(getAdminOverview);
@@ -102,6 +104,19 @@ function AdminConsole() {
     staleTime: 15_000,
   });
   const [tab, setTab] = useState<Tab>("verifications");
+
+  const fetchRecon = useServerFn(getPayoutReconciliation);
+  const rerunRecon = useServerFn(runPayoutReconciliation);
+  const recon = useQuery({
+    queryKey: ["admin-reconciliation"],
+    queryFn: () => fetchRecon(),
+    enabled: tab === "reconciliation",
+    staleTime: 30_000,
+  });
+  const reconMut = useMutation({
+    mutationFn: () => rerunRecon(),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["admin-reconciliation"] }),
+  });
 
   const decide = useServerFn(decideVerification);
   const resolve = useServerFn(resolveDispute);
@@ -165,7 +180,7 @@ function AdminConsole() {
       </div>
 
       <div style={{ display: "flex", gap: 8, marginBottom: 16, flexWrap: "wrap" }}>
-        {(["verifications", "payouts", "disputes"] as Tab[]).map((k) => (
+        {(["verifications", "payouts", "reconciliation", "disputes"] as Tab[]).map((k) => (
           <button
             key={k}
             onClick={() => setTab(k)}
@@ -246,6 +261,66 @@ function AdminConsole() {
               ))}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {tab === "reconciliation" && (
+        <div style={{ display: "grid", gap: 12 }}>
+          <div style={{ ...card, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+            <div>
+              <div style={{ fontWeight: 700, fontSize: 15 }}>Daily payout check</div>
+              <div style={{ color: T.mut, fontSize: 13.5 }}>
+                {recon.data?.runDate
+                  ? `Last run ${day(recon.data.runDate)} · ${recon.data.totals.checked} payouts checked · ${recon.data.totals.problems} need attention`
+                  : "The check runs automatically every night at 04:00 UTC."}
+              </div>
+            </div>
+            <button style={ghost} disabled={reconMut.isPending} onClick={() => reconMut.mutate()}>
+              {reconMut.isPending ? "Checking…" : "Run check now"}
+            </button>
+          </div>
+
+          {recon.isLoading && <div style={{ ...card, color: T.mut }}>Loading the latest check…</div>}
+          {recon.error && <div style={{ ...card, color: "#FF8A8A" }}>Could not load the check.</div>}
+
+          {recon.data && recon.data.totals.problems === 0 && recon.data.totals.checked > 0 && (
+            <div style={{ ...card, color: T.accent }}>Every payout matches its booking or order.</div>
+          )}
+          {recon.data && recon.data.totals.checked === 0 && (
+            <div style={{ ...card, color: T.mut }}>No payouts to check yet.</div>
+          )}
+
+          {recon.data && recon.data.rows.some((r: any) => r.status !== "matched") && (
+            <div style={{ ...card, overflowX: "auto", padding: 0 }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13.5, minWidth: 760 }}>
+                <thead>
+                  <tr style={{ color: T.mut, textAlign: "left" }}>
+                    {["Business", "Type", "Issue", "Expected", "Actual", "Difference"].map((h) => (
+                      <th key={h} style={{ padding: "12px 14px", borderBottom: `1px solid ${T.line}`, fontWeight: 600 }}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {recon.data.rows
+                    .filter((r: any) => r.status !== "matched")
+                    .map((r: any) => (
+                      <tr key={r.id}>
+                        <td style={{ padding: "12px 14px", borderBottom: `1px solid ${T.line}` }}>{r.business_name ?? "—"}</td>
+                        <td style={{ padding: "12px 14px", borderBottom: `1px solid ${T.line}`, color: T.mut }}>
+                          {r.scope === "booking" ? "Trip" : "Shop order"}
+                        </td>
+                        <td style={{ padding: "12px 14px", borderBottom: `1px solid ${T.line}` }}>{r.detail ?? r.status}</td>
+                        <td style={{ padding: "12px 14px", borderBottom: `1px solid ${T.line}`, color: T.mut }}>{money(r.expected_cents)}</td>
+                        <td style={{ padding: "12px 14px", borderBottom: `1px solid ${T.line}` }}>{money(r.actual_cents)}</td>
+                        <td style={{ padding: "12px 14px", borderBottom: `1px solid ${T.line}`, fontWeight: 700, color: r.delta_cents === 0 ? T.mut : "#FFB86B" }}>
+                          {money(r.delta_cents)}
+                        </td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       )}
 
