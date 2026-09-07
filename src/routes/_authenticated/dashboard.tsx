@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useSuspenseQuery, queryOptions } from "@tanstack/react-query";
+import { useSuspenseQuery, useQuery, queryOptions } from "@tanstack/react-query";
 import { lazy, Suspense } from "react";
 
 import { getMyRoles, hasPrimaryRole, getMyProfile, roleCategoryKey, isOperatorRole } from "@/lib/auth.functions";
@@ -183,7 +183,7 @@ function Dashboard() {
   const { data: businessesRaw } = useSuspenseQuery(myBusinessesQO);
   const roles = Array.isArray(rolesRaw) ? rolesRaw : [];
   const businesses = Array.isArray(businessesRaw) ? businessesRaw : [];
-  const { data: profile } = useSuspenseQuery(myProfileQO);
+  const { data: profile } = useQuery(myProfileQO);
   const primaryRole = hasPrimaryRole(roles);
   const { as } = Route.useSearch();
   // Nobody is ever auto-pushed into operator setup. Setting up a business is
@@ -191,7 +191,17 @@ function Dashboard() {
   // own dashboard.
   const anglerMode = as === "angler" || roles.includes("angler");
 
-  return <Suspense fallback={null}>{renderDashboard()}</Suspense>;
+  return (
+    <Suspense
+      fallback={
+        <div style={{ padding: 40, fontFamily: "Outfit, system-ui", opacity: 0.6 }}>
+          Loading your dashboard…
+        </div>
+      }
+    >
+      {renderDashboard()}
+    </Suspense>
+  );
 
   function renderDashboard() {
     if (anglerMode && businesses.length === 0) return <AnglerDashboard />;
