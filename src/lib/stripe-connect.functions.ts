@@ -57,14 +57,15 @@ export const getConnectStatus = createServerFn({ method: "GET" })
     }
 
     return {
-      businessId: biz.id as string,
-      businessName: biz.name as string,
+      businessId: biz.id as string | null,
+      businessName: biz.name as string | null,
       stripeConfigured: Boolean(stripe),
       stripeAccountId: (biz.stripe_account_id as string | null) ?? null,
       chargesEnabled,
       payoutsEnabled,
       requirementsDue,
       commissionRate: Number(biz.commission_rate ?? 0.2),
+      noBusiness: false,
     };
   });
 
