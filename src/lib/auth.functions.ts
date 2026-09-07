@@ -83,3 +83,38 @@ export const getMyProfile = createServerFn({ method: "GET" })
     if (error) throw new Response(error.message, { status: 500 });
     return data;
   });
+
+/**
+ * One round trip for everything the dashboard needs to decide what to render:
+ * roles, business memberships and profile. Each authenticated server call pays
+ * a token-verification cost, so merging three calls into one is the single
+ * biggest win on the login -> dashboard path.
+ */
+export const getMyBootstrap = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context;
+    const [rolesRes, memsRes, profileRes] = await Promise.all([
+      supabase.from("user_roles").select("role").eq("user_id", userId),
+      supabase
+        .from("business_members")
+        .select(
+          "role, business:businesses(id,slug,name,category_key,hero_url,is_published,verified_at)",
+        )
+        .eq("user_id", userId),
+      supabase
+        .from("profiles")
+        .select("id, full_name, display_name, avatar_url")
+        .eq("id", userId)
+        .maybeSingle(),
+    ]);
+    if (rolesRes.error) throw new Response(rolesRes.error.message, { status: 500 });
+    if (memsRes.error) throw new Response(memsRes.error.message, { status: 500 });
+    if (profileRes.error) throw new Response(profileRes.error.message, { status: 500 });
+
+    return {
+      roles: (rolesRes.data ?? []).map((r: { role: string }) => r.role),
+      businesses: memsRes.data ?? [],
+      profile: profileRes.data,
+    };
+  });
