@@ -180,12 +180,17 @@ function Dashboard() {
     if (anglerMode && businesses.length === 0) return <AnglerDashboard />;
     if (primaryRole === "angler" && businesses.length === 0) return <AnglerDashboard />;
     if (businesses.length === 0) return <AnglerDashboard />;
-    if (primaryRole === "captain" && businesses.length > 0) return <CaptainDashboard />;
 
+    {
+      const biz = pickPrimaryBusiness(businesses, primaryRole) as
+        | { id: string; name: string; category_key: string }
+        | undefined;
+      if (!biz) return <AnglerDashboard />;
 
       const operatorName =
         profile?.display_name || profile?.full_name || "Operator";
       const key = biz.category_key ?? roleCategoryKey(primaryRole);
+
 
       if (!key || key === "charter") return <CaptainDashboard />;
       if (key === "marina" || key === "lodge")
