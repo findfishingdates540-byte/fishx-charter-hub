@@ -255,3 +255,65 @@ export const markPayoutPaid = createServerFn({ method: "POST" })
 
     return { ok: true as const, alreadyPaid: false, transferId, amountCents: amount };
   });
+
+/**
+ * Daily payout reconciliation: every payout matched against the booking or
+ * shop order it belongs to. Rows are produced by the scheduled
+ * `reconcile_payouts` routine; admins can also re-run it on demand.
+ */
+export const getPayoutReconciliation = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertAdmin(context.supabase, context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: rows, error } = await supabaseAdmin
+      .from("payout_reconciliations")
+      .select(
+        "id,run_date,scope,status,payout_id,booking_id,order_id,business_id,expected_cents,actual_cents,delta_cents,detail,created_at",
+      )
+      .order("run_date", { ascending: false })
+      .order("status", { ascending: true })
+      .limit(500);
+    if (error) throw new Error(error.message);
+
+    const list = rows ?? [];
+    const latestRun = list[0]?.run_date ?? null;
+    const today = list.filter((r) => r.run_date === latestRun);
+
+    const bizIds = Array.from(
+      new Set(today.map((r) => r.business_id).filter(Boolean) as string[]),
+    );
+    const { data: bizRows } = bizIds.length
+      ? await supabaseAdmin.from("businesses").select("id,name").in("id", bizIds)
+      : { data: [] as { id: string; name: string }[] };
+    const nameById = new Map((bizRows ?? []).map((b) => [b.id, b.name]));
+
+    const withNames = today.map((r) => ({
+      ...r,
+      business_name: r.business_id ? nameById.get(r.business_id) ?? null : null,
+    }));
+
+    return {
+      runDate: latestRun,
+      rows: withNames,
+      totals: {
+        checked: withNames.length,
+        matched: withNames.filter((r) => r.status === "matched").length,
+        problems: withNames.filter((r) => r.status !== "matched").length,
+        deltaCents: withNames
+          .filter((r) => r.status !== "matched")
+          .reduce((s, r) => s + (r.delta_cents ?? 0), 0),
+      },
+    };
+  });
+
+export const runPayoutReconciliation = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertAdmin(context.supabase, context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data, error } = await supabaseAdmin.rpc("reconcile_payouts", {});
+    if (error) throw new Error(error.message);
+    return { ok: true as const, summary: data };
+  });
