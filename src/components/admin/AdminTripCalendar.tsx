@@ -5,7 +5,7 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { getAdminTripCalendar } from "@/lib/admin.functions";
+import { getAdminTripCalendar, adminReleaseTripPayout } from "@/lib/admin.functions";
 
 const T = {
   card: "#14202B",
@@ -22,6 +22,7 @@ const money = (c: number) =>
 
 const payoutColor: Record<string, string> = {
   paid: "#22C55E",
+  "to bank": "#2DE2F2",
   scheduled: "#2DE2F2",
   "in escrow": "#F8B57A",
   pending: "#8AA2B0",
@@ -47,11 +48,37 @@ export function AdminTripCalendar() {
   }, [offset]);
   const month = `${base.getUTCFullYear()}-${String(base.getUTCMonth() + 1).padStart(2, "0")}`;
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, refetch } = useQuery({
     queryKey: ["admin-trip-calendar", month],
     queryFn: () => fetchCal({ data: { month } }),
     staleTime: 30_000,
   });
+
+  const releaseFn = useServerFn(adminReleaseTripPayout);
+  const [busyId, setBusyId] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
+
+  async function release(bookingId: string) {
+    setNotice(null);
+    setBusyId(bookingId);
+    try {
+      const res = await releaseFn({ data: { bookingId } });
+      setNotice(
+        res.alreadyReleased
+          ? "That payout was already sent."
+          : res.bankStatus === "paid"
+            ? "Sent — the money has left for the operator's bank."
+            : `Sent to the operator's bank${res.arrivalDate ? `, arriving ${res.arrivalDate}` : ""}.`,
+      );
+      await refetch();
+    } catch (e) {
+      const msg =
+        e instanceof Response ? (await e.text()).slice(0, 200) : e instanceof Error ? e.message : String(e);
+      setNotice(msg || "Payout failed. Try again.");
+    } finally {
+      setBusyId(null);
+    }
+  }
 
   const trips = data?.trips ?? [];
   const byDay = useMemo(() => {
@@ -183,13 +210,16 @@ export function AdminTripCalendar() {
               timeZone: "UTC",
             })}
           </div>
+          {notice && (
+            <div style={{ color: T.accent, fontSize: 13, marginBottom: 10 }}>{notice}</div>
+          )}
           {dayTrips.length === 0 ? (
             <div style={{ color: T.mut, fontSize: 13.5 }}>No trips booked on this day.</div>
           ) : (
             <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13.5, minWidth: 720 }}>
               <thead>
                 <tr style={{ color: T.mut, textAlign: "left" }}>
-                  {["Operator", "Trip", "Time", "Guests", "Price", "Booking", "Payout"].map((h) => (
+                  {["Operator", "Trip", "Time", "Guests", "Price", "Booking", "Payout", ""].map((h) => (
                     <th key={h} style={{ padding: "8px 10px", fontWeight: 600, borderBottom: `1px solid ${T.line}` }}>{h}</th>
                   ))}
                 </tr>
@@ -205,6 +235,34 @@ export function AdminTripCalendar() {
                     <td style={{ ...td, textTransform: "capitalize" }}>{String(t.status).replace(/_/g, " ")}</td>
                     <td style={{ ...td, color: payoutColor[t.payoutStatus] ?? T.mut }}>
                       {t.payoutStatus} · {money(t.payoutCents)}
+                      {t.arrivalDate && t.payoutStatus !== "paid" && (
+                        <div style={{ color: T.mut, fontSize: 12 }}>arrives {t.arrivalDate}</div>
+                      )}
+                      {t.payoutError && (
+                        <div style={{ color: "#F87171", fontSize: 12 }}>{t.payoutError}</div>
+                      )}
+                    </td>
+                    <td style={td}>
+                      {t.releasable && (
+                        <button
+                          onClick={() => release(t.id)}
+                          disabled={busyId === t.id}
+                          style={{
+                            background: T.accent,
+                            color: "#0D161F",
+                            border: 0,
+                            borderRadius: 9,
+                            padding: "7px 13px",
+                            fontFamily: "inherit",
+                            fontSize: 12.5,
+                            fontWeight: 700,
+                            cursor: busyId === t.id ? "default" : "pointer",
+                            opacity: busyId === t.id ? 0.6 : 1,
+                          }}
+                        >
+                          {busyId === t.id ? "Sending…" : "Send to bank"}
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ))}

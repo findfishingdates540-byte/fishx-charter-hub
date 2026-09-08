@@ -317,6 +317,14 @@ export const releaseBookingPayout = createServerFn({ method: "POST" })
       throw new Response(`Payout failed: ${message}`, { status: 400 });
     }
 
+    // Move it the rest of the way — from the connected account's Stripe
+    // balance into the operator's actual bank account.
+    const { settleToBank } = await import("./stripe-payout.server");
+    const bank = await settleToBank(stripe, biz.stripe_account_id, vendorCents, {
+      booking_id: booking.id,
+      source_id: `booking-${booking.id}`,
+    });
+
     const now = new Date().toISOString();
     const expectedBalance =
       booking.balance_due_cents || Math.max(0, booking.total_cents - booking.deposit_cents);
@@ -336,11 +344,16 @@ export const releaseBookingPayout = createServerFn({ method: "POST" })
     await supabaseAdmin.from("payouts").insert({
       business_id: biz.id,
       booking_id: booking.id,
-      stripe_payout_id: transferId,
+      stripe_payout_id: bank.bankPayoutId ?? transferId,
+      stripe_transfer_id: transferId,
+      stripe_bank_payout_id: bank.bankPayoutId,
+      destination_account_id: biz.stripe_account_id,
       amount_cents: vendorCents,
       currency: "usd",
-      status: "paid",
-      paid_at: now,
+      status: bank.status,
+      arrival_date: bank.arrivalDate,
+      failure_message: bank.error,
+      ...(bank.status === "paid" ? { paid_at: now } : {}),
     });
 
     await supabaseAdmin.from("domain_events").insert({

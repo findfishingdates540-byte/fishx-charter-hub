@@ -360,7 +360,7 @@ export const getAdminTripCalendar = createServerFn({ method: "GET" })
       ids.length
         ? supabaseAdmin
             .from("payouts")
-            .select("id,booking_id,amount_cents,status,paid_at")
+            .select("id,booking_id,amount_cents,status,paid_at,arrival_date,stripe_bank_payout_id,failure_message")
             .in("booking_id", ids)
         : Promise.resolve({ data: [] as any[] }),
     ]);
@@ -372,13 +372,20 @@ export const getAdminTripCalendar = createServerFn({ method: "GET" })
       const payout = r.business_id ? payByBooking.get(r.id) ?? null : payByBooking.get(r.id) ?? null;
       const payoutStatus = payout?.status === "paid"
         ? "paid"
-        : payout
-          ? "scheduled"
-          : r.payout_released_at
-            ? "paid"
-            : r.escrow_state === "held"
-              ? "in escrow"
-              : "pending";
+        : payout?.status === "in_transit"
+          ? "to bank"
+          : payout
+            ? "scheduled"
+            : r.payout_released_at
+              ? "paid"
+              : r.escrow_state === "held"
+                ? "in escrow"
+                : "pending";
+      const releasable =
+        !payout &&
+        !r.payout_released_at &&
+        r.escrow_state === "held" &&
+        ["confirmed", "in_progress", "completed", "reviewed"].includes(String(r.status));
       return {
         id: r.id,
         tripDate: r.trip_date,
@@ -389,6 +396,9 @@ export const getAdminTripCalendar = createServerFn({ method: "GET" })
         totalCents: r.total_cents ?? 0,
         payoutCents: payout?.amount_cents ?? r.payout_cents ?? 0,
         payoutStatus,
+        releasable,
+        arrivalDate: payout?.arrival_date ?? null,
+        payoutError: payout?.failure_message ?? null,
         paidAt: payout?.paid_at ?? r.payout_released_at ?? null,
         operator: r.business_id ? bizById.get(r.business_id)?.name ?? "Unknown operator" : "Unknown operator",
         category: r.business_id ? bizById.get(r.business_id)?.category_key ?? null : null,
@@ -408,4 +418,22 @@ export const getAdminTripCalendar = createServerFn({ method: "GET" })
           .reduce((s, t) => s + t.payoutCents, 0),
       },
     };
+  });
+
+/**
+ * Admin override: sends a booked trip's operator share out of escrow — Stripe
+ * transfer to their connected account, then on to their bank.
+ */
+export const adminReleaseTripPayout = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i) => z.object({ bookingId: z.string().uuid() }).parse(i))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.supabase, context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { releaseBookingPayoutCore } = await import("./booking-payout.server");
+    try {
+      return await releaseBookingPayoutCore(supabaseAdmin as never, data.bookingId, context.userId);
+    } catch (err) {
+      throw new Error(err instanceof Error ? err.message : String(err));
+    }
   });

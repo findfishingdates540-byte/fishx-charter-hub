@@ -92,23 +92,35 @@ export const Route = createFileRoute("/api/public/hooks/release-escrow")({
               { idempotencyKey: `booking-payout-${b.id}` },
             );
 
+            const { settleToBank } = await import("@/lib/stripe-payout.server");
+            const bank = await settleToBank(stripe, biz.stripe_account_id, vendorCents, {
+              booking_id: b.id,
+              source_id: `booking-${b.id}`,
+            });
+
+            const nowIso = new Date().toISOString();
             await supabaseAdmin
               .from("bookings")
               .update({
                 escrow_state: "released",
                 stripe_transfer_id: transfer.id,
-                payout_released_at: new Date().toISOString(),
+                payout_released_at: nowIso,
               })
               .eq("id", b.id);
 
             await supabaseAdmin.from("payouts").insert({
               business_id: b.business_id!,
               booking_id: b.id,
-              stripe_payout_id: transfer.id,
+              stripe_payout_id: bank.bankPayoutId ?? transfer.id,
+              stripe_transfer_id: transfer.id,
+              stripe_bank_payout_id: bank.bankPayoutId,
+              destination_account_id: biz.stripe_account_id,
               amount_cents: vendorCents,
               currency: "usd",
-              status: "paid",
-              paid_at: new Date().toISOString(),
+              status: bank.status,
+              arrival_date: bank.arrivalDate,
+              failure_message: bank.error,
+              ...(bank.status === "paid" ? { paid_at: nowIso } : {}),
             });
 
             released++;

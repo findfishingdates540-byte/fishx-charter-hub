@@ -249,6 +249,45 @@ export const Route = createFileRoute("/api/public/stripe-webhook")({
                 .eq("stripe_account_id", account.id);
               break;
             }
+            // Connected-account bank payouts: this is the money actually
+            // leaving Stripe and landing in the operator's bank.
+            case "payout.paid":
+            case "payout.failed":
+            case "payout.canceled": {
+              const payout = event.data.object as Stripe.Payout;
+              const paid = event.type === "payout.paid";
+              await supabaseAdmin
+                .from("payouts")
+                .update({
+                  status: paid ? "paid" : "failed",
+                  ...(paid ? { paid_at: new Date().toISOString() } : {}),
+                  ...(payout.arrival_date
+                    ? { arrival_date: new Date(payout.arrival_date * 1000).toISOString().slice(0, 10) }
+                    : {}),
+                  failure_message: paid ? null : payout.failure_message ?? event.type,
+                })
+                .eq("stripe_bank_payout_id", payout.id);
+              break;
+            }
+            // Automatic-schedule accounts: Stripe pays out on its own, so the
+            // transfer landing in their balance is our settlement signal.
+            case "transfer.created": {
+              const transfer = event.data.object as Stripe.Transfer;
+              await supabaseAdmin
+                .from("payouts")
+                .update({ status: "paid", paid_at: new Date().toISOString() })
+                .eq("stripe_transfer_id", transfer.id)
+                .is("stripe_bank_payout_id", null);
+              break;
+            }
+            case "transfer.reversed": {
+              const transfer = event.data.object as Stripe.Transfer;
+              await supabaseAdmin
+                .from("payouts")
+                .update({ status: "reversed", failure_message: "Transfer reversed" })
+                .eq("stripe_transfer_id", transfer.id);
+              break;
+            }
             default:
               break;
           }
