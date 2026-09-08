@@ -118,7 +118,7 @@ function EditPackagePage() {
       });
       await qc.invalidateQueries({ queryKey: ["captain-charters"] });
       qc.invalidateQueries({ queryKey: ["captain-dashboard"] });
-      navigate({ to: "/dashboard" });
+      navigate({ to: "/dashboard", search: { tab: "services" } });
     } catch (err: any) {
       setError(err?.message || "We couldn't save that package. Check the details and try again.");
     } finally {
@@ -209,7 +209,7 @@ function EditPackagePage() {
           >
             {draft.is_published ? "Live — tap to unpublish" : "Draft — tap to publish"}
           </button>
-          <button style={ghostBtn} onClick={() => navigate({ to: "/dashboard" })}>
+          <button style={ghostBtn} onClick={() => navigate({ to: "/dashboard", search: { tab: "services" } })}>
             Back
           </button>
         </div>
@@ -225,7 +225,7 @@ function EditPackagePage() {
             base_price_cents: Math.round(draft.price * 100),
             duration_minutes: Math.round(draft.hours * 60),
           }}
-          onClose={() => navigate({ to: "/dashboard" })}
+          onClose={() => navigate({ to: "/dashboard", search: { tab: "services" } })}
         />
       </div>
 
@@ -235,7 +235,7 @@ function EditPackagePage() {
           <AddonsManager
             businessId={dash.business.id}
             service={{ id: packageId, title: draft.title }}
-            onClose={() => navigate({ to: "/dashboard" })}
+            onClose={() => navigate({ to: "/dashboard", search: { tab: "services" } })}
           />
         </div>
       )}
