@@ -608,10 +608,6 @@ function CharterRowItem({
   onEdit,
   onDelete,
   onTogglePublish,
-  addonsFor,
-  setAddonsFor,
-  datesFor,
-  setDatesFor,
   addingPkgFor,
   setAddingPkgFor,
   newPkg,
@@ -625,10 +621,6 @@ function CharterRowItem({
   onEdit: () => void;
   onDelete: () => void;
   onTogglePublish: (published: boolean) => void;
-  addonsFor: string | null;
-  setAddonsFor: (id: string | null) => void;
-  datesFor: { id: string; title: string; capacity: number; base_price_cents: number; duration_minutes: number } | null;
-  setDatesFor: (s: { id: string; title: string; capacity: number; base_price_cents: number; duration_minutes: number } | null) => void;
   addingPkgFor: string | null;
   setAddingPkgFor: (id: string | null) => void;
   newPkg: PackageDraft;
@@ -636,6 +628,7 @@ function CharterRowItem({
   data: { business: any };
 }) {
   const qc = useQueryClient();
+  const navigate = useNavigate();
   const mAddPkg = useMutation({
     mutationFn: async (charterId: string) => {
       await upsertCaptainService({
