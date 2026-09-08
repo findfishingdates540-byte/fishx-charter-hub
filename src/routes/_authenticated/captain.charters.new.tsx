@@ -34,14 +34,19 @@ function NewCharterPage() {
   const [error, setError] = useState<string | null>(null);
 
   return (
-    <CaptainPageShell title="New charter trip" subtitle="Create the trip anglers can book">
+    <CaptainPageShell
+      title="New charter trip"
+      subtitle="Create the trip anglers can book"
+      backLabel="← Back to charter trips"
+      backSearch={{ tab: "services" }}
+    >
       <CharterForm
         businessId={dash?.business?.id ?? null}
         draft={draft}
         boats={(boatsData?.rows ?? []) as any}
         error={error}
         onChange={setDraft}
-        onCancel={() => navigate({ to: "/dashboard" })}
+        onCancel={() => navigate({ to: "/dashboard", search: { tab: "services" } })}
         onSave={async () => {
           setError(null);
           try {
@@ -72,7 +77,7 @@ function NewCharterPage() {
             }
             await qc.invalidateQueries({ queryKey: ["captain-charters"] });
             qc.invalidateQueries({ queryKey: ["captain-dashboard"] });
-            navigate({ to: "/dashboard" });
+            navigate({ to: "/dashboard", search: { tab: "services" } });
           } catch (err: any) {
             setError(err?.message || "We couldn't save that charter. Check the details and try again.");
           }
