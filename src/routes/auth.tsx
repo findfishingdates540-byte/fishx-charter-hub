@@ -6,9 +6,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { resolveAsset } from "@/lib/dc-template";
 
 export const Route = createFileRoute("/auth")({
-  validateSearch: (search: Record<string, unknown>) => ({
-    view: search.view === "signup" ? "signup" : undefined,
-  }),
   component: AuthPage,
 });
 
