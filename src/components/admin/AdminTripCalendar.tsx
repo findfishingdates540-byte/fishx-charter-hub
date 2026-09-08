@@ -22,6 +22,7 @@ const money = (c: number) =>
 
 const payoutColor: Record<string, string> = {
   paid: "#22C55E",
+  "to bank": "#2DE2F2",
   scheduled: "#2DE2F2",
   "in escrow": "#F8B57A",
   pending: "#8AA2B0",
