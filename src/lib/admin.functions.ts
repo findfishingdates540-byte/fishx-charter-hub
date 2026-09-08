@@ -372,13 +372,20 @@ export const getAdminTripCalendar = createServerFn({ method: "GET" })
       const payout = r.business_id ? payByBooking.get(r.id) ?? null : payByBooking.get(r.id) ?? null;
       const payoutStatus = payout?.status === "paid"
         ? "paid"
-        : payout
-          ? "scheduled"
-          : r.payout_released_at
-            ? "paid"
-            : r.escrow_state === "held"
-              ? "in escrow"
-              : "pending";
+        : payout?.status === "in_transit"
+          ? "to bank"
+          : payout
+            ? "scheduled"
+            : r.payout_released_at
+              ? "paid"
+              : r.escrow_state === "held"
+                ? "in escrow"
+                : "pending";
+      const releasable =
+        !payout &&
+        !r.payout_released_at &&
+        r.escrow_state === "held" &&
+        ["confirmed", "in_progress", "completed", "reviewed"].includes(String(r.status));
       return {
         id: r.id,
         tripDate: r.trip_date,
