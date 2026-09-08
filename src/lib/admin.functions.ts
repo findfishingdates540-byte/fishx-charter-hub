@@ -360,7 +360,7 @@ export const getAdminTripCalendar = createServerFn({ method: "GET" })
       ids.length
         ? supabaseAdmin
             .from("payouts")
-            .select("id,booking_id,amount_cents,status,paid_at")
+            .select("id,booking_id,amount_cents,status,paid_at,arrival_date,stripe_bank_payout_id,failure_message")
             .in("booking_id", ids)
         : Promise.resolve({ data: [] as any[] }),
     ]);
