@@ -836,9 +836,11 @@ function PackageForm({
   };
   return (
     <div
+      className="fx-pkg-form"
       style={{
         display: "grid",
         gridTemplateColumns: "1.4fr 1fr 1fr 1fr auto auto",
+
         gap: 8,
         alignItems: "end",
         padding: 10,
