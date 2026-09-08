@@ -530,6 +530,14 @@ export function OperatorProfile({
               </section>
             )}
 
+            {/* Booked vs free days across every listing */}
+            <StorefrontAvailability
+              businessId={b.id}
+              heading={b.category_key === "marina" ? "Slip availability" : "Trip availability"}
+            />
+
+
+
             {b.category_key === "marina" && (
               <MarinaServiceRequest
                 businessId={b.id}
