@@ -800,6 +800,31 @@ body.dc-body { margin:0; background:#072057; }
 }
 
 /* ============ Responsive: operator/captain dashboard shells ============ */
+/* Hamburger sidebar: burger hidden on desktop, body always visible */
+.fx-side-burger { display: none !important; }
+.fx-side-body { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+
+@media (max-width: 900px) {
+  .fx-side { position: sticky !important; top: 0; z-index: 40; }
+  .fx-side-head {
+    display: flex !important; align-items: center; width: 100%;
+    padding: 2px 2px !important; margin-bottom: 0 !important;
+  }
+  .fx-side-burger { display: grid !important; }
+  .fx-side-body { display: none !important; }
+  .fx-side.fx-open .fx-side-body {
+    display: flex !important; flex-direction: column;
+    position: absolute; top: 100%; left: 0; right: 0;
+    background: #0d161f; padding: 8px 12px 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 22px 34px rgba(0, 0, 0, 0.45);
+    max-height: calc(100dvh - 64px); overflow-y: auto;
+    z-index: 60;
+  }
+  .fx-side.fx-open .fx-side-body nav { flex-direction: column !important; overflow: visible !important; }
+  .fx-side.fx-open .fx-side-body nav > button { width: 100% !important; }
+}
+
 @media (max-width: 1200px) {
   .fx-main [style*="grid-template-columns: repeat(4"] { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
   .fx-main [style*="grid-template-columns: 1.5fr 1fr"] { grid-template-columns: minmax(0, 1fr) !important; }
