@@ -205,6 +205,34 @@ export function AdminTripCalendar() {
                     <td style={{ ...td, textTransform: "capitalize" }}>{String(t.status).replace(/_/g, " ")}</td>
                     <td style={{ ...td, color: payoutColor[t.payoutStatus] ?? T.mut }}>
                       {t.payoutStatus} · {money(t.payoutCents)}
+                      {t.arrivalDate && t.payoutStatus !== "paid" && (
+                        <div style={{ color: T.mut, fontSize: 12 }}>arrives {t.arrivalDate}</div>
+                      )}
+                      {t.payoutError && (
+                        <div style={{ color: "#F87171", fontSize: 12 }}>{t.payoutError}</div>
+                      )}
+                    </td>
+                    <td style={td}>
+                      {t.releasable && (
+                        <button
+                          onClick={() => release(t.id)}
+                          disabled={busyId === t.id}
+                          style={{
+                            background: T.accent,
+                            color: "#0D161F",
+                            border: 0,
+                            borderRadius: 9,
+                            padding: "7px 13px",
+                            fontFamily: "inherit",
+                            fontSize: 12.5,
+                            fontWeight: 700,
+                            cursor: busyId === t.id ? "default" : "pointer",
+                            opacity: busyId === t.id ? 0.6 : 1,
+                          }}
+                        >
+                          {busyId === t.id ? "Sending…" : "Send to bank"}
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ))}
