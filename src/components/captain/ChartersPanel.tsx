@@ -8,6 +8,7 @@
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
+import { useNavigate } from "@tanstack/react-router";
 import {
   listCaptainCharters,
   upsertCaptainCharter,
@@ -220,7 +221,7 @@ export function ChartersPanel({
 
 /* ---- CHARTER FORM ---- */
 
-type CharterDraft = {
+export type CharterDraft = {
   id?: string;
   name: string;
   description: string;
@@ -237,7 +238,7 @@ type CharterDraft = {
   is_published: boolean;
 };
 
-const emptyCharterDraft: CharterDraft = {
+export const emptyCharterDraft: CharterDraft = {
   name: "",
   description: "",
   slug: "",
@@ -253,7 +254,7 @@ const emptyCharterDraft: CharterDraft = {
   is_published: false,
 };
 
-function CharterForm({
+export function CharterForm({
   businessId,
   draft,
   boats,
