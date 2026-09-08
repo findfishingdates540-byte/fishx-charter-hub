@@ -117,14 +117,21 @@ function BookingThreads() {
   });
   const rows: any[] = Array.isArray(data) ? (data as any[]) : [];
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [mobileThreadOpen, setMobileThreadOpen] = useState(false);
 
   useEffect(() => {
     if (!activeId && rows.length) setActiveId(rows[0].booking_id);
   }, [rows, activeId]);
 
+  const select = (id: string) => {
+    setActiveId(id);
+    setMobileThreadOpen(true);
+  };
+
   return (
-    <div className="fx-msg-grid" style={{ display: "grid", gridTemplateColumns: "minmax(280px,360px) 1fr", gap: 18, alignItems: "stretch", minHeight: 560 }}>
+    <div className="fx-msg-grid" data-thread-open={mobileThreadOpen} style={{ display: "grid", gridTemplateColumns: "minmax(280px,360px) 1fr", gap: 18, alignItems: "stretch", minHeight: 560 }}>
       <aside
+        className="fx-msg-list"
         style={{
           background: C.card,
           border: `1px solid ${C.line}`,
@@ -171,7 +178,7 @@ function BookingThreads() {
               return (
                 <button
                   key={c.booking_id}
-                  onClick={() => setActiveId(c.booking_id)}
+                  onClick={() => select(c.booking_id)}
                   style={{
                     width: "100%",
                     textAlign: "left",
@@ -253,7 +260,7 @@ function BookingThreads() {
         )}
       </aside>
 
-      {activeId ? <CaptainThread key={activeId} bookingId={activeId} /> : <Placeholder />}
+      {activeId ? <CaptainThread key={activeId} bookingId={activeId} onBack={() => setMobileThreadOpen(false)} /> : <Placeholder />}
     </div>
   );
 }
