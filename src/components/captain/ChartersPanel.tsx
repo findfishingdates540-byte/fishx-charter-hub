@@ -60,9 +60,9 @@ type CharterRow = {
 const money = (c: number) =>
   `$${(Math.max(0, c) / 100).toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
 
-const WATER_TYPES = ["Inshore", "Nearshore", "Offshore", "Flats", "Nearshore/Offshore", "Freshwater"];
+export const WATER_TYPES = ["Inshore", "Nearshore", "Offshore", "Flats", "Nearshore/Offshore", "Freshwater"];
 
-const ghostBtn: React.CSSProperties = {
+export const ghostBtn: React.CSSProperties = {
   background: "transparent",
   color: "var(--tmut)",
   border: "1px solid var(--line)",
@@ -73,7 +73,7 @@ const ghostBtn: React.CSSProperties = {
   cursor: "pointer",
 };
 
-const primaryBtn: React.CSSProperties = {
+export const primaryBtn: React.CSSProperties = {
   background: "var(--goldtext)",
   color: "var(--navy)",
   border: 0,
@@ -84,7 +84,7 @@ const primaryBtn: React.CSSProperties = {
   cursor: "pointer",
 };
 
-const labelStyle: React.CSSProperties = {
+export const labelStyle: React.CSSProperties = {
   display: "block",
   fontSize: 10,
   fontWeight: 700,
