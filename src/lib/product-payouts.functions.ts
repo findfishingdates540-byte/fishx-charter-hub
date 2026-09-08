@@ -77,6 +77,12 @@ export const releaseProductOrderPayout = createServerFn({ method: "POST" })
       throw new Error(`Payout failed: ${message}`);
     }
 
+    const { settleToBank } = await import("./stripe-payout.server");
+    const bank = await settleToBank(stripe, biz.stripe_account_id, vendorCents, {
+      order_id: order.id,
+      source_id: `order-${order.id}`,
+    });
+
     const now = new Date().toISOString();
     await supabaseAdmin
       .from("product_orders")
@@ -85,11 +91,17 @@ export const releaseProductOrderPayout = createServerFn({ method: "POST" })
 
     await supabaseAdmin.from("payouts").insert({
       business_id: biz.id,
-      stripe_payout_id: transferId,
+      order_id: order.id,
+      stripe_payout_id: bank.bankPayoutId ?? transferId,
+      stripe_transfer_id: transferId,
+      stripe_bank_payout_id: bank.bankPayoutId,
+      destination_account_id: biz.stripe_account_id,
       amount_cents: vendorCents,
       currency: "usd",
-      status: "paid",
-      paid_at: now,
+      status: bank.status,
+      arrival_date: bank.arrivalDate,
+      failure_message: bank.error,
+      ...(bank.status === "paid" ? { paid_at: now } : {}),
     });
 
     await supabaseAdmin.from("domain_events").insert({
