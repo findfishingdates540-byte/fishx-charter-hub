@@ -915,3 +915,36 @@ body.dc-body { margin:0; background:#072057; }
 /* Messages thread — hide scrollbar while keeping scroll */
 .fx-msg-thread { scrollbar-width: none; -ms-overflow-style: none; }
 .fx-msg-thread::-webkit-scrollbar { display: none; }
+
+/* Captain charter trips — mobile layout */
+@media (max-width: 720px) {
+  .fx-charter-row {
+    flex-wrap: wrap;
+    align-items: flex-start !important;
+    gap: 12px !important;
+  }
+  .fx-charter-actions {
+    width: 100%;
+    gap: 8px !important;
+  }
+  .fx-charter-actions > button {
+    flex: 1 1 auto;
+    min-width: 0;
+    white-space: nowrap;
+  }
+  .fx-charter-exp {
+    padding-left: 0 !important;
+  }
+  .fx-pkg-form {
+    grid-template-columns: 1fr 1fr !important;
+  }
+  .fx-pkg-form > button {
+    grid-column: span 1;
+    width: 100%;
+  }
+}
+@media (max-width: 420px) {
+  .fx-pkg-form {
+    grid-template-columns: 1fr !important;
+  }
+}
