@@ -973,3 +973,45 @@ body.dc-body { margin:0; background:#072057; }
     grid-template-columns: 1fr !important;
   }
 }
+
+@media (max-width: 640px) {
+  .fx-avail {
+    padding: 12px !important;
+    border-radius: 14px !important;
+  }
+  .fx-avail-cols {
+    grid-template-columns: 1fr !important;
+    gap: 14px !important;
+  }
+  .fx-avail-days button {
+    padding: 10px 0 8px !important;
+    min-height: 42px;
+  }
+  .fx-avail-slot {
+    display: grid !important;
+    grid-template-columns: 1fr auto !important;
+    align-items: center !important;
+    gap: 8px !important;
+  }
+  .fx-avail-slot > div:nth-child(1) {
+    grid-column: 1 / -1;
+    min-width: 0 !important;
+  }
+  .fx-avail-slot > div:nth-child(2) {
+    grid-column: 1 / -1;
+    min-width: 0 !important;
+  }
+  .fx-avail-slot > input {
+    width: 100% !important;
+    grid-column: 1 / -1;
+  }
+  .fx-avail-slot > button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 420px) {
+  .fx-avail-2 {
+    grid-template-columns: 1fr !important;
+  }
+}

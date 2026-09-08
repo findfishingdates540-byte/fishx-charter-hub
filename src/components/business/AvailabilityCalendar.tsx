@@ -153,6 +153,7 @@ export function AvailabilityCalendar({
 
   return (
     <div
+      className="fx-avail"
       style={{
         border: "1px solid rgba(255,255,255,.09)",
         borderRadius: 18,
@@ -179,7 +180,7 @@ export function AvailabilityCalendar({
         </button>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))", gap: 18 }}>
+      <div className="fx-avail-cols" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))", gap: 18 }}>
         {/* Month grid */}
         <div>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
@@ -197,7 +198,7 @@ export function AvailabilityCalendar({
               ›
             </button>
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 4 }}>
+          <div className="fx-avail-days" style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 4 }}>
             {DAY_NAMES.map((d, i) => (
               <div key={i} style={{ textAlign: "center", fontSize: 10.5, color: "#92A0AB", fontWeight: 700 }}>
                 {d}
@@ -256,7 +257,7 @@ export function AvailabilityCalendar({
         {/* Publish form */}
         <div style={{ display: "grid", gap: 12, alignContent: "start" }}>
           <Field label={`Publish ${picked.length} selected day${picked.length === 1 ? "" : "s"}`}>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+            <div className="fx-avail-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
               <input style={input} type="time" value={startTime} onChange={(e) => setStartTime(e.target.value)} />
               <input
                 style={input}
@@ -267,7 +268,7 @@ export function AvailabilityCalendar({
               />
             </div>
           </Field>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+          <div className="fx-avail-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
             <Field label="Seats per day">
               <input
                 style={input}
@@ -439,6 +440,7 @@ export function AvailabilityCalendar({
           return (
             <div
               key={s.id}
+              className="fx-avail-slot"
               style={{
                 display: "flex",
                 gap: 12,
