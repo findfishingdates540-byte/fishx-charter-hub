@@ -134,6 +134,8 @@ function EditPackagePage() {
     <CaptainPageShell
       title="Edit trip package"
       subtitle={parent ? `${parent.name} · ${draft.title}` : draft.title}
+      backLabel="← Back to charter trips"
+      backSearch={{ tab: "services" }}
     >
       <div style={card}>
         {error && (
