@@ -268,7 +268,7 @@ export function AvailabilityCalendar({
               />
             </div>
           </Field>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+          <div className="fx-avail-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
             <Field label="Seats per day">
               <input
                 style={input}
