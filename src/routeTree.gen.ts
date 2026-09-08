@@ -48,6 +48,7 @@ import { Route as ApiPublicHooksReleaseEscrowRouteImport } from './routes/api/pu
 import { Route as ApiPublicHooksRemindersRouteImport } from './routes/api/public/hooks/reminders'
 import { Route as ApiPublicHooksSyncCronSecretRouteImport } from './routes/api/public/hooks/sync-cron-secret'
 import { Route as ApiPublicMediaSplatRouteImport } from './routes/api/public/media/$'
+import { Route as AuthenticatedCaptainChartersCharterIdEditRouteImport } from './routes/_authenticated/captain.charters.$charterId.edit'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -252,6 +253,12 @@ const ApiPublicMediaSplatRoute = ApiPublicMediaSplatRouteImport.update({
   path: '/api/public/media/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedCaptainChartersCharterIdEditRoute =
+  AuthenticatedCaptainChartersCharterIdEditRouteImport.update({
+    id: '/captain/charters/$charterId/edit',
+    path: '/captain/charters/$charterId/edit',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -292,6 +299,7 @@ export interface FileRoutesByFullPath {
   '/api/public/hooks/reminders': typeof ApiPublicHooksRemindersRoute
   '/api/public/hooks/sync-cron-secret': typeof ApiPublicHooksSyncCronSecretRoute
   '/api/public/media/$': typeof ApiPublicMediaSplatRoute
+  '/captain/charters/$charterId/edit': typeof AuthenticatedCaptainChartersCharterIdEditRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -332,6 +340,7 @@ export interface FileRoutesByTo {
   '/api/public/hooks/reminders': typeof ApiPublicHooksRemindersRoute
   '/api/public/hooks/sync-cron-secret': typeof ApiPublicHooksSyncCronSecretRoute
   '/api/public/media/$': typeof ApiPublicMediaSplatRoute
+  '/captain/charters/$charterId/edit': typeof AuthenticatedCaptainChartersCharterIdEditRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -374,6 +383,7 @@ export interface FileRoutesById {
   '/api/public/hooks/reminders': typeof ApiPublicHooksRemindersRoute
   '/api/public/hooks/sync-cron-secret': typeof ApiPublicHooksSyncCronSecretRoute
   '/api/public/media/$': typeof ApiPublicMediaSplatRoute
+  '/_authenticated/captain/charters/$charterId/edit': typeof AuthenticatedCaptainChartersCharterIdEditRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -416,6 +426,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/reminders'
     | '/api/public/hooks/sync-cron-secret'
     | '/api/public/media/$'
+    | '/captain/charters/$charterId/edit'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -456,6 +467,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/reminders'
     | '/api/public/hooks/sync-cron-secret'
     | '/api/public/media/$'
+    | '/captain/charters/$charterId/edit'
   id:
     | '__root__'
     | '/'
@@ -497,6 +509,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/reminders'
     | '/api/public/hooks/sync-cron-secret'
     | '/api/public/media/$'
+    | '/_authenticated/captain/charters/$charterId/edit'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -804,6 +817,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicMediaSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/captain/charters/$charterId/edit': {
+      id: '/_authenticated/captain/charters/$charterId/edit'
+      path: '/captain/charters/$charterId/edit'
+      fullPath: '/captain/charters/$charterId/edit'
+      preLoaderRoute: typeof AuthenticatedCaptainChartersCharterIdEditRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
@@ -820,6 +840,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedBookingsDetailRoute: typeof AuthenticatedBookingsDetailRoute
   AuthenticatedTripsDetailRoute: typeof AuthenticatedTripsDetailRoute
+  AuthenticatedCaptainChartersCharterIdEditRoute: typeof AuthenticatedCaptainChartersCharterIdEditRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -835,6 +856,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedBookingsDetailRoute: AuthenticatedBookingsDetailRoute,
   AuthenticatedTripsDetailRoute: AuthenticatedTripsDetailRoute,
+  AuthenticatedCaptainChartersCharterIdEditRoute:
+    AuthenticatedCaptainChartersCharterIdEditRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
