@@ -303,7 +303,7 @@ function Placeholder() {
   );
 }
 
-function CaptainThread({ bookingId }: { bookingId: string }) {
+function CaptainThread({ bookingId, onBack }: { bookingId: string; onBack?: () => void }) {
   const qc = useQueryClient();
   const threadFn = useServerFn(getCaptainThread);
   const sendFn = useServerFn(sendMessage);
@@ -353,6 +353,7 @@ function CaptainThread({ bookingId }: { bookingId: string }) {
 
   return (
     <section
+      className="fx-msg-thread"
       style={{
         background: C.card,
         border: `1px solid ${C.line}`,
@@ -363,6 +364,26 @@ function CaptainThread({ bookingId }: { bookingId: string }) {
       }}
     >
       <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "16px 20px", borderBottom: `1px solid ${C.line}` }}>
+        {onBack && (
+          <button
+            type="button"
+            onClick={onBack}
+            className="fx-msg-back"
+            style={{
+              flex: "none",
+              background: "transparent",
+              border: `1px solid ${C.line}`,
+              color: "inherit",
+              borderRadius: 10,
+              padding: "8px 12px",
+              fontSize: 12,
+              fontWeight: 700,
+              cursor: "pointer",
+            }}
+          >
+            ← Back
+          </button>
+        )}
         <Avatar label={guestName} url={(data as any)?.angler?.avatar_url} size={42} />
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontSize: 15, fontWeight: 700 }}>{guestName}</div>
