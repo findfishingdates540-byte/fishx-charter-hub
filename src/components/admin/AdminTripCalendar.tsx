@@ -189,7 +189,7 @@ export function AdminTripCalendar() {
             <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13.5, minWidth: 720 }}>
               <thead>
                 <tr style={{ color: T.mut, textAlign: "left" }}>
-                  {["Operator", "Trip", "Time", "Guests", "Price", "Booking", "Payout"].map((h) => (
+                  {["Operator", "Trip", "Time", "Guests", "Price", "Booking", "Payout", ""].map((h) => (
                     <th key={h} style={{ padding: "8px 10px", fontWeight: 600, borderBottom: `1px solid ${T.line}` }}>{h}</th>
                   ))}
                 </tr>
