@@ -40,6 +40,8 @@ import { Route as AuthenticatedBookingsDetailRouteImport } from './routes/_authe
 import { Route as AuthenticatedTripsDetailRouteImport } from './routes/_authenticated/trips.detail'
 import { Route as ApiPublicFishxWebhookRouteImport } from './routes/api/public/fishx-webhook'
 import { Route as ApiPublicStripeWebhookRouteImport } from './routes/api/public/stripe-webhook'
+import { Route as AuthenticatedCaptainChartersNewRouteImport } from './routes/_authenticated/captain.charters.new'
+import { Route as AuthenticatedCaptainPackagesPackageIdRouteImport } from './routes/_authenticated/captain.packages.$packageId'
 import { Route as ApiPublicAvatarsSplatRouteImport } from './routes/api/public/avatars/$'
 import { Route as ApiPublicHooksBookingTimersRouteImport } from './routes/api/public/hooks/booking-timers'
 import { Route as ApiPublicHooksDispatchEventsRouteImport } from './routes/api/public/hooks/dispatch-events'
@@ -48,6 +50,7 @@ import { Route as ApiPublicHooksReleaseEscrowRouteImport } from './routes/api/pu
 import { Route as ApiPublicHooksRemindersRouteImport } from './routes/api/public/hooks/reminders'
 import { Route as ApiPublicHooksSyncCronSecretRouteImport } from './routes/api/public/hooks/sync-cron-secret'
 import { Route as ApiPublicMediaSplatRouteImport } from './routes/api/public/media/$'
+import { Route as AuthenticatedCaptainChartersCharterIdEditRouteImport } from './routes/_authenticated/captain.charters.$charterId.edit'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -207,6 +210,18 @@ const ApiPublicStripeWebhookRoute = ApiPublicStripeWebhookRouteImport.update({
   path: '/api/public/stripe-webhook',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedCaptainChartersNewRoute =
+  AuthenticatedCaptainChartersNewRouteImport.update({
+    id: '/captain/charters/new',
+    path: '/captain/charters/new',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedCaptainPackagesPackageIdRoute =
+  AuthenticatedCaptainPackagesPackageIdRouteImport.update({
+    id: '/captain/packages/$packageId',
+    path: '/captain/packages/$packageId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const ApiPublicAvatarsSplatRoute = ApiPublicAvatarsSplatRouteImport.update({
   id: '/api/public/avatars/$',
   path: '/api/public/avatars/$',
@@ -252,6 +267,12 @@ const ApiPublicMediaSplatRoute = ApiPublicMediaSplatRouteImport.update({
   path: '/api/public/media/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedCaptainChartersCharterIdEditRoute =
+  AuthenticatedCaptainChartersCharterIdEditRouteImport.update({
+    id: '/captain/charters/$charterId/edit',
+    path: '/captain/charters/$charterId/edit',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -284,6 +305,8 @@ export interface FileRoutesByFullPath {
   '/trips/detail': typeof AuthenticatedTripsDetailRoute
   '/api/public/fishx-webhook': typeof ApiPublicFishxWebhookRoute
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
+  '/captain/charters/new': typeof AuthenticatedCaptainChartersNewRoute
+  '/captain/packages/$packageId': typeof AuthenticatedCaptainPackagesPackageIdRoute
   '/api/public/avatars/$': typeof ApiPublicAvatarsSplatRoute
   '/api/public/hooks/booking-timers': typeof ApiPublicHooksBookingTimersRoute
   '/api/public/hooks/dispatch-events': typeof ApiPublicHooksDispatchEventsRoute
@@ -292,6 +315,7 @@ export interface FileRoutesByFullPath {
   '/api/public/hooks/reminders': typeof ApiPublicHooksRemindersRoute
   '/api/public/hooks/sync-cron-secret': typeof ApiPublicHooksSyncCronSecretRoute
   '/api/public/media/$': typeof ApiPublicMediaSplatRoute
+  '/captain/charters/$charterId/edit': typeof AuthenticatedCaptainChartersCharterIdEditRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -324,6 +348,8 @@ export interface FileRoutesByTo {
   '/trips/detail': typeof AuthenticatedTripsDetailRoute
   '/api/public/fishx-webhook': typeof ApiPublicFishxWebhookRoute
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
+  '/captain/charters/new': typeof AuthenticatedCaptainChartersNewRoute
+  '/captain/packages/$packageId': typeof AuthenticatedCaptainPackagesPackageIdRoute
   '/api/public/avatars/$': typeof ApiPublicAvatarsSplatRoute
   '/api/public/hooks/booking-timers': typeof ApiPublicHooksBookingTimersRoute
   '/api/public/hooks/dispatch-events': typeof ApiPublicHooksDispatchEventsRoute
@@ -332,6 +358,7 @@ export interface FileRoutesByTo {
   '/api/public/hooks/reminders': typeof ApiPublicHooksRemindersRoute
   '/api/public/hooks/sync-cron-secret': typeof ApiPublicHooksSyncCronSecretRoute
   '/api/public/media/$': typeof ApiPublicMediaSplatRoute
+  '/captain/charters/$charterId/edit': typeof AuthenticatedCaptainChartersCharterIdEditRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -366,6 +393,8 @@ export interface FileRoutesById {
   '/_authenticated/trips/detail': typeof AuthenticatedTripsDetailRoute
   '/api/public/fishx-webhook': typeof ApiPublicFishxWebhookRoute
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
+  '/_authenticated/captain/charters/new': typeof AuthenticatedCaptainChartersNewRoute
+  '/_authenticated/captain/packages/$packageId': typeof AuthenticatedCaptainPackagesPackageIdRoute
   '/api/public/avatars/$': typeof ApiPublicAvatarsSplatRoute
   '/api/public/hooks/booking-timers': typeof ApiPublicHooksBookingTimersRoute
   '/api/public/hooks/dispatch-events': typeof ApiPublicHooksDispatchEventsRoute
@@ -374,6 +403,7 @@ export interface FileRoutesById {
   '/api/public/hooks/reminders': typeof ApiPublicHooksRemindersRoute
   '/api/public/hooks/sync-cron-secret': typeof ApiPublicHooksSyncCronSecretRoute
   '/api/public/media/$': typeof ApiPublicMediaSplatRoute
+  '/_authenticated/captain/charters/$charterId/edit': typeof AuthenticatedCaptainChartersCharterIdEditRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -408,6 +438,8 @@ export interface FileRouteTypes {
     | '/trips/detail'
     | '/api/public/fishx-webhook'
     | '/api/public/stripe-webhook'
+    | '/captain/charters/new'
+    | '/captain/packages/$packageId'
     | '/api/public/avatars/$'
     | '/api/public/hooks/booking-timers'
     | '/api/public/hooks/dispatch-events'
@@ -416,6 +448,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/reminders'
     | '/api/public/hooks/sync-cron-secret'
     | '/api/public/media/$'
+    | '/captain/charters/$charterId/edit'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -448,6 +481,8 @@ export interface FileRouteTypes {
     | '/trips/detail'
     | '/api/public/fishx-webhook'
     | '/api/public/stripe-webhook'
+    | '/captain/charters/new'
+    | '/captain/packages/$packageId'
     | '/api/public/avatars/$'
     | '/api/public/hooks/booking-timers'
     | '/api/public/hooks/dispatch-events'
@@ -456,6 +491,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/reminders'
     | '/api/public/hooks/sync-cron-secret'
     | '/api/public/media/$'
+    | '/captain/charters/$charterId/edit'
   id:
     | '__root__'
     | '/'
@@ -489,6 +525,8 @@ export interface FileRouteTypes {
     | '/_authenticated/trips/detail'
     | '/api/public/fishx-webhook'
     | '/api/public/stripe-webhook'
+    | '/_authenticated/captain/charters/new'
+    | '/_authenticated/captain/packages/$packageId'
     | '/api/public/avatars/$'
     | '/api/public/hooks/booking-timers'
     | '/api/public/hooks/dispatch-events'
@@ -497,6 +535,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/reminders'
     | '/api/public/hooks/sync-cron-secret'
     | '/api/public/media/$'
+    | '/_authenticated/captain/charters/$charterId/edit'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -748,6 +787,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicStripeWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/captain/charters/new': {
+      id: '/_authenticated/captain/charters/new'
+      path: '/captain/charters/new'
+      fullPath: '/captain/charters/new'
+      preLoaderRoute: typeof AuthenticatedCaptainChartersNewRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/captain/packages/$packageId': {
+      id: '/_authenticated/captain/packages/$packageId'
+      path: '/captain/packages/$packageId'
+      fullPath: '/captain/packages/$packageId'
+      preLoaderRoute: typeof AuthenticatedCaptainPackagesPackageIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/api/public/avatars/$': {
       id: '/api/public/avatars/$'
       path: '/api/public/avatars/$'
@@ -804,6 +857,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicMediaSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/captain/charters/$charterId/edit': {
+      id: '/_authenticated/captain/charters/$charterId/edit'
+      path: '/captain/charters/$charterId/edit'
+      fullPath: '/captain/charters/$charterId/edit'
+      preLoaderRoute: typeof AuthenticatedCaptainChartersCharterIdEditRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
@@ -820,6 +880,9 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedBookingsDetailRoute: typeof AuthenticatedBookingsDetailRoute
   AuthenticatedTripsDetailRoute: typeof AuthenticatedTripsDetailRoute
+  AuthenticatedCaptainChartersNewRoute: typeof AuthenticatedCaptainChartersNewRoute
+  AuthenticatedCaptainPackagesPackageIdRoute: typeof AuthenticatedCaptainPackagesPackageIdRoute
+  AuthenticatedCaptainChartersCharterIdEditRoute: typeof AuthenticatedCaptainChartersCharterIdEditRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -835,6 +898,11 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedBookingsDetailRoute: AuthenticatedBookingsDetailRoute,
   AuthenticatedTripsDetailRoute: AuthenticatedTripsDetailRoute,
+  AuthenticatedCaptainChartersNewRoute: AuthenticatedCaptainChartersNewRoute,
+  AuthenticatedCaptainPackagesPackageIdRoute:
+    AuthenticatedCaptainPackagesPackageIdRoute,
+  AuthenticatedCaptainChartersCharterIdEditRoute:
+    AuthenticatedCaptainChartersCharterIdEditRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =

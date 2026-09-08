@@ -8,6 +8,7 @@
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
+import { useNavigate } from "@tanstack/react-router";
 import {
   listCaptainCharters,
   upsertCaptainCharter,
@@ -23,9 +24,6 @@ import {
 import { listCaptainBoats } from "@/lib/captain-fleet.functions";
 import { ImageUpload } from "@/components/business/ImageUpload";
 import { DepartureTimesEditor, type DepartureRow } from "@/components/captain/DepartureTimesEditor";
-import { AddonsManager } from "@/components/business/AddonsManager";
-import { copyServiceAddons } from "@/lib/service-addons.functions";
-import { AvailabilityCalendar } from "@/components/business/AvailabilityCalendar";
 import { DEFAULT_HERO } from "@/lib/platform-photos";
 
 type PackageRow = {
@@ -60,9 +58,9 @@ type CharterRow = {
 const money = (c: number) =>
   `$${(Math.max(0, c) / 100).toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
 
-const WATER_TYPES = ["Inshore", "Nearshore", "Offshore", "Flats", "Nearshore/Offshore", "Freshwater"];
+export const WATER_TYPES = ["Inshore", "Nearshore", "Offshore", "Flats", "Nearshore/Offshore", "Freshwater"];
 
-const ghostBtn: React.CSSProperties = {
+export const ghostBtn: React.CSSProperties = {
   background: "transparent",
   color: "var(--tmut)",
   border: "1px solid var(--line)",
@@ -73,7 +71,7 @@ const ghostBtn: React.CSSProperties = {
   cursor: "pointer",
 };
 
-const primaryBtn: React.CSSProperties = {
+export const primaryBtn: React.CSSProperties = {
   background: "var(--goldtext)",
   color: "var(--navy)",
   border: 0,
@@ -84,7 +82,7 @@ const primaryBtn: React.CSSProperties = {
   cursor: "pointer",
 };
 
-const labelStyle: React.CSSProperties = {
+export const labelStyle: React.CSSProperties = {
   display: "block",
   fontSize: 10,
   fontWeight: 700,
@@ -102,18 +100,10 @@ export function ChartersPanel({
   data: { business: any };
 }) {
   const qc = useQueryClient();
-  const [editing, setEditing] = useState<CharterDraft | null>(null);
+  const navigate = useNavigate();
   const [saveError, setSaveError] = useState<string | null>(null);
 
   const [openCharterId, setOpenCharterId] = useState<string | null>(null);
-  const [addonsFor, setAddonsFor] = useState<string | null>(null);
-  const [datesFor, setDatesFor] = useState<{
-    id: string;
-    title: string;
-    capacity: number;
-    base_price_cents: number;
-    duration_minutes: number;
-  } | null>(null);
   const [addingPkgFor, setAddingPkgFor] = useState<string | null>(null);
   const [newPkg, setNewPkg] = useState<PackageDraft>(emptyPackageDraft);
 
@@ -139,10 +129,7 @@ export function ChartersPanel({
           style={{ ...primaryBtn, opacity: boats.length === 0 ? 0.5 : 1, cursor: boats.length === 0 ? "not-allowed" : "pointer" }}
           disabled={boats.length === 0}
           title={boats.length === 0 ? "Add a boat in the Fleet tab first" : undefined}
-          onClick={() => {
-            setSaveError(null);
-            setEditing({ ...emptyCharterDraft });
-          }}
+          onClick={() => navigate({ to: "/captain/charters/new" })}
         >
           + Add new charter
         </button>
@@ -153,7 +140,7 @@ export function ChartersPanel({
         )}
       </div>
 
-      {saveError && !editing && (
+      {saveError && (
         <div
           style={{
             marginBottom: 14,
@@ -168,64 +155,10 @@ export function ChartersPanel({
         </div>
       )}
 
-      {editing && (
-        <CharterForm
-          businessId={data.business?.id ?? null}
-          draft={editing}
-          boats={boats}
-          error={saveError}
-          onChange={setEditing}
-          onCancel={() => {
-            setEditing(null);
-            setSaveError(null);
-          }}
-          onSave={async () => {
-            setSaveError(null);
-            try {
-              const charter: any = await upsertCaptainCharter({
-                data: {
-                  ...editing,
-                  target_species: editing.target_species
-                    .split(",")
-                    .map((s) => s.trim())
-                    .filter(Boolean),
-                  image_urls: editing.image_urls,
-                  slug: editing.slug || null,
-                },
-              });
-              // On create, seed one default package so the charter is bookable
-              if (charter?.id && !editing.id) {
-                await upsertCaptainService({
-                  data: {
-                    title: "Half Day",
-                    charter_id: charter.id,
-                    base_price_cents: editing.base_price_cents,
-                    capacity: editing.capacity,
-                    duration_minutes: Math.round(4 * 60),
-                    water_type: editing.water_type || null,
-                    boat_id: editing.boat_id || null,
-                    is_published: false,
-                  },
-                });
-              }
-              await qc.invalidateQueries({ queryKey: ["captain-charters"] });
-              qc.invalidateQueries({ queryKey: ["captain-dashboard"] });
-              setEditing(null);
-            } catch (err: any) {
-              setSaveError(
-                err?.message ||
-                  "We couldn't save that charter. Check the details and try again.",
-              );
-            }
-          }}
-        />
-      )}
-
-
       {chartersLoading && (
         <div style={{ color: "var(--tmut)", padding: 16, fontSize: 13 }}>Loading charters…</div>
       )}
-      {!chartersLoading && charters.length === 0 && !editing && (
+      {!chartersLoading && charters.length === 0 && (
         <div
           style={{
             color: "var(--tmut)",
@@ -246,22 +179,7 @@ export function ChartersPanel({
           isExpanded={openCharterId === c.id}
           onToggleExpand={() => setOpenCharterId(openCharterId === c.id ? null : c.id)}
           onEdit={() =>
-            setEditing({
-              id: c.id,
-              name: c.name,
-              description: c.description ?? "",
-              slug: c.slug ?? "",
-              hero_url: c.hero_url ?? "",
-              image_urls: c.image_urls ?? [],
-              boat_id: c.boat_id ?? "",
-              water_type: c.water_type ?? "",
-              target_species: Array.isArray(c.target_species) ? c.target_species.join(", ") : "",
-              base_price_cents: c.base_price_cents,
-              capacity: c.capacity,
-              duration_minutes: c.duration_minutes ?? null,
-              departure_location: "",
-              is_published: c.is_published,
-            })
+            navigate({ to: "/captain/charters/$charterId/edit", params: { charterId: c.id } })
           }
           onDelete={async () => {
             if (
@@ -287,11 +205,6 @@ export function ChartersPanel({
               setSaveError(err?.message || "We couldn't change that charter's status.");
             }
           }}
-
-          addonsFor={addonsFor}
-          setAddonsFor={setAddonsFor}
-          datesFor={datesFor}
-          setDatesFor={setDatesFor}
           addingPkgFor={addingPkgFor}
           setAddingPkgFor={setAddingPkgFor}
           newPkg={newPkg}
@@ -305,7 +218,7 @@ export function ChartersPanel({
 
 /* ---- CHARTER FORM ---- */
 
-type CharterDraft = {
+export type CharterDraft = {
   id?: string;
   name: string;
   description: string;
@@ -322,7 +235,7 @@ type CharterDraft = {
   is_published: boolean;
 };
 
-const emptyCharterDraft: CharterDraft = {
+export const emptyCharterDraft: CharterDraft = {
   name: "",
   description: "",
   slug: "",
@@ -338,7 +251,7 @@ const emptyCharterDraft: CharterDraft = {
   is_published: false,
 };
 
-function CharterForm({
+export function CharterForm({
   businessId,
   draft,
   boats,
@@ -692,10 +605,6 @@ function CharterRowItem({
   onEdit,
   onDelete,
   onTogglePublish,
-  addonsFor,
-  setAddonsFor,
-  datesFor,
-  setDatesFor,
   addingPkgFor,
   setAddingPkgFor,
   newPkg,
@@ -709,10 +618,6 @@ function CharterRowItem({
   onEdit: () => void;
   onDelete: () => void;
   onTogglePublish: (published: boolean) => void;
-  addonsFor: string | null;
-  setAddonsFor: (id: string | null) => void;
-  datesFor: { id: string; title: string; capacity: number; base_price_cents: number; duration_minutes: number } | null;
-  setDatesFor: (s: { id: string; title: string; capacity: number; base_price_cents: number; duration_minutes: number } | null) => void;
   addingPkgFor: string | null;
   setAddingPkgFor: (id: string | null) => void;
   newPkg: PackageDraft;
@@ -720,6 +625,7 @@ function CharterRowItem({
   data: { business: any };
 }) {
   const qc = useQueryClient();
+  const navigate = useNavigate();
   const mAddPkg = useMutation({
     mutationFn: async (charterId: string) => {
       await upsertCaptainService({
@@ -853,23 +759,11 @@ function CharterRowItem({
               </button>
               <button
                 onClick={() =>
-                  setDatesFor({
-                    id: p.id,
-                    title: p.title,
-                    capacity: p.capacity ?? 4,
-                    base_price_cents: p.base_price_cents,
-                    duration_minutes: p.duration_minutes ?? 240,
-                  })
+                  navigate({ to: "/captain/packages/$packageId", params: { packageId: p.id } })
                 }
                 style={{ ...ghostBtn, fontSize: 12 }}
               >
-                Dates
-              </button>
-              <button
-                onClick={() => setAddonsFor(addonsFor === p.id ? null : p.id)}
-                style={{ ...ghostBtn, fontSize: 12 }}
-              >
-                Add-ons
+                Edit
               </button>
               <button
                 onClick={() => {
@@ -882,26 +776,6 @@ function CharterRowItem({
             </div>
           ))}
 
-          {addonsFor && packages.some((p) => p.id === addonsFor) && data.business && (
-            <div style={{ marginTop: 4 }}>
-              {(() => {
-                const pkg = packages.find((p) => p.id === addonsFor)!;
-                return (
-                  <AddonsManager
-                    businessId={data.business.id}
-                    service={{ id: pkg.id, title: pkg.title }}
-                    onClose={() => setAddonsFor(null)}
-                  />
-                );
-              })()}
-            </div>
-          )}
-
-          {datesFor && packages.some((p) => p.id === datesFor.id) && (
-            <div style={{ marginTop: 4 }}>
-              <AvailabilityCalendar service={datesFor} onClose={() => setDatesFor(null)} />
-            </div>
-          )}
 
           {addingPkgFor === c.id ? (
             <PackageForm
