@@ -762,23 +762,11 @@ function CharterRowItem({
               </button>
               <button
                 onClick={() =>
-                  setDatesFor({
-                    id: p.id,
-                    title: p.title,
-                    capacity: p.capacity ?? 4,
-                    base_price_cents: p.base_price_cents,
-                    duration_minutes: p.duration_minutes ?? 240,
-                  })
+                  navigate({ to: "/captain/packages/$packageId", params: { packageId: p.id } })
                 }
                 style={{ ...ghostBtn, fontSize: 12 }}
               >
-                Dates
-              </button>
-              <button
-                onClick={() => setAddonsFor(addonsFor === p.id ? null : p.id)}
-                style={{ ...ghostBtn, fontSize: 12 }}
-              >
-                Add-ons
+                Edit
               </button>
               <button
                 onClick={() => {
@@ -791,26 +779,6 @@ function CharterRowItem({
             </div>
           ))}
 
-          {addonsFor && packages.some((p) => p.id === addonsFor) && data.business && (
-            <div style={{ marginTop: 4 }}>
-              {(() => {
-                const pkg = packages.find((p) => p.id === addonsFor)!;
-                return (
-                  <AddonsManager
-                    businessId={data.business.id}
-                    service={{ id: pkg.id, title: pkg.title }}
-                    onClose={() => setAddonsFor(null)}
-                  />
-                );
-              })()}
-            </div>
-          )}
-
-          {datesFor && packages.some((p) => p.id === datesFor.id) && (
-            <div style={{ marginTop: 4 }}>
-              <AvailabilityCalendar service={datesFor} onClose={() => setDatesFor(null)} />
-            </div>
-          )}
 
           {addingPkgFor === c.id ? (
             <PackageForm
