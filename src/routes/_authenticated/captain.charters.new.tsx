@@ -34,7 +34,12 @@ function NewCharterPage() {
   const [error, setError] = useState<string | null>(null);
 
   return (
-    <CaptainPageShell title="New charter trip" subtitle="Create the trip anglers can book">
+    <CaptainPageShell
+      title="New charter trip"
+      subtitle="Create the trip anglers can book"
+      backLabel="← Back to charter trips"
+      backSearch={{ tab: "services" }}
+    >
       <CharterForm
         businessId={dash?.business?.id ?? null}
         draft={draft}
