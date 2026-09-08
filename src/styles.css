@@ -683,6 +683,15 @@ body.dc-body { margin:0; background:#072057; }
   .fx-authed .fx-thread-list { padding: 0 !important; }
 }
 
+/* The global "flex rows wrap on mobile" rule must never touch the messages
+   screen: wrapping a column-flex scroll area makes it lay messages out in
+   extra columns instead of scrolling as one continuous thread. */
+.fx-authed .fx-messages-main [style*="display: flex"],
+.fx-authed .fx-messages-main [style*="display:flex"] {
+  flex-wrap: nowrap !important;
+}
+
+
 
 
 /* Angler Explore tab — cinematic discovery grids */
