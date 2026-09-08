@@ -63,7 +63,11 @@ function EditCharterPage() {
 
   if (isLoading || (!charter && !draft)) {
     return (
-      <CaptainPageShell title="Edit charter trip">
+      <CaptainPageShell
+        title="Edit charter trip"
+        backLabel="← Back to charter trips"
+        backSearch={{ tab: "services" }}
+      >
         <div style={{ color: "var(--tmut)", fontSize: 13 }}>
           {isLoading ? "Loading charter…" : "We couldn't find that charter trip."}
         </div>
