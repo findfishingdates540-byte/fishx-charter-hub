@@ -24,9 +24,6 @@ import {
 import { listCaptainBoats } from "@/lib/captain-fleet.functions";
 import { ImageUpload } from "@/components/business/ImageUpload";
 import { DepartureTimesEditor, type DepartureRow } from "@/components/captain/DepartureTimesEditor";
-import { AddonsManager } from "@/components/business/AddonsManager";
-import { copyServiceAddons } from "@/lib/service-addons.functions";
-import { AvailabilityCalendar } from "@/components/business/AvailabilityCalendar";
 import { DEFAULT_HERO } from "@/lib/platform-photos";
 
 type PackageRow = {
