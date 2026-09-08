@@ -344,11 +344,16 @@ export const releaseBookingPayout = createServerFn({ method: "POST" })
     await supabaseAdmin.from("payouts").insert({
       business_id: biz.id,
       booking_id: booking.id,
-      stripe_payout_id: transferId,
+      stripe_payout_id: bank.bankPayoutId ?? transferId,
+      stripe_transfer_id: transferId,
+      stripe_bank_payout_id: bank.bankPayoutId,
+      destination_account_id: biz.stripe_account_id,
       amount_cents: vendorCents,
       currency: "usd",
-      status: "paid",
-      paid_at: now,
+      status: bank.status,
+      arrival_date: bank.arrivalDate,
+      failure_message: bank.error,
+      ...(bank.status === "paid" ? { paid_at: now } : {}),
     });
 
     await supabaseAdmin.from("domain_events").insert({
