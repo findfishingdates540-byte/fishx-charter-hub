@@ -65,6 +65,7 @@ export function CaptainPageShell({
         </div>
         <Link
           to="/dashboard"
+          search={backSearch ?? {}}
           style={{
             marginLeft: "auto",
             fontSize: 12.5,
