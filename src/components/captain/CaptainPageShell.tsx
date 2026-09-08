@@ -28,10 +28,14 @@ export function CaptainPageShell({
   title,
   subtitle,
   children,
+  backLabel = "← Back to dashboard",
+  backSearch,
 }: {
   title: string;
   subtitle?: string;
   children: React.ReactNode;
+  backLabel?: string;
+  backSearch?: { tab?: string };
 }) {
   return (
     <div style={shell}>
