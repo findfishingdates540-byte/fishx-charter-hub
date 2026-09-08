@@ -92,7 +92,11 @@ function EditPackagePage() {
 
   if (!draft) {
     return (
-      <CaptainPageShell title="Edit package">
+      <CaptainPageShell
+        title="Edit package"
+        backLabel="← Back to charter trips"
+        backSearch={{ tab: "services" }}
+      >
         <div style={{ color: "var(--tmut)", fontSize: 13 }}>
           {isLoading ? "Loading package…" : "We couldn't find that package."}
         </div>
