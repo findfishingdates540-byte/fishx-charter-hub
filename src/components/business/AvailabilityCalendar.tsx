@@ -257,7 +257,7 @@ export function AvailabilityCalendar({
         {/* Publish form */}
         <div style={{ display: "grid", gap: 12, alignContent: "start" }}>
           <Field label={`Publish ${picked.length} selected day${picked.length === 1 ? "" : "s"}`}>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+            <div className="fx-avail-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
               <input style={input} type="time" value={startTime} onChange={(e) => setStartTime(e.target.value)} />
               <input
                 style={input}
