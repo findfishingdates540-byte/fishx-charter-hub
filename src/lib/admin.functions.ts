@@ -419,3 +419,21 @@ export const getAdminTripCalendar = createServerFn({ method: "GET" })
       },
     };
   });
+
+/**
+ * Admin override: sends a booked trip's operator share out of escrow — Stripe
+ * transfer to their connected account, then on to their bank.
+ */
+export const adminReleaseTripPayout = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i) => z.object({ bookingId: z.string().uuid() }).parse(i))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.supabase, context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { releaseBookingPayoutCore } = await import("./booking-payout.server");
+    try {
+      return await releaseBookingPayoutCore(supabaseAdmin as never, data.bookingId, context.userId);
+    } catch (err) {
+      throw new Error(err instanceof Error ? err.message : String(err));
+    }
+  });
