@@ -73,15 +73,23 @@ function EditCharterPage() {
 
   if (!draft) return null;
 
+  const backToCharters = () =>
+    navigate({ to: "/dashboard", search: { tab: "services" } });
+
   return (
-    <CaptainPageShell title="Edit charter trip" subtitle={draft.name}>
+    <CaptainPageShell
+      title="Edit charter trip"
+      subtitle={draft.name}
+      backLabel="← Back to charter trips"
+      backSearch={{ tab: "services" }}
+    >
       <CharterForm
         businessId={dash?.business?.id ?? null}
         draft={draft}
         boats={(boatsData?.rows ?? []) as any}
         error={error}
         onChange={setDraft}
-        onCancel={() => navigate({ to: "/dashboard" })}
+        onCancel={backToCharters}
         onSave={async () => {
           setError(null);
           try {
@@ -98,12 +106,103 @@ function EditCharterPage() {
             });
             await qc.invalidateQueries({ queryKey: ["captain-charters"] });
             qc.invalidateQueries({ queryKey: ["captain-dashboard"] });
-            navigate({ to: "/dashboard" });
+            backToCharters();
           } catch (err: any) {
             setError(err?.message || "We couldn't save that charter. Check the details and try again.");
           }
         }}
       />
+
+      <section
+        style={{
+          marginTop: 24,
+          background: "var(--card)",
+          border: "1px solid var(--line)",
+          borderRadius: 14,
+          padding: "16px 18px",
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 12,
+            flexWrap: "wrap",
+          }}
+        >
+          <div style={{ fontFamily: "var(--serif)", fontWeight: 600, fontSize: 16 }}>
+            Packages ({charter?.packages?.length ?? 0})
+          </div>
+          <button
+            onClick={backToCharters}
+            style={{
+              border: "1px solid var(--line)",
+              background: "transparent",
+              color: "var(--cyan)",
+              borderRadius: 10,
+              padding: "7px 12px",
+              fontSize: 12.5,
+              fontWeight: 600,
+              cursor: "pointer",
+            }}
+          >
+            + Add package
+          </button>
+        </div>
+        <div style={{ fontSize: 12, color: "var(--tmut)", marginTop: 4 }}>
+          The bookable time/duration options anglers see for this trip.
+        </div>
+
+        {(charter?.packages ?? []).length === 0 && (
+          <div style={{ fontSize: 12.5, color: "var(--tmut)", marginTop: 12 }}>
+            No packages yet. Add a time/duration variant from the Charter trips tab.
+          </div>
+        )}
+
+        <div style={{ display: "grid", marginTop: 8 }}>
+          {(charter?.packages ?? []).map((p: any) => (
+            <div
+              key={p.id}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 10,
+                padding: "12px 0",
+                borderTop: "1px solid rgba(255,255,255,.06)",
+                flexWrap: "wrap",
+              }}
+            >
+              <div style={{ flex: 1, minWidth: 160 }}>
+                <div style={{ fontSize: 13.5, fontWeight: 600 }}>{p.title}</div>
+                <div style={{ fontSize: 12, color: "var(--tmut)" }}>
+                  ${(p.base_price_cents / 100).toFixed(2)}
+                  {p.duration_minutes ? ` · ${Math.round(p.duration_minutes / 60)}h` : ""}
+                  {p.capacity ? ` · up to ${p.capacity}` : ""}
+                  {!p.is_published ? " · Draft" : ""}
+                </div>
+              </div>
+              <button
+                onClick={() =>
+                  navigate({ to: "/captain/packages/$packageId", params: { packageId: p.id } })
+                }
+                style={{
+                  border: "1px solid var(--line)",
+                  background: "transparent",
+                  color: "var(--ink)",
+                  borderRadius: 10,
+                  padding: "7px 12px",
+                  fontSize: 12.5,
+                  fontWeight: 600,
+                  cursor: "pointer",
+                }}
+              >
+                Edit package
+              </button>
+            </div>
+          ))}
+        </div>
+      </section>
     </CaptainPageShell>
   );
 }
