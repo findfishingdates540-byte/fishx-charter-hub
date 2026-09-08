@@ -674,7 +674,7 @@ function CharterRowItem({
         borderBottom: isLast ? "none" : "1px solid var(--line)",
       }}
     >
-      <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+      <div className="fx-charter-row" style={{ display: "flex", alignItems: "center", gap: 14 }}>
         <img
           src={c.hero_url || c.image_urls?.[0] || DEFAULT_HERO}
           alt=""
@@ -689,6 +689,7 @@ function CharterRowItem({
             {c.base_price_cents ? ` · ${money(c.base_price_cents)}` : ""}
           </div>
         </div>
+        <div className="fx-charter-actions" style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
         <button
           onClick={() => onTogglePublish(!c.is_published)}
           style={{
@@ -713,10 +714,12 @@ function CharterRowItem({
         <button style={{ ...ghostBtn, color: "#F87171" }} onClick={onDelete}>
           Delete
         </button>
+        </div>
       </div>
 
       {isExpanded && (
-        <div style={{ marginTop: 14, paddingLeft: 70, display: "grid", gap: 12 }}>
+        <div className="fx-charter-exp" style={{ marginTop: 14, paddingLeft: 70, display: "grid", gap: 12 }}>
+
           {packages.length === 0 && (
             <div style={{ fontSize: 12.5, color: "var(--tmut)" }}>
               No packages yet. Add a time/duration variant for this charter.
