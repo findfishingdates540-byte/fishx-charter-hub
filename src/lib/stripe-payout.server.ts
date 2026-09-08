@@ -50,7 +50,7 @@ export async function settleToBank(
     }
 
     // Manual schedule: only what has already cleared can be paid out now.
-    const balance = await stripe.balance.retrieve({ stripeAccount: accountId });
+    const balance = await stripe.balance.retrieve(undefined, { stripeAccount: accountId });
     const available =
       balance.available.find((b) => b.currency === "usd")?.amount ??
       balance.available[0]?.amount ??
