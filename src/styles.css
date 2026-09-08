@@ -941,6 +941,35 @@ body.dc-body { margin:0; background:#072057; }
 .fx-msg-thread { scrollbar-width: none; -ms-overflow-style: none; }
 .fx-msg-thread::-webkit-scrollbar { display: none; }
 
+/* Captain messages — mobile single scrollable screen */
+@media (max-width: 720px) {
+  .fx-msg-grid {
+    display: flex !important;
+    flex-direction: column;
+    gap: 0 !important;
+    min-height: unset !important;
+    height: calc(100vh - 180px);
+  }
+  .fx-msg-grid > aside,
+  .fx-msg-grid > section {
+    flex: 1 1 auto;
+    min-height: 0;
+    border-radius: 0 !important;
+    border-left: 0 !important;
+    border-right: 0 !important;
+  }
+  .fx-msg-grid > aside { display: flex; }
+  .fx-msg-grid[data-thread-open="true"] > aside { display: none; }
+  .fx-msg-grid > section { display: none; }
+  .fx-msg-grid[data-thread-open="true"] > section { display: flex; }
+  .fx-msg-thread { height: 100%; }
+  .fx-msg-thread > div:nth-of-type(2) {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+  }
+}
+
 /* Captain charter trips — mobile layout */
 @media (max-width: 720px) {
   .fx-charter-row {

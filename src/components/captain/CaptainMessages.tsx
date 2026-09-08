@@ -117,14 +117,21 @@ function BookingThreads() {
   });
   const rows: any[] = Array.isArray(data) ? (data as any[]) : [];
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [mobileThreadOpen, setMobileThreadOpen] = useState(false);
 
   useEffect(() => {
     if (!activeId && rows.length) setActiveId(rows[0].booking_id);
   }, [rows, activeId]);
 
+  const select = (id: string) => {
+    setActiveId(id);
+    setMobileThreadOpen(true);
+  };
+
   return (
-    <div className="fx-msg-grid" style={{ display: "grid", gridTemplateColumns: "minmax(280px,360px) 1fr", gap: 18, alignItems: "stretch", minHeight: 560 }}>
+    <div className="fx-msg-grid" data-thread-open={mobileThreadOpen} style={{ display: "grid", gridTemplateColumns: "minmax(280px,360px) 1fr", gap: 18, alignItems: "stretch", minHeight: 560 }}>
       <aside
+        className="fx-msg-list"
         style={{
           background: C.card,
           border: `1px solid ${C.line}`,
@@ -171,7 +178,7 @@ function BookingThreads() {
               return (
                 <button
                   key={c.booking_id}
-                  onClick={() => setActiveId(c.booking_id)}
+                  onClick={() => select(c.booking_id)}
                   style={{
                     width: "100%",
                     textAlign: "left",
@@ -253,7 +260,7 @@ function BookingThreads() {
         )}
       </aside>
 
-      {activeId ? <CaptainThread key={activeId} bookingId={activeId} /> : <Placeholder />}
+      {activeId ? <CaptainThread key={activeId} bookingId={activeId} onBack={() => setMobileThreadOpen(false)} /> : <Placeholder />}
     </div>
   );
 }
@@ -296,7 +303,7 @@ function Placeholder() {
   );
 }
 
-function CaptainThread({ bookingId }: { bookingId: string }) {
+function CaptainThread({ bookingId, onBack }: { bookingId: string; onBack?: () => void }) {
   const qc = useQueryClient();
   const threadFn = useServerFn(getCaptainThread);
   const sendFn = useServerFn(sendMessage);
@@ -346,6 +353,7 @@ function CaptainThread({ bookingId }: { bookingId: string }) {
 
   return (
     <section
+      className="fx-msg-thread"
       style={{
         background: C.card,
         border: `1px solid ${C.line}`,
@@ -356,6 +364,26 @@ function CaptainThread({ bookingId }: { bookingId: string }) {
       }}
     >
       <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "16px 20px", borderBottom: `1px solid ${C.line}` }}>
+        {onBack && (
+          <button
+            type="button"
+            onClick={onBack}
+            className="fx-msg-back"
+            style={{
+              flex: "none",
+              background: "transparent",
+              border: `1px solid ${C.line}`,
+              color: "inherit",
+              borderRadius: 10,
+              padding: "8px 12px",
+              fontSize: 12,
+              fontWeight: 700,
+              cursor: "pointer",
+            }}
+          >
+            ← Back
+          </button>
+        )}
         <Avatar label={guestName} url={(data as any)?.angler?.avatar_url} size={42} />
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontSize: 15, fontWeight: 700 }}>{guestName}</div>
