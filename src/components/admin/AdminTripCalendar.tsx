@@ -47,11 +47,37 @@ export function AdminTripCalendar() {
   }, [offset]);
   const month = `${base.getUTCFullYear()}-${String(base.getUTCMonth() + 1).padStart(2, "0")}`;
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, refetch } = useQuery({
     queryKey: ["admin-trip-calendar", month],
     queryFn: () => fetchCal({ data: { month } }),
     staleTime: 30_000,
   });
+
+  const releaseFn = useServerFn(adminReleaseTripPayout);
+  const [busyId, setBusyId] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
+
+  async function release(bookingId: string) {
+    setNotice(null);
+    setBusyId(bookingId);
+    try {
+      const res = await releaseFn({ data: { bookingId } });
+      setNotice(
+        res.alreadyReleased
+          ? "That payout was already sent."
+          : res.bankStatus === "paid"
+            ? "Sent — the money has left for the operator's bank."
+            : `Sent to the operator's bank${res.arrivalDate ? `, arriving ${res.arrivalDate}` : ""}.`,
+      );
+      await refetch();
+    } catch (e) {
+      const msg =
+        e instanceof Response ? (await e.text()).slice(0, 200) : e instanceof Error ? e.message : String(e);
+      setNotice(msg || "Payout failed. Try again.");
+    } finally {
+      setBusyId(null);
+    }
+  }
 
   const trips = data?.trips ?? [];
   const byDay = useMemo(() => {
