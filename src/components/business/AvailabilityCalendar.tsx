@@ -440,6 +440,7 @@ export function AvailabilityCalendar({
           return (
             <div
               key={s.id}
+              className="fx-avail-slot"
               style={{
                 display: "flex",
                 gap: 12,
