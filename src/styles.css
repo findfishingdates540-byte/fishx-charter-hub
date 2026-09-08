@@ -1015,3 +1015,17 @@ body.dc-body { margin:0; background:#072057; }
     grid-template-columns: 1fr !important;
   }
 }
+
+/* The month calendar must always stay a 7-column weekday grid, even when the
+   global mobile rules collapse other grids to a single column. */
+@media (max-width: 900px) {
+  .fx-authed .fx-avail .fx-avail-days {
+    grid-template-columns: repeat(7, minmax(0, 1fr)) !important;
+    gap: 4px !important;
+  }
+  .fx-authed .fx-avail .fx-avail-days button {
+    padding: 8px 0 6px !important;
+    min-height: 44px;
+    font-size: 12px !important;
+  }
+}
