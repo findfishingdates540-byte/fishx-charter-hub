@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { BrandLogo } from "@/components/brand/BrandLogo";
 import { MarinaServiceRequest } from "@/components/profile/MarinaServiceRequest";
 import { StorefrontBooking } from "@/components/profile/StorefrontBooking";
+import { StorefrontAvailability } from "@/components/profile/StorefrontAvailability";
 
 import { useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
