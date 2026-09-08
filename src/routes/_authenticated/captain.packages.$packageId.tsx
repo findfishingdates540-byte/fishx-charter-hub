@@ -225,6 +225,7 @@ function EditPackagePage() {
             base_price_cents: Math.round(draft.price * 100),
             duration_minutes: Math.round(draft.hours * 60),
           }}
+          onClose={() => navigate({ to: "/dashboard" })}
         />
       </div>
 
@@ -234,6 +235,7 @@ function EditPackagePage() {
           <AddonsManager
             businessId={dash.business.id}
             service={{ id: packageId, title: draft.title }}
+            onClose={() => navigate({ to: "/dashboard" })}
           />
         </div>
       )}
