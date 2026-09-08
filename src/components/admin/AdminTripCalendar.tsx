@@ -210,6 +210,9 @@ export function AdminTripCalendar() {
               timeZone: "UTC",
             })}
           </div>
+          {notice && (
+            <div style={{ color: T.accent, fontSize: 13, marginBottom: 10 }}>{notice}</div>
+          )}
           {dayTrips.length === 0 ? (
             <div style={{ color: T.mut, fontSize: 13.5 }}>No trips booked on this day.</div>
           ) : (
