@@ -512,6 +512,12 @@ body.dc-body { margin:0; background:#072057; }
     border-bottom: 1px solid rgba(255,255,255,.08) !important;
     box-shadow: 0 18px 40px -12px rgba(0,0,0,.35) !important;
   }
+  /* The angler nav carries a scroll-row negative margin; reset it in overlay mode
+     or the dropdown bleeds 16px off the left edge of the screen. */
+  .fx-authed header[style*="sticky"][data-nav-open="true"] nav.ang-topnav {
+    margin: 0 !important;
+    width: 100% !important;
+  }
   .fx-authed header[style*="sticky"][data-nav-open="true"] nav > * {
     flex: none !important;
     white-space: nowrap !important;
