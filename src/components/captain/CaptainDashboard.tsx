@@ -64,6 +64,7 @@ export function CaptainDashboard() {
   const { data } = useSuspenseQuery(captainDashboardQO);
   const [tab, setTab] = useState<Tab>("overview");
   const [accepting, setAccepting] = useState(true);
+  const [navOpen, setNavOpen] = useState(false);
   const navigate = useNavigate();
 
   const biz = data.business;
@@ -101,10 +102,25 @@ export function CaptainDashboard() {
   return (
     <div className="fx-shell" style={shell}>
       {/* SIDEBAR */}
-      <aside className="fx-side" style={{ width: 256, flex: "none", background: "var(--navy)", color: "var(--ond)", display: "flex", flexDirection: "column", padding: "22px 16px", position: "sticky", top: 0, height: "100vh", borderRight: "1px solid rgba(255,255,255,.06)" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "6px 10px 22px" }}>
+      <aside className={`fx-side${navOpen ? " fx-open" : ""}`} style={{ width: 256, flex: "none", background: "var(--navy)", color: "var(--ond)", display: "flex", flexDirection: "column", padding: "22px 16px", position: "sticky", top: 0, height: "100vh", borderRight: "1px solid rgba(255,255,255,.06)" }}>
+        <div className="fx-side-head" style={{ display: "flex", alignItems: "center", gap: 10, padding: "6px 10px 22px" }}>
           <BrandLogo size="md" accent="var(--cyan)" color="var(--ond)" />
+          <button
+            type="button"
+            className="fx-side-burger"
+            aria-label={navOpen ? "Close menu" : "Open menu"}
+            aria-expanded={navOpen}
+            onClick={() => setNavOpen((v) => !v)}
+            style={{ marginLeft: "auto", background: "rgba(255,255,255,.06)", border: "1px solid var(--lined)", borderRadius: 10, width: 40, height: 40, display: "grid", placeItems: "center", color: "var(--ink)", cursor: "pointer" }}
+          >
+            {navOpen ? (
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M6 6l12 12M18 6L6 18" /></svg>
+            ) : (
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
+            )}
+          </button>
         </div>
+        <div className="fx-side-body" style={{ display: "flex", flexDirection: "column", flex: 1, minHeight: 0 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 11, background: "rgba(255,255,255,.04)", border: "1px solid var(--lined)", borderRadius: 13, padding: "11px 12px", marginBottom: 18 }}>
           <span style={{ width: 34, height: 34, borderRadius: 9, background: "rgba(45,226,242,.14)", display: "grid", placeItems: "center", color: "var(--cyan)", flex: "none", fontFamily: "var(--serif)", fontWeight: 600 }}>
             {biz?.name.charAt(0).toUpperCase() ?? "C"}
@@ -118,12 +134,12 @@ export function CaptainDashboard() {
         </div>
         <nav style={{ display: "flex", flexDirection: "column", gap: 3 }}>
           {(["overview", "bookings", "services", "blockouts", "fleet", "messages", "earnings"] as Tab[]).map((t) => (
-            <NavBtn key={t} label={t === "services" ? "Charter Trips" : t === "blockouts" ? "Blockout Dates" : t === "fleet" ? "Fleet" : cap(t)} active={tab === t} onClick={() => setTab(t)} badge={t === "bookings" ? data.stats.upcomingCount : undefined} />
+            <NavBtn key={t} label={t === "services" ? "Charter Trips" : t === "blockouts" ? "Blockout Dates" : t === "fleet" ? "Fleet" : cap(t)} active={tab === t} onClick={() => { setTab(t); setNavOpen(false); }} badge={t === "bookings" ? data.stats.upcomingCount : undefined} />
           ))}
         </nav>
         <div style={{ marginTop: 20, paddingTop: 18, borderTop: "1px solid var(--lined)" }}>
           <div style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: ".14em", textTransform: "uppercase", color: "var(--ondmut)", padding: "0 12px 8px" }}>Account</div>
-          <NavBtn label="Settings" active={tab === "settings"} onClick={() => setTab("settings")} />
+          <NavBtn label="Settings" active={tab === "settings"} onClick={() => { setTab("settings"); setNavOpen(false); }} />
         </div>
         <div style={{ marginTop: "auto", display: "flex", alignItems: "center", gap: 11, background: "rgba(255,255,255,.04)", border: "1px solid var(--lined)", borderRadius: 13, padding: "10px 12px" }}>
           <div style={{ width: 38, height: 38, borderRadius: "50%", background: "rgba(45,226,242,.14)", display: "grid", placeItems: "center", color: "var(--cyan)", fontFamily: "var(--serif)", fontWeight: 600 }}>{initial}</div>
@@ -134,6 +150,7 @@ export function CaptainDashboard() {
           <button onClick={signOut} title="Sign out" style={{ marginLeft: "auto", background: "transparent", color: "var(--ondmut)", border: 0, cursor: "pointer", flex: "none" }}>
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7"><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 17l5-5-5-5M15 12H3" /></svg>
           </button>
+        </div>
         </div>
       </aside>
 
