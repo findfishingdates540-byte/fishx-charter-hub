@@ -317,3 +317,95 @@ export const runPayoutReconciliation = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { ok: true as const, summary: data };
   });
+
+/**
+ * Every booked trip on the platform for a given month, with the operator that
+ * runs it and the money state (escrow / payout) behind it. Admin only.
+ */
+export const getAdminTripCalendar = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i) =>
+    z
+      .object({ month: z.string().regex(/^\d{4}-\d{2}$/) })
+      .parse(i),
+  )
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.supabase, context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const [y, m] = data.month.split("-").map(Number) as [number, number];
+    const start = new Date(Date.UTC(y, m - 1, 1));
+    const end = new Date(Date.UTC(y, m, 1));
+    const iso = (d: Date) => d.toISOString().slice(0, 10);
+
+    const { data: rows, error } = await supabaseAdmin
+      .from("bookings")
+      .select(
+        "id,trip_date,start_time,status,total_cents,payout_cents,party_size,escrow_state,payout_released_at,business_id,service:bookable_services(title)",
+      )
+      .gte("trip_date", iso(start))
+      .lt("trip_date", iso(end))
+      .order("trip_date", { ascending: true })
+      .limit(1000);
+    if (error) throw new Error(error.message);
+
+    const list = rows ?? [];
+    const bizIds = Array.from(new Set(list.map((r) => r.business_id).filter(Boolean) as string[]));
+    const ids = list.map((r) => r.id);
+
+    const [{ data: bizRows }, { data: payRows }] = await Promise.all([
+      bizIds.length
+        ? supabaseAdmin.from("businesses").select("id,name,category_key").in("id", bizIds)
+        : Promise.resolve({ data: [] as any[] }),
+      ids.length
+        ? supabaseAdmin
+            .from("payouts")
+            .select("id,booking_id,amount_cents,status,paid_at")
+            .in("booking_id", ids)
+        : Promise.resolve({ data: [] as any[] }),
+    ]);
+
+    const bizById = new Map((bizRows ?? []).map((b: any) => [b.id, b]));
+    const payByBooking = new Map((payRows ?? []).map((p: any) => [p.booking_id, p]));
+
+    const trips = list.map((r) => {
+      const payout = r.business_id ? payByBooking.get(r.id) ?? null : payByBooking.get(r.id) ?? null;
+      const payoutStatus = payout?.status === "paid"
+        ? "paid"
+        : payout
+          ? "scheduled"
+          : r.payout_released_at
+            ? "paid"
+            : r.escrow_state === "held"
+              ? "in escrow"
+              : "pending";
+      return {
+        id: r.id,
+        tripDate: r.trip_date,
+        startTime: r.start_time,
+        status: r.status,
+        title: (r.service as any)?.title ?? "Trip",
+        partySize: r.party_size,
+        totalCents: r.total_cents ?? 0,
+        payoutCents: payout?.amount_cents ?? r.payout_cents ?? 0,
+        payoutStatus,
+        paidAt: payout?.paid_at ?? r.payout_released_at ?? null,
+        operator: r.business_id ? bizById.get(r.business_id)?.name ?? "Unknown operator" : "Unknown operator",
+        category: r.business_id ? bizById.get(r.business_id)?.category_key ?? null : null,
+      };
+    });
+
+    const settled = trips.filter((t) => t.payoutStatus === "paid");
+    return {
+      month: data.month,
+      trips,
+      totals: {
+        trips: trips.length,
+        grossCents: trips.reduce((s, t) => s + t.totalCents, 0),
+        paidOutCents: settled.reduce((s, t) => s + t.payoutCents, 0),
+        awaitingPayoutCents: trips
+          .filter((t) => t.payoutStatus !== "paid")
+          .reduce((s, t) => s + t.payoutCents, 0),
+      },
+    };
+  });
