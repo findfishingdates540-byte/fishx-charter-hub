@@ -186,6 +186,24 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
 
 // (categoryTemplate removed — verticals now use React components below.)
 
+function DashboardLoading() {
+  return (
+    <div className="fx-dash-loading" aria-busy="true" aria-label="Loading dashboard">
+      <div className="fx-dash-loading-bar" />
+      <div className="fx-dash-loading-head">
+        <div className="fx-dash-loading-title" />
+        <div className="fx-dash-loading-sub" />
+      </div>
+      <div className="fx-dash-loading-grid">
+        <div className="fx-dash-loading-card" />
+        <div className="fx-dash-loading-card" />
+        <div className="fx-dash-loading-card" />
+        <div className="fx-dash-loading-card" />
+      </div>
+    </div>
+  );
+}
+
 function Dashboard() {
   const { data: boot } = useSuspenseQuery(bootstrapQO);
   const roles = Array.isArray(boot?.roles) ? boot.roles : [];
@@ -199,13 +217,7 @@ function Dashboard() {
   const anglerMode = as === "angler" || roles.includes("angler");
 
   return (
-    <Suspense
-      fallback={
-        <div style={{ padding: 40, fontFamily: "Outfit, system-ui", opacity: 0.6 }}>
-          Loading your dashboard…
-        </div>
-      }
-    >
+    <Suspense fallback={<DashboardLoading />}>
       {renderDashboard()}
     </Suspense>
   );

@@ -1058,3 +1058,14 @@ body.dc-body { margin:0; background:#072057; }
     font-size: 12px !important;
   }
 }
+
+/* Dashboard loading skeleton */
+.fx-dash-loading { min-height: 60vh; padding: 24px; font-family: "Outfit", system-ui, sans-serif; }
+.fx-dash-loading-bar { height: 4px; border-radius: 999px; max-width: 420px; margin: 0 auto 32px; background: linear-gradient(90deg, rgba(45,226,242,.15), rgba(45,226,242,.6), rgba(45,226,242,.15)); background-size: 200% 100%; animation: fxDashShimmer 1.2s linear infinite; }
+.fx-dash-loading-head { max-width: 1100px; margin: 0 auto 20px; display: grid; gap: 10px; }
+.fx-dash-loading-title { height: 28px; width: min(320px, 60%); border-radius: 8px; background: rgba(13,22,31,.08); animation: fxDashPulse 1.4s ease-in-out infinite; }
+.fx-dash-loading-sub { height: 16px; width: min(220px, 45%); border-radius: 6px; background: rgba(13,22,31,.06); animation: fxDashPulse 1.4s ease-in-out infinite; }
+.fx-dash-loading-grid { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
+.fx-dash-loading-card { height: 120px; border-radius: 14px; background: rgba(13,22,31,.06); animation: fxDashPulse 1.4s ease-in-out infinite; }
+@keyframes fxDashShimmer { to { background-position: -200% 0; } }
+@keyframes fxDashPulse { 0%, 100% { opacity: 1; } 50% { opacity: .45; } }
