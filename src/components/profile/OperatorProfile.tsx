@@ -2,7 +2,6 @@ import { Link } from "@tanstack/react-router";
 import { BrandLogo } from "@/components/brand/BrandLogo";
 import { MarinaServiceRequest } from "@/components/profile/MarinaServiceRequest";
 import { StorefrontBooking } from "@/components/profile/StorefrontBooking";
-import { StorefrontAvailability } from "@/components/profile/StorefrontAvailability";
 
 import { useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
@@ -530,14 +529,6 @@ export function OperatorProfile({
                 </div>
               </section>
             )}
-
-            {/* Booked vs free days across every listing */}
-            <StorefrontAvailability
-              businessId={b.id}
-              heading={b.category_key === "marina" ? "Slip availability" : "Trip availability"}
-            />
-
-
 
             {b.category_key === "marina" && (
               <MarinaServiceRequest
