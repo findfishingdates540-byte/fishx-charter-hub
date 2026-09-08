@@ -134,12 +134,12 @@ export function CaptainDashboard() {
         </div>
         <nav style={{ display: "flex", flexDirection: "column", gap: 3 }}>
           {(["overview", "bookings", "services", "blockouts", "fleet", "messages", "earnings"] as Tab[]).map((t) => (
-            <NavBtn key={t} label={t === "services" ? "Charter Trips" : t === "blockouts" ? "Blockout Dates" : t === "fleet" ? "Fleet" : cap(t)} active={tab === t} onClick={() => setTab(t)} badge={t === "bookings" ? data.stats.upcomingCount : undefined} />
+            <NavBtn key={t} label={t === "services" ? "Charter Trips" : t === "blockouts" ? "Blockout Dates" : t === "fleet" ? "Fleet" : cap(t)} active={tab === t} onClick={() => { setTab(t); setNavOpen(false); }} badge={t === "bookings" ? data.stats.upcomingCount : undefined} />
           ))}
         </nav>
         <div style={{ marginTop: 20, paddingTop: 18, borderTop: "1px solid var(--lined)" }}>
           <div style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: ".14em", textTransform: "uppercase", color: "var(--ondmut)", padding: "0 12px 8px" }}>Account</div>
-          <NavBtn label="Settings" active={tab === "settings"} onClick={() => setTab("settings")} />
+          <NavBtn label="Settings" active={tab === "settings"} onClick={() => { setTab("settings"); setNavOpen(false); }} />
         </div>
         <div style={{ marginTop: "auto", display: "flex", alignItems: "center", gap: 11, background: "rgba(255,255,255,.04)", border: "1px solid var(--lined)", borderRadius: 13, padding: "10px 12px" }}>
           <div style={{ width: 38, height: 38, borderRadius: "50%", background: "rgba(45,226,242,.14)", display: "grid", placeItems: "center", color: "var(--cyan)", fontFamily: "var(--serif)", fontWeight: 600 }}>{initial}</div>
@@ -150,6 +150,7 @@ export function CaptainDashboard() {
           <button onClick={signOut} title="Sign out" style={{ marginLeft: "auto", background: "transparent", color: "var(--ondmut)", border: 0, cursor: "pointer", flex: "none" }}>
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7"><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 17l5-5-5-5M15 12H3" /></svg>
           </button>
+        </div>
         </div>
       </aside>
 
