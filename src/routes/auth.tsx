@@ -7,7 +7,7 @@ import { resolveAsset } from "@/lib/dc-template";
 
 export const Route = createFileRoute("/auth")({
   validateSearch: (search: Record<string, unknown>) => ({
-    view: search.view === "signup" ? "signup" : "login",
+    view: search.view === "signup" ? "signup" : undefined,
   }),
   component: AuthPage,
 });
