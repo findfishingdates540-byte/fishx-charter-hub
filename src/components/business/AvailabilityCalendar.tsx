@@ -198,7 +198,7 @@ export function AvailabilityCalendar({
               ›
             </button>
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 4 }}>
+          <div className="fx-avail-days" style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 4 }}>
             {DAY_NAMES.map((d, i) => (
               <div key={i} style={{ textAlign: "center", fontSize: 10.5, color: "#92A0AB", fontWeight: 700 }}>
                 {d}
