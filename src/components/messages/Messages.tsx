@@ -484,6 +484,7 @@ function ThreadView({ bookingId, mobile = false }: { bookingId: string; mobile?:
 
       {/* Body */}
       <div
+        className="fx-msg-thread"
         style={{
           flex: 1,
           minHeight: 0,
