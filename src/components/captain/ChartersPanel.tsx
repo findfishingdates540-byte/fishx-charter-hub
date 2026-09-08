@@ -733,10 +733,12 @@ function CharterRowItem({
                 display: "flex",
                 alignItems: "center",
                 gap: 10,
+                flexWrap: "wrap",
                 padding: "10px 0",
                 borderTop: "1px solid rgba(255,255,255,.06)",
               }}
             >
+
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: 13, fontWeight: 600 }}>{p.title}</div>
                 <div style={{ fontSize: 12, color: "var(--tmut)" }}>
