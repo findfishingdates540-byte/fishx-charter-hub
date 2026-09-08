@@ -199,13 +199,7 @@ function Dashboard() {
   const anglerMode = as === "angler" || roles.includes("angler");
 
   return (
-    <Suspense
-      fallback={
-        <div style={{ padding: 40, fontFamily: "Outfit, system-ui", opacity: 0.6 }}>
-          Loading your dashboard…
-        </div>
-      }
-    >
+    <Suspense fallback={<DashboardLoading />}>
       {renderDashboard()}
     </Suspense>
   );
