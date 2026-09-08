@@ -73,7 +73,9 @@ function pickPrimaryBusiness(
     const match = owned.find(
       (m) => (m.business.category_key ?? "charter") === wantedCategory,
     );
-    if (match) return match.business;
+    // An explicit vertical role must never fall through to a business from a
+    // different vertical. The role remains the routing source of truth.
+    return match?.business;
   }
   const asOwner = owned.find((m) => m.role === "owner");
   return (asOwner ?? owned[0])?.business;
