@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, useSearch } from "@tanstack/react-router";
 import { BrandLogo } from "@/components/brand/BrandLogo";
 import { useEffect, useMemo, useState, type CSSProperties, type FormEvent, type PointerEvent } from "react";
 import { flushSync } from "react-dom";
@@ -6,6 +6,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { resolveAsset } from "@/lib/dc-template";
 
 export const Route = createFileRoute("/auth")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    view: search.view === "signup" ? "signup" : "login",
+  }),
   component: AuthPage,
 });
 
