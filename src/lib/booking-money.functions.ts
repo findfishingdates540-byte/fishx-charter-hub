@@ -317,6 +317,14 @@ export const releaseBookingPayout = createServerFn({ method: "POST" })
       throw new Response(`Payout failed: ${message}`, { status: 400 });
     }
 
+    // Move it the rest of the way — from the connected account's Stripe
+    // balance into the operator's actual bank account.
+    const { settleToBank } = await import("./stripe-payout.server");
+    const bank = await settleToBank(stripe, biz.stripe_account_id, vendorCents, {
+      booking_id: booking.id,
+      source_id: `booking-${booking.id}`,
+    });
+
     const now = new Date().toISOString();
     const expectedBalance =
       booking.balance_due_cents || Math.max(0, booking.total_cents - booking.deposit_cents);
