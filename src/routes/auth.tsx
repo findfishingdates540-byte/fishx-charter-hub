@@ -97,7 +97,8 @@ function ErrorBox({ msg }: { msg: string }) {
 
 function AuthPage() {
   const navigate = useNavigate();
-  const [view, setView] = useState<View>("login");
+  const search = useSearch({ from: "/auth" });
+  const [view, setView] = useState<View>(search.view === "signup" ? "signup" : "login");
   const [step, setStep] = useState<Step>("intent");
   const [vertical, setVertical] = useState<Vertical>("");
   const [status, setStatus] = useState<Status>("idle");

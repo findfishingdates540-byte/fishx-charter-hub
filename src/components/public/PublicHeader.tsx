@@ -265,7 +265,8 @@ export function PublicHeader({
                 Sign in
               </Link>
               <Link
-                to="/charters"
+                to="/auth"
+                search={{ view: "signup" }}
                 style={{
                   flex: 1,
                   textAlign: "center",
@@ -280,7 +281,7 @@ export function PublicHeader({
                   textTransform: "uppercase",
                 }}
               >
-                Find a charter
+                Sign up
               </Link>
             </>
           )}
