@@ -41,6 +41,7 @@ import { Route as AuthenticatedTripsDetailRouteImport } from './routes/_authenti
 import { Route as ApiPublicFishxWebhookRouteImport } from './routes/api/public/fishx-webhook'
 import { Route as ApiPublicStripeWebhookRouteImport } from './routes/api/public/stripe-webhook'
 import { Route as AuthenticatedCaptainChartersNewRouteImport } from './routes/_authenticated/captain.charters.new'
+import { Route as AuthenticatedCaptainPackagesPackageIdRouteImport } from './routes/_authenticated/captain.packages.$packageId'
 import { Route as ApiPublicAvatarsSplatRouteImport } from './routes/api/public/avatars/$'
 import { Route as ApiPublicHooksBookingTimersRouteImport } from './routes/api/public/hooks/booking-timers'
 import { Route as ApiPublicHooksDispatchEventsRouteImport } from './routes/api/public/hooks/dispatch-events'
@@ -215,6 +216,12 @@ const AuthenticatedCaptainChartersNewRoute =
     path: '/captain/charters/new',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedCaptainPackagesPackageIdRoute =
+  AuthenticatedCaptainPackagesPackageIdRouteImport.update({
+    id: '/captain/packages/$packageId',
+    path: '/captain/packages/$packageId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const ApiPublicAvatarsSplatRoute = ApiPublicAvatarsSplatRouteImport.update({
   id: '/api/public/avatars/$',
   path: '/api/public/avatars/$',
@@ -299,6 +306,7 @@ export interface FileRoutesByFullPath {
   '/api/public/fishx-webhook': typeof ApiPublicFishxWebhookRoute
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/captain/charters/new': typeof AuthenticatedCaptainChartersNewRoute
+  '/captain/packages/$packageId': typeof AuthenticatedCaptainPackagesPackageIdRoute
   '/api/public/avatars/$': typeof ApiPublicAvatarsSplatRoute
   '/api/public/hooks/booking-timers': typeof ApiPublicHooksBookingTimersRoute
   '/api/public/hooks/dispatch-events': typeof ApiPublicHooksDispatchEventsRoute
@@ -341,6 +349,7 @@ export interface FileRoutesByTo {
   '/api/public/fishx-webhook': typeof ApiPublicFishxWebhookRoute
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/captain/charters/new': typeof AuthenticatedCaptainChartersNewRoute
+  '/captain/packages/$packageId': typeof AuthenticatedCaptainPackagesPackageIdRoute
   '/api/public/avatars/$': typeof ApiPublicAvatarsSplatRoute
   '/api/public/hooks/booking-timers': typeof ApiPublicHooksBookingTimersRoute
   '/api/public/hooks/dispatch-events': typeof ApiPublicHooksDispatchEventsRoute
@@ -385,6 +394,7 @@ export interface FileRoutesById {
   '/api/public/fishx-webhook': typeof ApiPublicFishxWebhookRoute
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/_authenticated/captain/charters/new': typeof AuthenticatedCaptainChartersNewRoute
+  '/_authenticated/captain/packages/$packageId': typeof AuthenticatedCaptainPackagesPackageIdRoute
   '/api/public/avatars/$': typeof ApiPublicAvatarsSplatRoute
   '/api/public/hooks/booking-timers': typeof ApiPublicHooksBookingTimersRoute
   '/api/public/hooks/dispatch-events': typeof ApiPublicHooksDispatchEventsRoute
@@ -429,6 +439,7 @@ export interface FileRouteTypes {
     | '/api/public/fishx-webhook'
     | '/api/public/stripe-webhook'
     | '/captain/charters/new'
+    | '/captain/packages/$packageId'
     | '/api/public/avatars/$'
     | '/api/public/hooks/booking-timers'
     | '/api/public/hooks/dispatch-events'
@@ -471,6 +482,7 @@ export interface FileRouteTypes {
     | '/api/public/fishx-webhook'
     | '/api/public/stripe-webhook'
     | '/captain/charters/new'
+    | '/captain/packages/$packageId'
     | '/api/public/avatars/$'
     | '/api/public/hooks/booking-timers'
     | '/api/public/hooks/dispatch-events'
@@ -514,6 +526,7 @@ export interface FileRouteTypes {
     | '/api/public/fishx-webhook'
     | '/api/public/stripe-webhook'
     | '/_authenticated/captain/charters/new'
+    | '/_authenticated/captain/packages/$packageId'
     | '/api/public/avatars/$'
     | '/api/public/hooks/booking-timers'
     | '/api/public/hooks/dispatch-events'
@@ -781,6 +794,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCaptainChartersNewRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/captain/packages/$packageId': {
+      id: '/_authenticated/captain/packages/$packageId'
+      path: '/captain/packages/$packageId'
+      fullPath: '/captain/packages/$packageId'
+      preLoaderRoute: typeof AuthenticatedCaptainPackagesPackageIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/api/public/avatars/$': {
       id: '/api/public/avatars/$'
       path: '/api/public/avatars/$'
@@ -861,6 +881,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedBookingsDetailRoute: typeof AuthenticatedBookingsDetailRoute
   AuthenticatedTripsDetailRoute: typeof AuthenticatedTripsDetailRoute
   AuthenticatedCaptainChartersNewRoute: typeof AuthenticatedCaptainChartersNewRoute
+  AuthenticatedCaptainPackagesPackageIdRoute: typeof AuthenticatedCaptainPackagesPackageIdRoute
   AuthenticatedCaptainChartersCharterIdEditRoute: typeof AuthenticatedCaptainChartersCharterIdEditRoute
 }
 
@@ -878,6 +899,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedBookingsDetailRoute: AuthenticatedBookingsDetailRoute,
   AuthenticatedTripsDetailRoute: AuthenticatedTripsDetailRoute,
   AuthenticatedCaptainChartersNewRoute: AuthenticatedCaptainChartersNewRoute,
+  AuthenticatedCaptainPackagesPackageIdRoute:
+    AuthenticatedCaptainPackagesPackageIdRoute,
   AuthenticatedCaptainChartersCharterIdEditRoute:
     AuthenticatedCaptainChartersCharterIdEditRoute,
 }
