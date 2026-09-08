@@ -911,3 +911,7 @@ body.dc-body { margin:0; background:#072057; }
   .ang-topnav::-webkit-scrollbar { display: none; }
   .ang-topnav > button, .ang-topnav > a { padding: 8px 12px !important; font-size: 13.5px !important; }
 }
+
+/* Messages thread — hide scrollbar while keeping scroll */
+.fx-msg-thread { scrollbar-width: none; -ms-overflow-style: none; }
+.fx-msg-thread::-webkit-scrollbar { display: none; }
