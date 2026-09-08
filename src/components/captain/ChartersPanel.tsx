@@ -102,18 +102,10 @@ export function ChartersPanel({
   data: { business: any };
 }) {
   const qc = useQueryClient();
-  const [editing, setEditing] = useState<CharterDraft | null>(null);
+  const navigate = useNavigate();
   const [saveError, setSaveError] = useState<string | null>(null);
 
   const [openCharterId, setOpenCharterId] = useState<string | null>(null);
-  const [addonsFor, setAddonsFor] = useState<string | null>(null);
-  const [datesFor, setDatesFor] = useState<{
-    id: string;
-    title: string;
-    capacity: number;
-    base_price_cents: number;
-    duration_minutes: number;
-  } | null>(null);
   const [addingPkgFor, setAddingPkgFor] = useState<string | null>(null);
   const [newPkg, setNewPkg] = useState<PackageDraft>(emptyPackageDraft);
 
@@ -139,10 +131,7 @@ export function ChartersPanel({
           style={{ ...primaryBtn, opacity: boats.length === 0 ? 0.5 : 1, cursor: boats.length === 0 ? "not-allowed" : "pointer" }}
           disabled={boats.length === 0}
           title={boats.length === 0 ? "Add a boat in the Fleet tab first" : undefined}
-          onClick={() => {
-            setSaveError(null);
-            setEditing({ ...emptyCharterDraft });
-          }}
+          onClick={() => navigate({ to: "/captain/charters/new" })}
         >
           + Add new charter
         </button>
@@ -153,7 +142,7 @@ export function ChartersPanel({
         )}
       </div>
 
-      {saveError && !editing && (
+      {saveError && (
         <div
           style={{
             marginBottom: 14,
@@ -168,64 +157,10 @@ export function ChartersPanel({
         </div>
       )}
 
-      {editing && (
-        <CharterForm
-          businessId={data.business?.id ?? null}
-          draft={editing}
-          boats={boats}
-          error={saveError}
-          onChange={setEditing}
-          onCancel={() => {
-            setEditing(null);
-            setSaveError(null);
-          }}
-          onSave={async () => {
-            setSaveError(null);
-            try {
-              const charter: any = await upsertCaptainCharter({
-                data: {
-                  ...editing,
-                  target_species: editing.target_species
-                    .split(",")
-                    .map((s) => s.trim())
-                    .filter(Boolean),
-                  image_urls: editing.image_urls,
-                  slug: editing.slug || null,
-                },
-              });
-              // On create, seed one default package so the charter is bookable
-              if (charter?.id && !editing.id) {
-                await upsertCaptainService({
-                  data: {
-                    title: "Half Day",
-                    charter_id: charter.id,
-                    base_price_cents: editing.base_price_cents,
-                    capacity: editing.capacity,
-                    duration_minutes: Math.round(4 * 60),
-                    water_type: editing.water_type || null,
-                    boat_id: editing.boat_id || null,
-                    is_published: false,
-                  },
-                });
-              }
-              await qc.invalidateQueries({ queryKey: ["captain-charters"] });
-              qc.invalidateQueries({ queryKey: ["captain-dashboard"] });
-              setEditing(null);
-            } catch (err: any) {
-              setSaveError(
-                err?.message ||
-                  "We couldn't save that charter. Check the details and try again.",
-              );
-            }
-          }}
-        />
-      )}
-
-
       {chartersLoading && (
         <div style={{ color: "var(--tmut)", padding: 16, fontSize: 13 }}>Loading charters…</div>
       )}
-      {!chartersLoading && charters.length === 0 && !editing && (
+      {!chartersLoading && charters.length === 0 && (
         <div
           style={{
             color: "var(--tmut)",
@@ -246,22 +181,7 @@ export function ChartersPanel({
           isExpanded={openCharterId === c.id}
           onToggleExpand={() => setOpenCharterId(openCharterId === c.id ? null : c.id)}
           onEdit={() =>
-            setEditing({
-              id: c.id,
-              name: c.name,
-              description: c.description ?? "",
-              slug: c.slug ?? "",
-              hero_url: c.hero_url ?? "",
-              image_urls: c.image_urls ?? [],
-              boat_id: c.boat_id ?? "",
-              water_type: c.water_type ?? "",
-              target_species: Array.isArray(c.target_species) ? c.target_species.join(", ") : "",
-              base_price_cents: c.base_price_cents,
-              capacity: c.capacity,
-              duration_minutes: c.duration_minutes ?? null,
-              departure_location: "",
-              is_published: c.is_published,
-            })
+            navigate({ to: "/captain/charters/$charterId/edit", params: { charterId: c.id } })
           }
           onDelete={async () => {
             if (
@@ -287,11 +207,6 @@ export function ChartersPanel({
               setSaveError(err?.message || "We couldn't change that charter's status.");
             }
           }}
-
-          addonsFor={addonsFor}
-          setAddonsFor={setAddonsFor}
-          datesFor={datesFor}
-          setDatesFor={setDatesFor}
           addingPkgFor={addingPkgFor}
           setAddingPkgFor={setAddingPkgFor}
           newPkg={newPkg}
