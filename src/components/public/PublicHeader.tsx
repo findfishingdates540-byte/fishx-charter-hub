@@ -152,7 +152,8 @@ export function PublicHeader({
                 Sign in
               </Link>
               <Link
-                to="/charters"
+                to="/auth"
+                search={{ view: "signup" }}
                 style={{
                   display: "inline-flex",
                   alignItems: "center",
@@ -168,7 +169,7 @@ export function PublicHeader({
                   borderRadius: 30,
                 }}
               >
-                Find a charter
+                Sign up
               </Link>
             </>
           )}
