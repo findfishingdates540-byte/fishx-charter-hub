@@ -14,6 +14,7 @@ import {
   getPayoutReconciliation,
   runPayoutReconciliation,
 } from "@/lib/admin.functions";
+import { AdminTripCalendar } from "@/components/admin/AdminTripCalendar";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({
@@ -93,7 +94,7 @@ const money = (c: number) =>
 
 const day = (s?: string | null) => (s ? new Date(s).toLocaleDateString() : "—");
 
-type Tab = "verifications" | "payouts" | "reconciliation" | "disputes";
+type Tab = "verifications" | "calendar" | "payouts" | "reconciliation" | "disputes";
 
 function AdminConsole() {
   const fetchOverview = useServerFn(getAdminOverview);
@@ -180,7 +181,7 @@ function AdminConsole() {
       </div>
 
       <div style={{ display: "flex", gap: 8, marginBottom: 16, flexWrap: "wrap" }}>
-        {(["verifications", "payouts", "reconciliation", "disputes"] as Tab[]).map((k) => (
+        {(["verifications", "calendar", "payouts", "reconciliation", "disputes"] as Tab[]).map((k) => (
           <button
             key={k}
             onClick={() => setTab(k)}
@@ -221,6 +222,8 @@ function AdminConsole() {
           ))}
         </div>
       )}
+
+      {tab === "calendar" && <AdminTripCalendar />}
 
       {tab === "payouts" && (
         <div style={{ ...card, overflowX: "auto", padding: 0 }}>
