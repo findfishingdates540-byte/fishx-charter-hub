@@ -153,6 +153,7 @@ export function AvailabilityCalendar({
 
   return (
     <div
+      className="fx-avail"
       style={{
         border: "1px solid rgba(255,255,255,.09)",
         borderRadius: 18,
