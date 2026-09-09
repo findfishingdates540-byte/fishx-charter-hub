@@ -330,8 +330,8 @@ function BookingsPanel() {
               fontWeight: 600,
               cursor: "pointer",
               border: "1px solid var(--line)",
-              background: filter === f.key ? "var(--ink)" : "transparent",
-              color: filter === f.key ? "#F0F2F5" : "var(--tmut)",
+              background: filter === f.key ? "var(--sand, #2DE2F2)" : "transparent",
+              color: filter === f.key ? "#04121B" : "var(--tmut)",
             }}
           >
             {f.label}
