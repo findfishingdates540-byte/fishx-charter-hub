@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { listCaptainCharters, upsertCaptainCharter } from "@/lib/captain-charters.functions";
+import { upsertCaptainService } from "@/lib/captain-management.functions";
 import { listCaptainBoats } from "@/lib/captain-fleet.functions";
 import { getCaptainDashboard } from "@/lib/captain-dashboard.functions";
 import { CaptainPageShell } from "@/components/captain/CaptainPageShell";
@@ -182,7 +183,7 @@ function EditCharterPage() {
             Packages ({charter?.packages?.length ?? 0})
           </div>
           <button
-            onClick={backToCharters}
+            onClick={addPackage}
             style={{
               border: "1px solid var(--line)",
               background: "transparent",
