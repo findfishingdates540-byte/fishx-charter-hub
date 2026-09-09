@@ -183,7 +183,16 @@ export function CaptainDashboard({ initialTab }: { initialTab?: string } = {}) {
         </header>
 
         <main className="fx-main" style={{ flex: 1, padding: "30px 34px 48px", maxWidth: 1180, width: "100%" }}>
-          {tab === "overview" && <OverviewPanel data={data} onGoto={setTab} />}
+          {tab === "overview" && (
+            <OverviewPanel
+              data={data}
+              onGoto={setTab}
+              onGotoSettings={(section) => {
+                setSettingsSection(section);
+                setTab("settings");
+              }}
+            />
+          )}
           {tab === "bookings" && <BookingsPanel />}
           {tab === "services" && <ChartersPanel data={data} />}
           {tab === "blockouts" && <BlockoutDatesPanel />}
