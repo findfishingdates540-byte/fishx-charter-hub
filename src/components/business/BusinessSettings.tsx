@@ -41,10 +41,25 @@ const OP_SECTIONS: Array<{ key: string; label: string; hint: string }> = [
   { key: "payouts", label: "Payouts", hint: "Bank details & Stripe status" },
 ];
 
-export function BusinessSettings({ businessId }: { businessId: string }) {
+export function BusinessSettings({
+  businessId,
+  initialSection,
+}: {
+  businessId: string;
+  initialSection?: string;
+}) {
   const qc = useQueryClient();
   const fetchSettings = useServerFn(getBusinessSettings);
-  const [active, setActive] = useState<string>("profile");
+  const [active, setActive] = useState<string>(
+    initialSection && OP_SECTIONS.some((s) => s.key === initialSection) ? initialSection : "profile",
+  );
+
+  // Deep links from the readiness checklist ("Fix →") open the matching section.
+  useEffect(() => {
+    if (initialSection && OP_SECTIONS.some((s) => s.key === initialSection)) {
+      setActive(initialSection);
+    }
+  }, [initialSection]);
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["business-settings", businessId],

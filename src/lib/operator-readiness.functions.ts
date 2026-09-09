@@ -118,7 +118,7 @@ export const getOperatorReadiness = createServerFn({ method: "GET" })
           : "Add a cover photo, description, city and contact details.",
         done: profileOk,
         blocking: false,
-        navKey: "settings",
+        navKey: "profile",
       },
       {
         key: "verification",
@@ -128,7 +128,7 @@ export const getOperatorReadiness = createServerFn({ method: "GET" })
           : "Submit documents to earn the verified badge and rank higher.",
         done: Boolean(biz.verified_at),
         blocking: false,
-        navKey: "settings",
+        navKey: "verification",
       },
     ];
 

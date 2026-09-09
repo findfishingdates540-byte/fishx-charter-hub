@@ -80,6 +80,7 @@ export function MarinaDashboard({
   operatorName: string;
 }) {
   const { data } = useSuspenseQuery(overviewQO(businessId));
+  const [settingsSection, setSettingsSection] = useState<string>("profile");
   const [active, setActive] = useState("overview");
   const pending = data.reservations.filter((r: Reservation) => r.status === "pending").length;
 
@@ -138,7 +139,19 @@ export function MarinaDashboard({
     >
       {active === "overview" && (
         <>
-          <ReadinessGate businessId={businessId} onNav={setActive} compact />
+          <ReadinessGate
+            businessId={businessId}
+            onNav={(k) => {
+              // Profile and verification are both fixed inside Settings.
+              if (k === "profile" || k === "verification") {
+                setSettingsSection(k === "verification" ? "visibility" : "profile");
+                setActive("settings");
+                return;
+              }
+              setActive(k);
+            }}
+            compact
+          />
           <Overview businessId={businessId} data={data} />
         </>
       )}
@@ -171,7 +184,9 @@ export function MarinaDashboard({
         </div>
       )}
       {active === "messages" && <BusinessInbox theme="dark" businessId={businessId} />}
-      {active === "settings" && <BusinessSettings businessId={businessId} />}
+      {active === "settings" && (
+        <BusinessSettings businessId={businessId} initialSection={settingsSection} />
+      )}
     </OperatorShell>
   );
 }

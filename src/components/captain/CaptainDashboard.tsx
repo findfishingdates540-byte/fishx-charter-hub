@@ -68,6 +68,8 @@ export function CaptainDashboard({ initialTab }: { initialTab?: string } = {}) {
   const [tab, setTab] = useState<Tab>(
     TABS.includes(initialTab as Tab) ? (initialTab as Tab) : "overview",
   );
+  // Which Settings section to open when arriving from the readiness checklist.
+  const [settingsSection, setSettingsSection] = useState<string>("profile");
   const [accepting, setAccepting] = useState(true);
   const [navOpen, setNavOpen] = useState(false);
   const navigate = useNavigate();
@@ -183,14 +185,23 @@ export function CaptainDashboard({ initialTab }: { initialTab?: string } = {}) {
         </header>
 
         <main className="fx-main" style={{ flex: 1, padding: "30px 34px 48px", maxWidth: 1180, width: "100%" }}>
-          {tab === "overview" && <OverviewPanel data={data} onGoto={setTab} />}
+          {tab === "overview" && (
+            <OverviewPanel
+              data={data}
+              onGoto={setTab}
+              onGotoSettings={(section) => {
+                setSettingsSection(section);
+                setTab("settings");
+              }}
+            />
+          )}
           {tab === "bookings" && <BookingsPanel />}
           {tab === "services" && <ChartersPanel data={data} />}
           {tab === "blockouts" && <BlockoutDatesPanel />}
           {tab === "fleet" && <FleetPanel businessId={data.business?.id ?? null} />}
           {tab === "messages" && <CaptainMessages businessId={data.business?.id ?? null} />}
           {tab === "earnings" && <EarningsPanel businessId={data.business?.id ?? null} />}
-          {tab === "settings" && <SettingsPanel data={data} />}
+          {tab === "settings" && <SettingsPanel data={data} section={settingsSection} />}
         </main>
       </div>
     </div>
@@ -234,17 +245,40 @@ type CaptainData = Awaited<ReturnType<typeof getCaptainDashboard>>;
 
 /* ---------------- OVERVIEW ---------------- */
 
-function OverviewPanel({ data, onGoto }: { data: CaptainData; onGoto: (t: Tab) => void }) {
+function OverviewPanel({
+  data,
+  onGoto,
+  onGotoSettings,
+}: {
+  data: CaptainData;
+  onGoto: (t: Tab) => void;
+  onGotoSettings: (section: string) => void;
+}) {
   const { stats, upcoming, services } = data;
+  // Each readiness item opens the exact place where it can be fixed.
   const navToTab: Record<string, Tab> = {
-    payouts: "settings",
     listings: "services",
     slots: "services",
-    settings: "settings",
+  };
+  const navToSettingsSection: Record<string, string> = {
+    payouts: "payouts",
+    verification: "visibility",
+    profile: "profile",
+    settings: "profile",
   };
   return (
     <div>
-      <ReadinessGate onNav={(k) => onGoto(navToTab[k] ?? "settings")} compact />
+      <ReadinessGate
+        onNav={(k) => {
+          const tab = navToTab[k];
+          if (tab) {
+            onGoto(tab);
+            return;
+          }
+          onGotoSettings(navToSettingsSection[k] ?? "profile");
+        }}
+        compact
+      />
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 18, marginBottom: 22 }}>
         <KpiCard label="This month" value={money(stats.grossCents)} sub="Gross earnings" />
         <KpiCard label="Upcoming" value={String(stats.upcomingCount)} sub="Trips booked" />
@@ -431,12 +465,12 @@ function EarningsPanel({ businessId }: { businessId: string | null }) {
 
 /* ---------------- MESSAGES ---------------- */
 
-function SettingsPanel({ data }: { data: CaptainData }) {
+function SettingsPanel({ data, section }: { data: CaptainData; section?: string }) {
   const biz = data.business;
   if (!biz) return <Empty text="Complete onboarding to set up your business." />;
   return (
     <div style={{ background: "#1C2936", margin: -4, padding: 4, borderRadius: 18 }}>
-      <BusinessSettings businessId={biz.id} />
+      <BusinessSettings businessId={biz.id} initialSection={section} />
     </div>
   );
 }
