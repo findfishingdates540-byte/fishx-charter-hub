@@ -199,7 +199,7 @@ export function CaptainDashboard({ initialTab }: { initialTab?: string } = {}) {
           {tab === "fleet" && <FleetPanel businessId={data.business?.id ?? null} />}
           {tab === "messages" && <CaptainMessages businessId={data.business?.id ?? null} />}
           {tab === "earnings" && <EarningsPanel businessId={data.business?.id ?? null} />}
-          {tab === "settings" && <SettingsPanel data={data} />}
+          {tab === "settings" && <SettingsPanel data={data} section={settingsSection} />}
         </main>
       </div>
     </div>
