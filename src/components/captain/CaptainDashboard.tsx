@@ -60,9 +60,14 @@ const shell: React.CSSProperties = {
   fontFamily: "var(--sans)",
 };
 
-export function CaptainDashboard() {
+const TABS: Tab[] = ["overview", "bookings", "services", "blockouts", "fleet", "messages", "earnings", "settings"];
+
+export function CaptainDashboard({ initialTab }: { initialTab?: string } = {}) {
   const { data } = useSuspenseQuery(captainDashboardQO);
-  const [tab, setTab] = useState<Tab>("overview");
+  // Editor pages return here with ?tab=services, so honour the requested tab.
+  const [tab, setTab] = useState<Tab>(
+    TABS.includes(initialTab as Tab) ? (initialTab as Tab) : "overview",
+  );
   const [accepting, setAccepting] = useState(true);
   const [navOpen, setNavOpen] = useState(false);
   const navigate = useNavigate();
