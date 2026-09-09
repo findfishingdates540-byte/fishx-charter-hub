@@ -57,6 +57,7 @@ export function GuideDashboard({
   operatorName: string;
 }) {
   const { data } = useSuspenseQuery(overviewQO(businessId));
+  const [settingsSection, setSettingsSection] = useState<string>("profile");
   const [active, setActive] = useState("overview");
 
   const nav: OperatorNavItem[] = [
@@ -110,7 +111,19 @@ export function GuideDashboard({
     >
       {active === "overview" && (
         <>
-          <ReadinessGate businessId={businessId} onNav={setActive} compact />
+          <ReadinessGate
+            businessId={businessId}
+            onNav={(k) => {
+              // Profile and verification are both fixed inside Settings.
+              if (k === "profile" || k === "verification") {
+                setSettingsSection(k === "verification" ? "visibility" : "profile");
+                setActive("settings");
+                return;
+              }
+              setActive(k);
+            }}
+            compact
+          />
           <Overview data={data} />
         </>
       )}
@@ -146,7 +159,9 @@ export function GuideDashboard({
         </div>
       )}
       {active === "messages" && <BusinessInbox theme="dark" businessId={businessId} />}
-      {active === "settings" && <BusinessSettings businessId={businessId} />}
+      {active === "settings" && (
+        <BusinessSettings businessId={businessId} initialSection={settingsSection} />
+      )}
     </OperatorShell>
   );
 }
