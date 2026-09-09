@@ -238,7 +238,7 @@ function Dashboard() {
       const key = biz.category_key ?? roleCategoryKey(primaryRole);
 
 
-      if (!key || key === "charter") return <CaptainDashboard />;
+      if (!key || key === "charter") return <CaptainDashboard initialTab={tab} />;
       if (key === "marina" || key === "lodge")
         return (
           <MarinaDashboard
