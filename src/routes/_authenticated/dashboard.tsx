@@ -210,7 +210,7 @@ function Dashboard() {
   const businesses = Array.isArray(boot?.businesses) ? boot.businesses : [];
   const profile = boot?.profile ?? null;
   const primaryRole = hasPrimaryRole(roles);
-  const { as } = Route.useSearch();
+  const { as, tab } = Route.useSearch();
   // Nobody is ever auto-pushed into operator setup. Setting up a business is
   // an explicit action from the dashboard, so anglers land straight on their
   // own dashboard.
@@ -238,7 +238,7 @@ function Dashboard() {
       const key = biz.category_key ?? roleCategoryKey(primaryRole);
 
 
-      if (!key || key === "charter") return <CaptainDashboard />;
+      if (!key || key === "charter") return <CaptainDashboard initialTab={tab} />;
       if (key === "marina" || key === "lodge")
         return (
           <MarinaDashboard
