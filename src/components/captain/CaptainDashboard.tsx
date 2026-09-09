@@ -245,17 +245,40 @@ type CaptainData = Awaited<ReturnType<typeof getCaptainDashboard>>;
 
 /* ---------------- OVERVIEW ---------------- */
 
-function OverviewPanel({ data, onGoto }: { data: CaptainData; onGoto: (t: Tab) => void }) {
+function OverviewPanel({
+  data,
+  onGoto,
+  onGotoSettings,
+}: {
+  data: CaptainData;
+  onGoto: (t: Tab) => void;
+  onGotoSettings: (section: string) => void;
+}) {
   const { stats, upcoming, services } = data;
+  // Each readiness item opens the exact place where it can be fixed.
   const navToTab: Record<string, Tab> = {
-    payouts: "settings",
     listings: "services",
     slots: "services",
-    settings: "settings",
+  };
+  const navToSettingsSection: Record<string, string> = {
+    payouts: "payouts",
+    verification: "visibility",
+    profile: "profile",
+    settings: "profile",
   };
   return (
     <div>
-      <ReadinessGate onNav={(k) => onGoto(navToTab[k] ?? "settings")} compact />
+      <ReadinessGate
+        onNav={(k) => {
+          const tab = navToTab[k];
+          if (tab) {
+            onGoto(tab);
+            return;
+          }
+          onGotoSettings(navToSettingsSection[k] ?? "profile");
+        }}
+        compact
+      />
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 18, marginBottom: 22 }}>
         <KpiCard label="This month" value={money(stats.grossCents)} sub="Gross earnings" />
         <KpiCard label="Upcoming" value={String(stats.upcomingCount)} sub="Trips booked" />
