@@ -80,6 +80,49 @@ function EditCharterPage() {
   const backToCharters = () =>
     navigate({ to: "/dashboard", search: { tab: "services" } });
 
+  const saveCharter = async () => {
+    await upsertCaptainCharter({
+      data: {
+        ...draft,
+        target_species: draft.target_species
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean),
+        image_urls: draft.image_urls,
+        slug: draft.slug || null,
+      },
+    });
+    await qc.invalidateQueries({ queryKey: ["captain-charters"] });
+    qc.invalidateQueries({ queryKey: ["captain-dashboard"] });
+  };
+
+  // Adding a package must never silently discard the charter edits on screen:
+  // save them first, then create the package and open its own editor.
+  const addPackage = async () => {
+    setError(null);
+    try {
+      await saveCharter();
+      const pkg: any = await upsertCaptainService({
+        data: {
+          title: "New package",
+          charter_id: charterId,
+          base_price_cents: draft.base_price_cents,
+          capacity: draft.capacity,
+          duration_minutes: draft.duration_minutes ?? 240,
+          water_type: draft.water_type || null,
+          boat_id: draft.boat_id || null,
+          is_published: false,
+        },
+      });
+      await qc.invalidateQueries({ queryKey: ["captain-charters"] });
+      if (pkg?.id) {
+        navigate({ to: "/captain/packages/$packageId", params: { packageId: pkg.id } });
+      }
+    } catch (err: any) {
+      setError(err?.message || "We couldn't add a package. Please try again.");
+    }
+  };
+
   return (
     <CaptainPageShell
       title="Edit charter trip"
