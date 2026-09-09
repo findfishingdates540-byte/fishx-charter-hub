@@ -465,12 +465,12 @@ function EarningsPanel({ businessId }: { businessId: string | null }) {
 
 /* ---------------- MESSAGES ---------------- */
 
-function SettingsPanel({ data }: { data: CaptainData }) {
+function SettingsPanel({ data, section }: { data: CaptainData; section?: string }) {
   const biz = data.business;
   if (!biz) return <Empty text="Complete onboarding to set up your business." />;
   return (
     <div style={{ background: "#1C2936", margin: -4, padding: 4, borderRadius: 18 }}>
-      <BusinessSettings businessId={biz.id} />
+      <BusinessSettings businessId={biz.id} initialSection={section} />
     </div>
   );
 }
