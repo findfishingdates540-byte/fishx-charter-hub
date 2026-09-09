@@ -68,6 +68,8 @@ export function CaptainDashboard({ initialTab }: { initialTab?: string } = {}) {
   const [tab, setTab] = useState<Tab>(
     TABS.includes(initialTab as Tab) ? (initialTab as Tab) : "overview",
   );
+  // Which Settings section to open when arriving from the readiness checklist.
+  const [settingsSection, setSettingsSection] = useState<string>("profile");
   const [accepting, setAccepting] = useState(true);
   const [navOpen, setNavOpen] = useState(false);
   const navigate = useNavigate();
