@@ -10,6 +10,10 @@ const search = z.object({
   /** Departure + party carried over from a storefront booking form. */
   slot: z.string().uuid().optional(),
   party: z.coerce.number().int().min(1).max(60).optional(),
+  /** Storefront handoff opens directly on the dedicated availability step. */
+  start: z.string().optional(),
+  /** Safe route parameter used by the booking flow's back link. */
+  storefront: z.string().optional(),
   paid: z.string().optional(),
   canceled: z.string().optional(),
   booking_id: z.string().optional(),
@@ -57,13 +61,15 @@ function BookingError({ error }: { error: Error }) {
 }
 
 function RouteComponent() {
-  const { service_id, base, slot, party } = Route.useSearch();
+  const { service_id, base, slot, party, start, storefront } = Route.useSearch();
   return (
     <BookingFlow
       serviceId={service_id}
       baseId={base ?? service_id}
       initialSlotId={slot}
       initialParty={party}
+      initialStep={start === "dates" ? "dates" : undefined}
+      storefrontSlug={storefront}
     />
   );
 }

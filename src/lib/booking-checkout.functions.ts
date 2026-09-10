@@ -19,7 +19,7 @@ export const getCheckoutContext = createServerFn({ method: "GET" })
     const { data: svc, error } = await supabase
       .from("bookable_services")
       .select(
-        "id,kind,title,hero_url,duration_minutes,base_price_cents,capacity,includes,departure_location,water_type,target_species,boat_id,business_id,instant_book,accept_window_hours,cancellation_policy,boat:boats(name,make,model,length_ft,capacity,home_port,description,hero_image_url,image_urls),business:businesses(id,slug,name,city,region,logo_url,hero_url,created_by,deposit_rate,commission_rate)",
+        "id,kind,title,hero_url,duration_minutes,base_price_cents,capacity,includes,departure_location,water_type,target_species,boat_id,business_id,charter_id,instant_book,accept_window_hours,cancellation_policy,boat:boats(name,make,model,length_ft,capacity,home_port,description,hero_image_url,image_urls),charter:charters(id,name,boat_id,hero_url,image_urls,boat:boats(name,make,model,length_ft,capacity,home_port,description,hero_image_url,image_urls)),business:businesses(id,slug,name,city,region,logo_url,hero_url,created_by,deposit_rate,commission_rate)",
       )
       .eq("id", data.serviceId)
       .maybeSingle();
@@ -45,16 +45,21 @@ export const getCheckoutContext = createServerFn({ method: "GET" })
       }))
       .filter((s) => s.seatsLeft > 0);
 
-    // Sibling trip packages from the same operator — the angler can swap
-    // between them on the detail page without losing their place.
+    // Sibling packages belong to the same charter, not merely the same operator.
+    // This prevents packages for another boat/charter appearing in this flow.
+    let packagesQuery = supabase
+      .from("bookable_services")
+      .select("id,title,duration_minutes,base_price_cents,capacity,hero_url,target_species,description")
+      .eq("is_published", true)
+      .in("kind", ["charter_trip", "guided_trip"])
+      .order("base_price_cents", { ascending: true })
+      .limit(12);
+    packagesQuery = svc.charter_id
+      ? packagesQuery.eq("charter_id", svc.charter_id)
+      : packagesQuery.eq("business_id", svc.business_id).eq("boat_id", svc.boat_id ?? "00000000-0000-0000-0000-000000000000");
+
     const [packagesRes, addonsRes] = await Promise.all([
-      supabase
-        .from("bookable_services")
-        .select("id,title,duration_minutes,base_price_cents,capacity,hero_url,target_species,description")
-        .eq("business_id", svc.business_id)
-        .eq("is_published", true)
-        .order("base_price_cents", { ascending: true })
-        .limit(12),
+      packagesQuery,
       (supabase as any)
         .from("service_addons")
         .select("id,title,description,price_cents,unit,sort_order,max_per_booking,capacity_per_slot,lead_time_hours")

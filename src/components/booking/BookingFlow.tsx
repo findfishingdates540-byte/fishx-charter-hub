@@ -131,16 +131,20 @@ export function BookingFlow({
   baseId,
   initialSlotId,
   initialParty,
+  initialStep,
+  storefrontSlug,
 }: {
   serviceId: string;
   baseId?: string;
   initialSlotId?: string;
   initialParty?: number;
+  initialStep?: "dates";
+  storefrontSlug?: string;
 }) {
   const navigate = useNavigate();
   const { data: svc } = useSuspenseQuery(checkoutQuery(serviceId));
   const business = svc.business as { id: string; slug: string; name: string; city: string | null; region: string | null; logo_url: string | null; hero_url: string | null; deposit_rate?: number | null; commission_rate?: number | null } | null;
-  const boat = (svc.boat ?? null) as {
+  const boat = (svc.boat ?? (svc as any).charter?.boat ?? null) as {
     name: string | null; make: string | null; model: string | null; length_ft: number | null;
     capacity: number | null; home_port: string | null; description: string | null;
     hero_image_url: string | null; image_urls: string[] | null;
@@ -150,7 +154,7 @@ export function BookingFlow({
   const openSlots = svc.openSlots ?? [];
   /** A departure carried over from a storefront booking form skips straight to extras. */
   const preSlot = initialSlotId && openSlots.some((s: any) => s.id === initialSlotId) ? initialSlotId : "";
-  const [step, setStep] = useState<Step>(preSlot ? "extras" : "detail");
+  const [step, setStep] = useState<Step>(preSlot ? "extras" : initialStep === "dates" ? "dates" : "detail");
   const [takenSlot, setTakenSlot] = useState<{ label: string } | null>(null);
   const [payBlocked, setPayBlocked] = useState<string | null>(null);
 
@@ -776,7 +780,17 @@ export function BookingFlow({
         {/* ==== DATE & TIME BLOCK ==== */}
         {step === "dates" && (
           <div>
-            <button onClick={() => { setStep("detail"); window.scrollTo(0, 0); }} style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "transparent", border: 0, color: V.tmut, fontSize: 13.5, fontWeight: 600, cursor: "pointer", marginBottom: 16 }}>← Back to trip</button>
+            {storefrontSlug ? (
+              <Link
+                to="/b/$slug"
+                params={{ slug: storefrontSlug }}
+                style={{ display: "inline-flex", alignItems: "center", gap: 8, color: V.tmut, fontSize: 13.5, fontWeight: 600, textDecoration: "none", marginBottom: 16 }}
+              >
+                ← Back to storefront
+              </Link>
+            ) : (
+              <button onClick={() => { setStep("detail"); window.scrollTo(0, 0); }} style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "transparent", border: 0, color: V.tmut, fontSize: 13.5, fontWeight: 600, cursor: "pointer", marginBottom: 16 }}>← Back to trip</button>
+            )}
             <h1 style={{ fontFamily: V.serif, fontWeight: 600, fontSize: 34, margin: "0 0 6px" }}>Select date &amp; time</h1>
             <p style={{ fontSize: 14.5, color: V.tmut, margin: "0 0 24px", maxWidth: 620 }}>
               Only dates with an open departure are selectable. Each departure is an exclusive time

@@ -58,11 +58,10 @@ export const getBusinessProfile = createServerFn({ method: "GET" })
     if (error) throw new Response(error.message, { status: 500 });
     if (!biz) throw new Response("Not found", { status: 404 });
 
-    const nowIso = new Date().toISOString();
-    const [servicesRes, reviewsRes, boatsRes, productsRes, slipsRes, postsRes] = await Promise.all([
+    const [servicesRes, reviewsRes, boatsRes, chartersRes, productsRes, slipsRes, postsRes] = await Promise.all([
       sb
         .from("bookable_services")
-        .select("id,slug,kind,title,description,hero_url,duration_minutes,capacity,base_price_cents,deposit_cents,target_species,departure_location")
+        .select("id,slug,kind,title,description,hero_url,duration_minutes,capacity,base_price_cents,deposit_cents,target_species,departure_location,charter_id,boat_id")
         .eq("business_id", biz.id)
         .eq("is_published", true)
         .order("base_price_cents", { ascending: true })
@@ -79,6 +78,13 @@ export const getBusinessProfile = createServerFn({ method: "GET" })
         .eq("business_id", biz.id)
         .eq("is_active", true)
         .limit(12),
+      sb
+        .from("charters")
+        .select("id,name,boat_id")
+        .eq("business_id", biz.id)
+        .eq("is_published", true)
+        .order("created_at", { ascending: true })
+        .limit(24),
       sb
         .from("inventory_products")
         .select("id,title,description,category,price_cents,compare_at_cents,stock_qty,images")
@@ -118,29 +124,6 @@ export const getBusinessProfile = createServerFn({ method: "GET" })
     ratings.forEach((r) => { if (r >= 1 && r <= 5) buckets[r - 1]++; });
 
     const services = servicesRes.data ?? [];
-    const serviceIds = services.map((s) => s.id);
-    const slotsRes = serviceIds.length
-      ? await sb
-          .from("service_availability")
-          .select("id,service_id,starts_at,ends_at,seats_available,seats_booked,price_cents")
-          .in("service_id", serviceIds)
-          .gte("starts_at", nowIso)
-          .eq("is_blackout", false)
-          .order("starts_at")
-          .limit(40)
-      : { data: [] as any[] };
-    const upcoming = (slotsRes.data ?? [])
-      .filter((s) => (s.seats_available ?? 0) - (s.seats_booked ?? 0) > 0)
-      .slice(0, 8)
-      .map((s) => ({
-        id: s.id,
-        serviceId: s.service_id,
-        serviceTitle: services.find((x) => x.id === s.service_id)?.title ?? "Trip",
-        startsAt: s.starts_at,
-        endsAt: s.ends_at,
-        seatsLeft: Math.max((s.seats_available ?? 0) - (s.seats_booked ?? 0), 0),
-        priceCents: s.price_cents ?? services.find((x) => x.id === s.service_id)?.base_price_cents ?? 0,
-      }));
 
     // Operator media lives in a private bucket — resolve to signed URLs so the
     // storefront renders fleet and listing photos on every host.
@@ -171,9 +154,9 @@ export const getBusinessProfile = createServerFn({ method: "GET" })
       business: biz,
       services: servicesSigned,
       boats,
+      charters: chartersRes.data ?? [],
       products,
       slips: slipsRes.data ?? [],
-      upcoming,
       posts: postsRes.data ?? [],
       reviews: reviews.map((r) => ({
         ...r,
