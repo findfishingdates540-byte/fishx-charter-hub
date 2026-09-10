@@ -167,10 +167,10 @@ export function AnglerDashboard() {
               Marketplace ↗
             </Link>
           </nav>
-          <div className="ang-topactions" style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 14 }}>
+          <div className="ang-topactions" style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 14, flex: "0 0 auto", minWidth: 0 }}>
             <NotificationBell />
 
-            <label className="ang-topsearch" style={{ display: "flex", alignItems: "center", gap: 9, background: "rgba(255,255,255,.06)", border: "1px solid var(--lined)", borderRadius: 30, padding: "9px 15px", width: 230 }}>
+            <label className="ang-topsearch" style={{ display: "flex", alignItems: "center", gap: 9, background: "rgba(255,255,255,.06)", border: "1px solid var(--lined)", borderRadius: 30, padding: "9px 15px", maxWidth: 180, width: "100%", flex: "0 1 180px", minWidth: 0 }}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#93a7b7" strokeWidth="1.8">
                 <circle cx="11" cy="11" r="7" />
                 <path d="m21 21-4.3-4.3" />
