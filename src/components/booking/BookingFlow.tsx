@@ -453,7 +453,7 @@ export function BookingFlow({
       {/* TOP BAR */}
       <header style={{ position: "sticky", top: 0, zIndex: 30, background: V.navy, color: V.ond }}>
         <div style={{ maxWidth: 1180, margin: "0 auto", padding: "0 28px", height: 64, display: "flex", alignItems: "center", gap: 24 }}>
-          <Link to="/marketplace" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none", color: V.ond }}>
+          <Link to="/dashboard" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none", color: V.ond }}>
             <span style={{ width: 11, height: 11, background: V.sand, transform: "rotate(45deg)", display: "inline-block", borderRadius: 1 }} />
             <span style={{ fontFamily: V.serif, fontWeight: 600, fontSize: 20, letterSpacing: ".02em", whiteSpace: "nowrap" }}>FISH-X.COM</span>
           </Link>
