@@ -1,8 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
-import { getPublicServiceAvailability } from "@/lib/businesses.functions";
 
 type Svc = {
   id: string;
@@ -41,53 +38,16 @@ const label: React.CSSProperties = {
  * selection already made.
  */
 export function StorefrontBooking({
-  services,
-  selectedServiceId,
-  onSelectService,
+  service,
+  storefrontSlug,
 }: {
-  services: Svc[];
-  selectedServiceId: string | null;
-  onSelectService: (id: string) => void;
+  service: Svc | null;
+  storefrontSlug: string;
 }) {
   const navigate = useNavigate();
-  const loadAvailability = useServerFn(getPublicServiceAvailability);
-  const serviceId = selectedServiceId ?? services[0]?.id ?? null;
-  const service = services.find((s) => s.id === serviceId) ?? null;
-
-  const availability = useQuery({
-    queryKey: ["storefront-availability", serviceId],
-    enabled: Boolean(serviceId),
-    queryFn: () => loadAvailability({ data: { serviceId: serviceId as string } }),
-    staleTime: 60_000,
-  });
-
-  const slots = availability.data?.slots ?? [];
-  const [slotId, setSlotId] = useState("");
   const [party, setParty] = useState(2);
-
-  // Reset the departure whenever the trip changes or new availability lands.
-  useEffect(() => {
-    setSlotId((cur) => (slots.some((s) => s.id === cur) ? cur : ""));
-  }, [slots]);
-
-  const days = useMemo(() => {
-    const map = new Map<string, typeof slots>();
-    for (const s of slots) {
-      const key = new Date(s.startsAt).toISOString().slice(0, 10);
-      map.set(key, [...(map.get(key) ?? []), s]);
-    }
-    return [...map.entries()];
-  }, [slots]);
-
-  const [day, setDay] = useState("");
-  useEffect(() => {
-    setDay((cur) => (days.some(([d]) => d === cur) ? cur : days[0]?.[0] ?? ""));
-  }, [days]);
-
-  const daySlots = days.find(([d]) => d === day)?.[1] ?? [];
-  const slot = slots.find((s) => s.id === slotId) ?? null;
-  const maxParty = Math.max(1, Math.min(slot?.seatsLeft ?? service?.capacity ?? 6, service?.capacity ?? 60));
-  const price = slot?.priceCents ?? service?.base_price_cents ?? 0;
+  const maxParty = Math.max(1, Math.min(service?.capacity ?? 6, 60));
+  const price = service?.base_price_cents ?? 0;
 
   if (!service) {
     return (
@@ -112,68 +72,14 @@ export function StorefrontBooking({
 
       <div style={{ display: "grid", gap: 14 }}>
         <div>
-          <span style={label}>Trip</span>
-          <select
-            value={service.id}
-            onChange={(e) => onSelectService(e.target.value)}
-            style={field}
-          >
-            {services.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.title} — {fmtPrice(s.base_price_cents)}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div>
-          <span style={label}>Date</span>
-          {availability.isLoading ? (
-            <div style={{ ...field, color: "#92A0AB" }}>Loading dates…</div>
-          ) : days.length === 0 ? (
-            <div style={{ ...field, color: "#92A0AB" }}>No dates released yet</div>
-          ) : (
-            <select value={day} onChange={(e) => { setDay(e.target.value); setSlotId(""); }} style={field}>
-              {days.map(([d, list]) => (
-                <option key={d} value={d}>
-                  {new Date(`${d}T12:00:00`).toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" })}
-                  {` · ${list.length} departure${list.length === 1 ? "" : "s"}`}
-                </option>
-              ))}
-            </select>
-          )}
-        </div>
-
-        {daySlots.length > 0 && (
-          <div>
-            <span style={label}>Departure</span>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-              {daySlots.map((s) => {
-                const active = s.id === slotId;
-                return (
-                  <button
-                    key={s.id}
-                    type="button"
-                    onClick={() => setSlotId(s.id)}
-                    style={{
-                      background: active ? "#2DE2F2" : "#1C2936",
-                      color: active ? "#04121B" : "#F0F2F5",
-                      border: `1px solid ${active ? "#2DE2F2" : "rgba(255,255,255,.1)"}`,
-                      borderRadius: 10,
-                      padding: "9px 12px",
-                      fontSize: 12.5,
-                      fontWeight: 700,
-                      cursor: "pointer",
-                    }}
-                  >
-                    {new Date(s.startsAt).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })}
-                    <span style={{ fontWeight: 500, opacity: 0.75 }}> · {s.seatsLeft} left</span>
-                  </button>
-                );
-              })}
-            </div>
+          <span style={label}>Selected package</span>
+          <div style={{ ...field, lineHeight: 1.45 }}>
+            <strong>{service.title}</strong>
+            <span style={{ display: "block", color: "#92A0AB", fontSize: 12, marginTop: 3 }}>
+              {service.duration_minutes ? `${Math.round(service.duration_minutes / 60)} hr · ` : ""}{fmtPrice(service.base_price_cents)} per trip
+            </span>
           </div>
-        )}
+        </div>
 
         <div>
           <span style={label}>Guests</span>
@@ -187,16 +93,15 @@ export function StorefrontBooking({
 
         <button
           type="button"
-          disabled={!slotId}
           onClick={() =>
             navigate({
               to: "/booking",
-              search: { service_id: service.id, slot: slotId, party },
+              search: { service_id: service.id, party, start: "dates", storefront: storefrontSlug },
             })
           }
           style={{
-            background: slotId ? "#2DE2F2" : "#1C2936",
-            color: slotId ? "#04121B" : "#5f7080",
+            background: "#2DE2F2",
+            color: "#04121B",
             border: 0,
             borderRadius: 12,
             padding: "14px 16px",
@@ -204,10 +109,10 @@ export function StorefrontBooking({
             fontWeight: 800,
             letterSpacing: ".12em",
             textTransform: "uppercase",
-            cursor: slotId ? "pointer" : "not-allowed",
+            cursor: "pointer",
           }}
         >
-          {slotId ? "Continue to checkout" : "Pick a departure"}
+          Pick a departure
         </button>
       </div>
 
