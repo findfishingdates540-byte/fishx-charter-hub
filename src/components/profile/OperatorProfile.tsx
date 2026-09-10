@@ -82,6 +82,8 @@ type Service = {
   deposit_cents: number | null;
   target_species: string[] | null;
   departure_location: string | null;
+  charter_id: string | null;
+  boat_id: string | null;
 };
 
 type Review = {
@@ -147,15 +149,7 @@ type Slip = {
   status: string;
 };
 
-type Departure = {
-  id: string;
-  serviceId: string;
-  serviceTitle: string;
-  startsAt: string;
-  endsAt: string;
-  seatsLeft: number;
-  priceCents: number;
-};
+type Charter = { id: string; name: string; boat_id: string | null };
 
 type Post = { id: string; body: string; media_json: any; created_at: string };
 
@@ -166,9 +160,9 @@ type Props = {
   ratingSummary: { average: number; count: number; buckets: number[] };
   variant: "captain" | "guide";
   boats?: Boat[];
+  charters?: Charter[];
   products?: Product[];
   slips?: Slip[];
-  upcoming?: Departure[];
   posts?: Post[];
 };
 
@@ -200,13 +194,39 @@ export function OperatorProfile({
   ratingSummary,
   variant,
   boats = [],
+  charters = [],
   products = [],
   slips = [],
-  upcoming = [],
   posts = [],
 }: Props) {
-  const [selectedServiceId, setSelectedServiceId] = useState<string | null>(services[0]?.id ?? null);
-  const selected = useMemo(() => services.find((s) => s.id === selectedServiceId) ?? services[0], [services, selectedServiceId]);
+  const isTripStorefront = variant === "captain" || variant === "guide";
+  const storefrontServices = useMemo(
+    () => isTripStorefront ? services.filter((s) => s.kind === "charter_trip" || s.kind === "guided_trip") : services,
+    [isTripStorefront, services],
+  );
+  const [selectedServiceId, setSelectedServiceId] = useState<string | null>(storefrontServices[0]?.id ?? null);
+  const selected = useMemo(
+    () => storefrontServices.find((s) => s.id === selectedServiceId) ?? storefrontServices[0],
+    [storefrontServices, selectedServiceId],
+  );
+  const charterGroups = useMemo(() => {
+    const charterById = new Map(charters.map((charter) => [charter.id, charter]));
+    const boatById = new Map(boats.map((boat) => [boat.id, boat]));
+    const groups = new Map<string, { charterName: string; boatName: string | null; services: Service[] }>();
+    for (const service of storefrontServices) {
+      const charter = service.charter_id ? charterById.get(service.charter_id) : undefined;
+      const boatId = service.boat_id ?? charter?.boat_id ?? null;
+      const key = service.charter_id ?? `service-${service.id}`;
+      const current = groups.get(key) ?? {
+        charterName: charter?.name ?? service.title,
+        boatName: boatId ? boatById.get(boatId)?.name ?? null : null,
+        services: [],
+      };
+      current.services.push(service);
+      groups.set(key, current);
+    }
+    return [...groups.values()];
+  }, [boats, charters, storefrontServices]);
   const location = [b.city, b.region, b.country].filter(Boolean).join(", ");
   const avg = ratingSummary.average ? ratingSummary.average.toFixed(2) : "—";
   const hours = normalizeHours((b as any).hours_json);
@@ -283,7 +303,7 @@ export function OperatorProfile({
           </div>
           <FollowButton businessId={b.id} />
           <div style={{ display: "flex", gap: 26, padding: "16px 22px", background: "#14202B", border: "1px solid rgba(255,255,255,.07)", borderRadius: 16, flex: "none", flexWrap: "wrap" }}>
-            <Stat n={services.length} label={isShop ? "services" : "trips"} />
+            <Stat n={storefrontServices.length} label={isShop ? "services" : "trips"} />
             {boats.length > 0 && <Stat n={boats.length} label={boats.length === 1 ? "boat" : "boats"} divider />}
             {products.length > 0 && <Stat n={products.length} label="products" divider />}
             {slips.length > 0 && <Stat n={slips.length} label="slips" divider />}
@@ -342,16 +362,24 @@ export function OperatorProfile({
                 {labels.blurb && <span style={{ fontSize: 13, color: "#92A0AB" }}>{labels.blurb}</span>}
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-                {services.length === 0 && (
+                {storefrontServices.length === 0 && (
                   <div style={{ background: "#14202B", border: "1px dashed rgba(255,255,255,.12)", borderRadius: 18, padding: 32, textAlign: "center", color: "#92A0AB" }}>
                     Nothing published here yet.
                   </div>
                 )}
 
-                {services.map((s) => {
-                  const active = selectedServiceId === s.id;
-                  return (
-                    <article key={s.id} style={{ background: "#14202B", border: `1px solid ${active ? "#2DE2F2" : "rgba(255,255,255,.07)"}`, borderRadius: 18, padding: 16, display: "flex", alignItems: "center", gap: 18 }}>
+                {charterGroups.map((group) => (
+                  <div key={`${group.charterName}-${group.boatName ?? "no-boat"}`} style={{ display: "grid", gap: 10 }}>
+                    {isTripStorefront && (
+                      <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 12, padding: "2px 4px" }}>
+                        <h3 style={{ margin: 0, fontSize: 16, color: "#F0F2F5" }}>{group.charterName}</h3>
+                        <span style={{ color: "#92A0AB", fontSize: 12 }}>{group.boatName ? `Boat · ${group.boatName}` : "Boat not assigned"}</span>
+                      </div>
+                    )}
+                    {group.services.map((s) => {
+                      const active = selectedServiceId === s.id;
+                      return (
+                        <article key={s.id} className="fx-storefront-package" style={{ background: "#14202B", border: `1px solid ${active ? "#2DE2F2" : "rgba(255,255,255,.07)"}`, borderRadius: 18, padding: 16, display: "flex", alignItems: "center", gap: 18 }}>
                       <div style={{ width: 104, height: 80, borderRadius: 12, flex: "none", background: s.hero_url ? `#e9edf1 url(${s.hero_url}) center/cover` : "linear-gradient(135deg,#F0F2F5,#031029)" }} />
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <h3 style={{ fontFamily: "'Outfit', Georgia, serif", fontWeight: 600, fontSize: 19, margin: 0, color: "#F0F2F5" }}>{s.title}</h3>
@@ -376,40 +404,13 @@ export function OperatorProfile({
                       >
                         {active ? "Selected" : "Select"}
                       </button>
-                    </article>
-                  );
-                })}
+                        </article>
+                      );
+                    })}
+                  </div>
+                ))}
               </div>
             </section>
-
-            {/* Next departures */}
-            {upcoming.length > 0 && (
-              <section style={CARD}>
-                <h2 style={sectionTitle}>Next available departures</h2>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(200px,1fr))", gap: 12 }}>
-                  {upcoming.map((u) => (
-                    <Link
-                      key={u.id}
-                      to="/booking"
-                      search={{ service_id: u.serviceId }}
-                      style={{ textDecoration: "none", background: "#1C2936", border: "1px solid rgba(255,255,255,.07)", borderRadius: 14, padding: 14, display: "block", color: "#F0F2F5" }}
-                    >
-                      <div style={{ fontSize: 12, color: "#2DE2F2", fontWeight: 700 }}>
-                        {new Date(u.startsAt).toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" })}
-                      </div>
-                      <div style={{ fontSize: 14, fontWeight: 600, marginTop: 4 }}>
-                        {new Date(u.startsAt).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })} –{" "}
-                        {new Date(u.endsAt).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })}
-                      </div>
-                      <div style={{ fontSize: 12, color: "#92A0AB", marginTop: 4 }}>{u.serviceTitle}</div>
-                      <div style={{ fontSize: 12, color: "#92A0AB", marginTop: 6 }}>
-                        {u.seatsLeft} seat{u.seatsLeft === 1 ? "" : "s"} left · {fmtPrice(u.priceCents)}
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              </section>
-            )}
 
             {/* Fleet */}
             {boats.length > 0 && (
@@ -677,15 +678,14 @@ export function OperatorProfile({
               </div>
             )}
             <StorefrontBooking
-              services={services.map((s) => ({
+              service={selected ? {
                 id: s.id,
-                title: s.title,
-                base_price_cents: s.base_price_cents,
-                capacity: s.capacity,
-                duration_minutes: s.duration_minutes,
-              }))}
-              selectedServiceId={selected?.id ?? null}
-              onSelectService={setSelectedServiceId}
+                title: selected.title,
+                base_price_cents: selected.base_price_cents,
+                capacity: selected.capacity,
+                duration_minutes: selected.duration_minutes,
+              } : null}
+              storefrontSlug={b.slug}
             />
 
 
