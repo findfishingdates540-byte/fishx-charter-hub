@@ -109,7 +109,7 @@ export function AnglerDashboard() {
     <div id="ang-dash" style={styleVars}>
       {/* TOP NAV */}
       <header style={{ position: "sticky", top: 0, zIndex: 30, background: "var(--navy)", color: "var(--ond)" }}>
-        <div className="ang-topbar" style={{ maxWidth: 1160, margin: "0 auto", padding: "0 28px", minHeight: 66, height: "auto", display: "flex", alignItems: "center", flexWrap: "wrap", gap: 28, rowGap: 10, minWidth: 0 }}>
+        <div className="ang-topbar" style={{ maxWidth: 1160, margin: "0 auto", padding: "0 28px", minHeight: 66, height: "auto", display: "flex", alignItems: "center", flexWrap: "nowrap", gap: 28, minWidth: 0 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0, flex: "0 0 auto" }}>
             <BrandLogo size="md" accent="var(--sand)" color="var(--ond)" />
           </div>

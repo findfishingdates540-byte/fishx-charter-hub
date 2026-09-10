@@ -953,16 +953,27 @@ body.dc-body { margin:0; background:#072057; }
 
 /* Angler dashboard top bar — intermediate widths */
 @media (max-width: 1180px) {
-  .ang-topbar { gap: 18px !important; padding: 0 20px !important; }
+  .ang-topbar {
+    max-width: none !important;
+    gap: 10px !important;
+    padding: 0 16px !important;
+    flex-wrap: nowrap !important;
+  }
+  .ang-topnav { gap: 0 !important; }
+  .ang-topnav > button,
+  .ang-topnav > a {
+    padding: 8px 9px !important;
+    font-size: 13px !important;
+  }
   .ang-topsearch { display: none !important; }
-  .ang-topactions { gap: 10px !important; }
+  .ang-topactions { gap: 8px !important; }
 }
 @media (max-width: 1050px) {
   .ang-topname { display: none !important; }
 }
 /* Angler dashboard top bar — mobile */
 @media (max-width: 860px) {
-  .ang-topbar { gap: 10px; padding: 0 16px !important; height: auto !important; min-height: 58px; flex-wrap: wrap; align-items: center; }
+  .ang-topbar { gap: 10px; padding: 0 16px !important; height: auto !important; min-height: 58px; flex-wrap: nowrap !important; align-items: center; }
   .ang-topsearch { display: none !important; }
   .ang-topactions { gap: 10px !important; margin-left: auto; }
   .ang-topname { display: none !important; }
