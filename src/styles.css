@@ -920,6 +920,37 @@ body.dc-body { margin:0; background:#072057; }
 .fx-shell input[type="checkbox"],
 .fx-shell input[type="radio"] { accent-color: #2de2f2; }
 
+@media (max-width: 900px) {
+  .fx-storefront-layout {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .fx-storefront-rail {
+    position: static !important;
+    width: 100%;
+  }
+}
+
+@media (max-width: 620px) {
+  .fx-storefront-package {
+    align-items: flex-start !important;
+    flex-wrap: wrap;
+  }
+
+  .fx-storefront-package > div:nth-child(2) {
+    min-width: calc(100% - 122px) !important;
+  }
+
+  .fx-storefront-package > div:nth-child(3) {
+    margin-left: 122px;
+    text-align: left !important;
+  }
+
+  .fx-storefront-package > button {
+    flex: 1 1 100% !important;
+  }
+}
+
 /* Angler dashboard top bar — intermediate widths */
 @media (max-width: 1180px) {
   .ang-topbar { gap: 18px !important; padding: 0 20px !important; }

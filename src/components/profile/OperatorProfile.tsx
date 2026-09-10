@@ -199,7 +199,7 @@ export function OperatorProfile({
   slips = [],
   posts = [],
 }: Props) {
-  const isTripStorefront = variant === "captain" || variant === "guide";
+  const isTripStorefront = b.category_key === "charter" || b.category_key === "guide_service";
   const storefrontServices = useMemo(
     () => isTripStorefront ? services.filter((s) => s.kind === "charter_trip" || s.kind === "guided_trip") : services,
     [isTripStorefront, services],
@@ -313,7 +313,7 @@ export function OperatorProfile({
 
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) 360px", gap: 26, marginTop: 34 }}>
+        <div className="fx-storefront-layout" style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) 360px", gap: 26, marginTop: 34 }}>
           {/* Left column */}
           <div style={{ display: "flex", flexDirection: "column", gap: 22 }}>
             {/* About */}
@@ -658,7 +658,7 @@ export function OperatorProfile({
           </div>
 
           {/* Right rail */}
-          <aside style={{ display: "flex", flexDirection: "column", gap: 18, position: "sticky", top: 86, alignSelf: "flex-start" }}>
+          <aside className="fx-storefront-rail" style={{ display: "flex", flexDirection: "column", gap: 18, position: "sticky", top: 86, alignSelf: "flex-start" }}>
             {socialLinks.length > 0 && (
               <div style={{ background: "#14202B", border: "1px solid rgba(255,255,255,.07)", borderRadius: 20, padding: 20 }}>
                 <h2 style={{ ...sectionTitle, fontSize: 15 }}>Follow along</h2>
