@@ -921,11 +921,13 @@ body.dc-body { margin:0; background:#072057; }
 .fx-shell input[type="radio"] { accent-color: #2de2f2; }
 
 /* Angler dashboard top bar — intermediate widths */
-@media (max-width: 1100px) {
+@media (max-width: 1180px) {
   .ang-topbar { gap: 18px !important; padding: 0 20px !important; }
   .ang-topsearch { display: none !important; }
-  .ang-topname { display: none !important; }
   .ang-topactions { gap: 10px !important; }
+}
+@media (max-width: 1050px) {
+  .ang-topname { display: none !important; }
 }
 /* Angler dashboard top bar — mobile */
 @media (max-width: 860px) {
