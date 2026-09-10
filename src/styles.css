@@ -1012,7 +1012,7 @@ body.dc-body { margin:0; background:#072057; }
 }
 /* Angler dashboard top bar — mobile */
 @media (max-width: 860px) {
-  .ang-topbar { gap: 8px; padding: 0 16px !important; height: auto !important; min-height: 58px; flex-wrap: nowrap !important; align-items: center; }
+  .ang-topbar { gap: 8px; padding: 0 22px !important; height: auto !important; min-height: 58px; flex-wrap: nowrap !important; align-items: center; }
   .ang-topbar > div:first-child { transform: scale(0.88) !important; }
   .ang-topsearch { display: none !important; }
   .ang-topactions { gap: 8px !important; margin-left: auto !important; flex-wrap: nowrap !important; }
@@ -1021,7 +1021,7 @@ body.dc-body { margin:0; background:#072057; }
   .ang-topactions > a[title="Settings"] { display: none !important; }
   .ang-topnav {
     order: 3; width: 100%; overflow-x: auto; flex-wrap: nowrap; gap: 2px !important;
-    margin: 0 -16px; padding: 0 16px 8px !important; scrollbar-width: none;
+    margin: 0 -22px; padding: 0 22px 8px !important; scrollbar-width: none;
     -webkit-overflow-scrolling: touch;
   }
   .ang-topnav::-webkit-scrollbar { display: none; }
