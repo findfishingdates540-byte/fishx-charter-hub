@@ -951,6 +951,17 @@ body.dc-body { margin:0; background:#072057; }
   }
 }
 
+/* Angler dashboard top bar — base: fluid nav, hidden scrollbar, never overlaps */
+.ang-topnav {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  -webkit-overflow-scrolling: touch;
+}
+.ang-topnav::-webkit-scrollbar { display: none; }
+.ang-topnav > button,
+.ang-topnav > a { flex: 0 0 auto; }
+.ang-topactions { flex: 0 0 auto; }
+
 /* Angler dashboard top bar — intermediate widths */
 @media (max-width: 1180px) {
   .ang-topbar {
