@@ -144,7 +144,7 @@ export function BookingFlow({
   const navigate = useNavigate();
   const { data: svc } = useSuspenseQuery(checkoutQuery(serviceId));
   const business = svc.business as { id: string; slug: string; name: string; city: string | null; region: string | null; logo_url: string | null; hero_url: string | null; deposit_rate?: number | null; commission_rate?: number | null } | null;
-  const boat = (svc.boat ?? null) as {
+  const boat = (svc.boat ?? (svc as any).charter?.boat ?? null) as {
     name: string | null; make: string | null; model: string | null; length_ft: number | null;
     capacity: number | null; home_port: string | null; description: string | null;
     hero_image_url: string | null; image_urls: string[] | null;

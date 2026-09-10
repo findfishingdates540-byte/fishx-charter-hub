@@ -81,7 +81,6 @@ export const getCheckoutContext = createServerFn({ method: "GET" })
 
     return {
       ...svc,
-      boat: svc.boat ?? svc.charter?.boat ?? null,
       openSlots,
       slip: slipRes.data ?? null,
       packages: packagesRes.data ?? [],

@@ -679,7 +679,7 @@ export function OperatorProfile({
             )}
             <StorefrontBooking
               service={selected ? {
-                id: s.id,
+                id: selected.id,
                 title: selected.title,
                 base_price_cents: selected.base_price_cents,
                 capacity: selected.capacity,
