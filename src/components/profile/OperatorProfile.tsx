@@ -378,47 +378,100 @@ export function OperatorProfile({
                   </div>
                 )}
 
-                {charterGroups.map((group) => (
-                  <div key={`${group.charterName}-${group.boatName ?? "no-boat"}`} style={{ display: "grid", gap: 10 }}>
-                    {isTripStorefront && (
-                      <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 12, padding: "2px 4px" }}>
-                        <h3 style={{ margin: 0, fontSize: 16, color: "#F0F2F5" }}>{group.charterName}</h3>
-                        <span style={{ color: "#92A0AB", fontSize: 12 }}>{group.boatName ? `Boat · ${group.boatName}` : "Boat not assigned"}</span>
-                      </div>
-                    )}
-                    {group.services.map((s) => {
+                {isTripStorefront
+                  ? charterGroups.map((group) => {
+                      const open = (openCharterKey ?? charterGroups[0]?.key) === group.key;
+                      return (
+                        <article key={group.key} style={{ background: "#14202B", border: `1px solid ${open ? "rgba(45,226,242,.5)" : "rgba(255,255,255,.07)"}`, borderRadius: 18, overflow: "hidden" }}>
+                          <button
+                            type="button"
+                            onClick={() => setOpenCharterKey(open ? null : group.key)}
+                            style={{ width: "100%", display: "flex", alignItems: "center", gap: 16, padding: 14, background: "transparent", border: 0, cursor: "pointer", textAlign: "left", color: "#F0F2F5" }}
+                          >
+                            <div style={{ width: 96, height: 72, borderRadius: 12, flex: "none", background: group.image ? `#0D161F url(${group.image}) center/cover` : "linear-gradient(135deg,#1C2936,#0D161F)" }} />
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <h3 style={{ fontFamily: "'Outfit', Georgia, serif", fontWeight: 600, fontSize: 19, margin: 0 }}>{group.charterName}</h3>
+                              <div style={{ fontSize: 12.5, color: "#92A0AB", marginTop: 4 }}>
+                                {[
+                                  group.boatName ? `Boat · ${group.boatName}` : "Boat not assigned",
+                                  `${group.services.length} package${group.services.length === 1 ? "" : "s"}`,
+                                ].join(" · ")}
+                              </div>
+                            </div>
+                            <div style={{ textAlign: "right", flex: "none" }}>
+                              <div>
+                                <span style={{ fontSize: 11, color: "#92A0AB" }}>from </span>
+                                <span style={{ fontFamily: "'Outfit', Georgia, serif", fontSize: 20, fontWeight: 600, color: "#2DE2F2" }}>{fmtPrice(group.minPriceCents)}</span>
+                              </div>
+                              <div style={{ fontSize: 11.5, color: "#92A0AB" }}>{open ? "Hide packages ▲" : "View packages ▼"}</div>
+                            </div>
+                          </button>
+                          {open && (
+                            <div style={{ display: "grid", gap: 10, padding: "0 14px 14px" }}>
+                              {group.services.map((s) => {
+                                const active = selectedServiceId === s.id;
+                                return (
+                                  <div key={s.id} className="fx-storefront-package" style={{ background: "#1C2936", border: `1px solid ${active ? "#2DE2F2" : "rgba(255,255,255,.07)"}`, borderRadius: 14, padding: 12, display: "flex", alignItems: "center", gap: 14 }}>
+                                    <div style={{ width: 84, height: 62, borderRadius: 10, flex: "none", background: s.hero_url ? `#e9edf1 url(${s.hero_url}) center/cover` : "linear-gradient(135deg,#F0F2F5,#031029)" }} />
+                                    <div style={{ flex: 1, minWidth: 0 }}>
+                                      <div style={{ fontWeight: 600, fontSize: 15, color: "#F0F2F5" }}>{s.title}</div>
+                                      <div style={{ fontSize: 12.5, color: "#92A0AB", marginTop: 3 }}>
+                                        {[
+                                          s.duration_minutes ? `${Math.round(s.duration_minutes / 60)} hr` : null,
+                                          s.capacity ? `up to ${s.capacity}` : null,
+                                          s.target_species?.slice(0, 3).join(", "),
+                                        ].filter(Boolean).join(" · ")}
+                                      </div>
+                                    </div>
+                                    <div style={{ textAlign: "right", flex: "none" }}>
+                                      <span style={{ fontFamily: "'Outfit', Georgia, serif", fontSize: 18, fontWeight: 600, color: "#2DE2F2" }}>{fmtPrice(s.base_price_cents)}</span>
+                                      <div style={{ fontSize: 11, color: "#92A0AB" }}>per trip</div>
+                                    </div>
+                                    <button
+                                      onClick={() => setSelectedServiceId(s.id)}
+                                      style={{ flex: "none", background: active ? "#0D161F" : "#2DE2F2", color: active ? "#F0F2F5" : "#04121B", border: 0, borderRadius: 10, padding: "10px 16px", fontSize: 12, fontWeight: 700, cursor: "pointer" }}
+                                    >
+                                      {active ? "Selected" : "Select"}
+                                    </button>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </article>
+                      );
+                    })
+                  : charterGroups.flatMap((group) => group.services).map((s) => {
                       const active = selectedServiceId === s.id;
                       return (
                         <article key={s.id} className="fx-storefront-package" style={{ background: "#14202B", border: `1px solid ${active ? "#2DE2F2" : "rgba(255,255,255,.07)"}`, borderRadius: 18, padding: 16, display: "flex", alignItems: "center", gap: 18 }}>
-                      <div style={{ width: 104, height: 80, borderRadius: 12, flex: "none", background: s.hero_url ? `#e9edf1 url(${s.hero_url}) center/cover` : "linear-gradient(135deg,#F0F2F5,#031029)" }} />
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <h3 style={{ fontFamily: "'Outfit', Georgia, serif", fontWeight: 600, fontSize: 19, margin: 0, color: "#F0F2F5" }}>{s.title}</h3>
-                        <div style={{ fontSize: 13, color: "#92A0AB", marginTop: 4 }}>
-                          {[
-                            s.duration_minutes ? `${Math.round(s.duration_minutes / 60)} hr` : null,
-                            s.capacity ? `up to ${s.capacity}` : null,
-                            s.target_species?.slice(0, 3).join(", "),
-                          ].filter(Boolean).join(" · ")}
-                        </div>
-                      </div>
-                      <div style={{ textAlign: "right", flex: "none" }}>
-                        <div>
-                          <span style={{ fontSize: 11, color: "#92A0AB" }}>from </span>
-                          <span style={{ fontFamily: "'Outfit', Georgia, serif", fontSize: 22, fontWeight: 600, color: "#2DE2F2" }}>{fmtPrice(s.base_price_cents)}</span>
-                        </div>
-                        <div style={{ fontSize: 11.5, color: "#92A0AB" }}>per trip</div>
-                      </div>
-                      <button
-                        onClick={() => setSelectedServiceId(s.id)}
-                        style={{ flex: "none", background: active ? "#1C2936" : "#2DE2F2", color: active ? "#F0F2F5" : "#04121B", border: 0, borderRadius: 11, padding: "12px 20px", fontSize: 12.5, fontWeight: 700, cursor: "pointer" }}
-                      >
-                        {active ? "Selected" : "Select"}
-                      </button>
+                          <div style={{ width: 104, height: 80, borderRadius: 12, flex: "none", background: s.hero_url ? `#e9edf1 url(${s.hero_url}) center/cover` : "linear-gradient(135deg,#F0F2F5,#031029)" }} />
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <h3 style={{ fontFamily: "'Outfit', Georgia, serif", fontWeight: 600, fontSize: 19, margin: 0, color: "#F0F2F5" }}>{s.title}</h3>
+                            <div style={{ fontSize: 13, color: "#92A0AB", marginTop: 4 }}>
+                              {[
+                                s.duration_minutes ? `${Math.round(s.duration_minutes / 60)} hr` : null,
+                                s.capacity ? `up to ${s.capacity}` : null,
+                                s.target_species?.slice(0, 3).join(", "),
+                              ].filter(Boolean).join(" · ")}
+                            </div>
+                          </div>
+                          <div style={{ textAlign: "right", flex: "none" }}>
+                            <div>
+                              <span style={{ fontSize: 11, color: "#92A0AB" }}>from </span>
+                              <span style={{ fontFamily: "'Outfit', Georgia, serif", fontSize: 22, fontWeight: 600, color: "#2DE2F2" }}>{fmtPrice(s.base_price_cents)}</span>
+                            </div>
+                            <div style={{ fontSize: 11.5, color: "#92A0AB" }}>per trip</div>
+                          </div>
+                          <button
+                            onClick={() => setSelectedServiceId(s.id)}
+                            style={{ flex: "none", background: active ? "#1C2936" : "#2DE2F2", color: active ? "#F0F2F5" : "#04121B", border: 0, borderRadius: 11, padding: "12px 20px", fontSize: 12.5, fontWeight: 700, cursor: "pointer" }}
+                          >
+                            {active ? "Selected" : "Select"}
+                          </button>
                         </article>
                       );
                     })}
-                  </div>
-                ))}
               </div>
             </section>
 
