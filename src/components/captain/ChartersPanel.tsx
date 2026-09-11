@@ -688,6 +688,11 @@ function CharterRowItem({
             {c.capacity ? ` · up to ${c.capacity}` : ""}
             {c.base_price_cents ? ` · ${money(c.base_price_cents)}` : ""}
           </div>
+          {c.is_published && packages.length > 0 && !packages.some((p) => p.is_published) && (
+            <div style={{ fontSize: 12, color: "var(--gold, #E0B252)", marginTop: 4 }}>
+              Not on your storefront yet — set at least one package to Live.
+            </div>
+          )}
         </div>
         <div className="fx-charter-actions" style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
         <button
