@@ -12,6 +12,7 @@ import { queryOptions } from "@tanstack/react-query";
 import { createBookingFromService, getAddonAvailability, getCheckoutContext } from "@/lib/booking-checkout.functions";
 import { PublicAvailabilityCalendar, timeBlock, type PublicSlot } from "@/components/booking/PublicAvailabilityCalendar";
 import { DEFAULT_HERO, galleryFor } from "@/lib/platform-photos";
+import BrandLogo from "@/components/brand/BrandLogo";
 
 const V = {
   serif: "'Outfit',Georgia,serif",
