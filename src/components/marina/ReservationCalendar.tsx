@@ -86,7 +86,10 @@ export function ReservationCalendar({ rows }: { rows: Reservation[] }) {
         </div>
       }
     >
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 6 }}>
+      <div
+        className="fx-calendar-grid fx-calendar-grid-detailed"
+        style={{ display: "grid", gridTemplateColumns: "repeat(7,minmax(0,1fr))", gap: 6 }}
+      >
         {DAY_LABELS.map((d) => (
           <div
             key={d}

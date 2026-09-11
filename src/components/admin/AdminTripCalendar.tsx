@@ -139,7 +139,10 @@ export function AdminTripCalendar() {
 
       <div style={{ ...box, padding: 14 }}>
         {isLoading && <div style={{ color: T.mut, fontSize: 13.5, marginBottom: 10 }}>Loading trips…</div>}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 6 }}>
+        <div
+          className="fx-calendar-grid fx-calendar-grid-detailed"
+          style={{ display: "grid", gridTemplateColumns: "repeat(7,minmax(0,1fr))", gap: 6 }}
+        >
           {DAY_LABELS.map((d) => (
             <div
               key={d}
