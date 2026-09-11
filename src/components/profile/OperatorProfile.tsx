@@ -177,7 +177,7 @@ const CARD: React.CSSProperties = {
 };
 
 const LABEL_BY_CATEGORY: Record<string, { services: string; blurb: string }> = {
-  charter: { services: "Trips offered", blurb: "All escrow-protected" },
+  charter: { services: "Charters offered", blurb: "All escrow-protected" },
   guide_service: { services: "Guided trips", blurb: "All escrow-protected" },
   tackle_shop: { services: "Services & clinics", blurb: "Book in-store services" },
   bait_shop: { services: "Services", blurb: "Book ahead" },
