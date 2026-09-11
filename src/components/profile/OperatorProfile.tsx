@@ -213,20 +213,29 @@ export function OperatorProfile({
   const charterGroups = useMemo(() => {
     const charterById = new Map(charters.map((charter) => [charter.id, charter]));
     const boatById = new Map(boats.map((boat) => [boat.id, boat]));
-    const groups = new Map<string, { charterName: string; boatName: string | null; services: Service[] }>();
+    const groups = new Map<string, { key: string; charterName: string; boatName: string | null; image: string | null; minPriceCents: number; services: Service[] }>();
     for (const service of storefrontServices) {
       const charter = service.charter_id ? charterById.get(service.charter_id) : undefined;
       const boatId = service.boat_id ?? charter?.boat_id ?? null;
+      const boat = boatId ? boatById.get(boatId) : undefined;
       const key = service.charter_id ?? `service-${service.id}`;
       const current = groups.get(key) ?? {
+        key,
         charterName: charter?.name ?? service.title,
-        boatName: boatId ? boatById.get(boatId)?.name ?? null : null,
+        boatName: boat?.name ?? null,
+        image: boat?.hero_image_url ?? boat?.image_urls?.[0] ?? null,
+        minPriceCents: Number.POSITIVE_INFINITY,
         services: [],
       };
+      if (!current.image && service.hero_url) current.image = service.hero_url;
+      if (typeof service.base_price_cents === "number") current.minPriceCents = Math.min(current.minPriceCents, service.base_price_cents);
       current.services.push(service);
       groups.set(key, current);
     }
-    return [...groups.values()];
+    return [...groups.values()].map((g) => ({
+      ...g,
+      minPriceCents: Number.isFinite(g.minPriceCents) ? g.minPriceCents : 0,
+    }));
   }, [boats, charters, storefrontServices]);
   const location = [b.city, b.region, b.country].filter(Boolean).join(", ");
   const avg = ratingSummary.average ? ratingSummary.average.toFixed(2) : "—";
