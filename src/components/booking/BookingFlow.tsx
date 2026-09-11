@@ -12,7 +12,6 @@ import { queryOptions } from "@tanstack/react-query";
 import { createBookingFromService, getAddonAvailability, getCheckoutContext } from "@/lib/booking-checkout.functions";
 import { PublicAvailabilityCalendar, timeBlock, type PublicSlot } from "@/components/booking/PublicAvailabilityCalendar";
 import { DEFAULT_HERO, galleryFor } from "@/lib/platform-photos";
-import BrandLogo from "@/components/brand/BrandLogo";
 
 const V = {
   serif: "'Outfit',Georgia,serif",
@@ -456,72 +455,24 @@ export function BookingFlow({
     <div style={{ minHeight: "100vh", background: V.paper, color: V.ink, fontFamily: V.sans }}>
 
       {/* TOP BAR */}
-      <header
-        className="fx-booking-header"
-        style={{
-          position: "sticky",
-          top: 0,
-          zIndex: 30,
-          background: "linear-gradient(180deg, #0A2458 0%, #072057 100%)",
-          color: V.ond,
-          borderBottom: `1px solid ${V.lined}`,
-          boxShadow: "0 10px 30px -14px rgba(3,16,41,.55)",
-        }}
-      >
-        <div
-          className="fx-booking-header-inner"
-          style={{ maxWidth: 1180, margin: "0 auto", padding: "0 28px", minHeight: 68, display: "flex", alignItems: "center", gap: 24 }}
-        >
-          <Link to="/dashboard" style={{ display: "flex", alignItems: "center", textDecoration: "none", color: V.ond, flexShrink: 0 }} aria-label="Back to dashboard">
-            <BrandLogo size="sm" color="#fff" />
+      <header style={{ position: "sticky", top: 0, zIndex: 30, background: V.navy, color: V.ond }}>
+        <div style={{ maxWidth: 1180, margin: "0 auto", padding: "0 28px", height: 64, display: "flex", alignItems: "center", gap: 24 }}>
+          <Link to="/dashboard" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none", color: V.ond }}>
+            <span style={{ width: 11, height: 11, background: V.sand, transform: "rotate(45deg)", display: "inline-block", borderRadius: 1 }} />
+            <span style={{ fontFamily: V.serif, fontWeight: 600, fontSize: 20, letterSpacing: ".02em", whiteSpace: "nowrap" }}>FISH-X.COM</span>
           </Link>
-
-          <nav className="fx-booking-steps" aria-label="Booking progress" style={{ margin: "0 auto", display: "flex", alignItems: "center", gap: 10 }}>
-            {CRUMBS.map((c, i) => {
-              const order = STEP_ORDER;
-              const done = order.indexOf(c.k) < order.indexOf(step);
-              const active = order.indexOf(c.k) === order.indexOf(step);
-              return (
-                <span key={c.k} style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <span style={crumbStyle(c.k)} className={active ? "fx-crumb-active" : done ? "fx-crumb-done" : "fx-crumb-todo"}>
-                    <span style={crumbNumStyle(c.k, i + 1).style}>{crumbNumStyle(c.k, i + 1).label}</span>
-                    <span className="fx-crumb-label">{c.label}</span>
-                  </span>
-                  {i < CRUMBS.length - 1 && (
-                    <span
-                      style={{
-                        width: 26,
-                        height: 2,
-                        borderRadius: 2,
-                        background: done ? V.sand : "rgba(255,255,255,.12)",
-                        transition: "background .25s ease",
-                      }}
-                    />
-                  )}
+          <div style={{ margin: "0 auto", display: "flex", alignItems: "center", gap: 8 }}>
+            {CRUMBS.map((c, i) => (
+              <span key={c.k} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <span style={crumbStyle(c.k)}>
+                  <span style={crumbNumStyle(c.k, i + 1).style}>{crumbNumStyle(c.k, i + 1).label}</span> {c.label}
                 </span>
-              );
-            })}
-          </nav>
-
-          <span
-            className="fx-booking-escrow"
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 8,
-              border: `1px solid ${V.lined}`,
-              background: "rgba(255,255,255,.05)",
-              borderRadius: 30,
-              padding: "7px 13px",
-              fontSize: 11.5,
-              fontWeight: 600,
-              letterSpacing: ".02em",
-              whiteSpace: "nowrap",
-              flexShrink: 0,
-            }}
-          >
-            <span style={{ width: 7, height: 7, borderRadius: "50%", background: V.cyan, boxShadow: `0 0 8px ${V.cyan}` }} />
-            <span className="fx-escrow-label">Secured by escrow</span>
+                {i < CRUMBS.length - 1 && <span style={{ width: 22, height: 1, background: V.lined }} />}
+              </span>
+            ))}
+          </div>
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 8, border: `1px solid ${V.lined}`, borderRadius: 30, padding: "8px 13px", fontSize: 11.5, fontWeight: 600 }}>
+            <span style={{ width: 7, height: 7, borderRadius: "50%", background: V.cyan, boxShadow: `0 0 8px ${V.cyan}` }} /> Secured by escrow
           </span>
         </div>
       </header>

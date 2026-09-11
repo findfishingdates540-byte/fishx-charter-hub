@@ -704,22 +704,6 @@ body.dc-body { margin:0; background:#072057; }
   .explore-quad { grid-template-columns: 1fr !important; }
 }
 
-/* Booking header */
-.fx-booking-steps { flex-wrap: nowrap; }
-.fx-crumb-active .fx-crumb-label { color: #fff; }
-@media (max-width: 1024px) {
-  .fx-booking-header-inner { padding: 0 18px !important; gap: 14px !important; }
-  .fx-crumb-label { display: none; }
-  .fx-booking-escrow { padding: 7px 11px !important; }
-}
-@media (max-width: 560px) {
-  .fx-booking-header-inner { padding: 0 14px !important; min-height: 60px !important; }
-  .fx-booking-steps { gap: 6px !important; }
-  .fx-booking-steps > span { gap: 6px !important; }
-  .fx-booking-escrow .fx-escrow-label { display: none; }
-  .fx-booking-escrow { padding: 7px 9px !important; }
-}
-
 /* Trip detail / booking page responsive */
 @media (max-width: 1024px) {
   .fx-booking-main { padding: 20px 20px 64px !important; }
