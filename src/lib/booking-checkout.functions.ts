@@ -54,9 +54,20 @@ export const getCheckoutContext = createServerFn({ method: "GET" })
       .in("kind", ["charter_trip", "guided_trip"])
       .order("base_price_cents", { ascending: true })
       .limit(12);
-    packagesQuery = svc.charter_id
-      ? packagesQuery.eq("charter_id", svc.charter_id)
-      : packagesQuery.eq("business_id", svc.business_id).eq("boat_id", svc.boat_id ?? "00000000-0000-0000-0000-000000000000");
+    if (svc.charter_id) {
+      packagesQuery = packagesQuery.eq("charter_id", svc.charter_id);
+    } else if (svc.boat_id) {
+      packagesQuery = packagesQuery
+        .eq("business_id", svc.business_id)
+        .eq("boat_id", svc.boat_id);
+    } else {
+      // Legacy/generic captain listings may have neither parent link. Group
+      // those packages together without leaking packages from linked charters.
+      packagesQuery = packagesQuery
+        .eq("business_id", svc.business_id)
+        .is("charter_id", null)
+        .is("boat_id", null);
+    }
 
     const [packagesRes, addonsRes] = await Promise.all([
       packagesQuery,
