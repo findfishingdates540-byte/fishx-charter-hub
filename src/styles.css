@@ -971,7 +971,7 @@ body.dc-body { margin:0; background:#072057; }
     column-gap: 28px !important;
     padding: 0 36px !important;
     flex-wrap: nowrap !important;
-    overflow: hidden !important;
+    overflow: visible !important;
   }
   .ang-topbar > div:first-child {
     flex: 0 0 auto !important;
@@ -1005,6 +1005,7 @@ body.dc-body { margin:0; background:#072057; }
     z-index: 2;
     background: var(--navy);
     flex-wrap: nowrap !important;
+    overflow: visible !important;
   }
   .ang-topname,
   .ang-signout,
