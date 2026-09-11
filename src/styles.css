@@ -1136,17 +1136,53 @@ body.dc-body { margin:0; background:#072057; }
   }
 }
 
-/* The month calendar must always stay a 7-column weekday grid, even when the
-   global mobile rules collapse other grids to a single column. */
+/* Every month calendar stays aligned beneath seven unambiguous weekday
+   headings, even when global responsive rules collapse other grids. */
+.fx-calendar-grid {
+  width: 100%;
+  min-width: 0;
+  grid-template-columns: repeat(7, minmax(0, 1fr)) !important;
+}
+
+.fx-calendar-grid > * {
+  min-width: 0;
+}
+
 @media (max-width: 900px) {
+  .fx-calendar-grid,
   .fx-authed .fx-avail .fx-avail-days {
     grid-template-columns: repeat(7, minmax(0, 1fr)) !important;
     gap: 4px !important;
   }
+  .fx-calendar-grid button,
   .fx-authed .fx-avail .fx-avail-days button {
     padding: 8px 0 6px !important;
     min-height: 44px;
     font-size: 12px !important;
+    overflow: hidden;
+  }
+  .fx-calendar-grid-detailed button {
+    min-height: 64px !important;
+    padding: 6px !important;
+  }
+  .fx-calendar-grid-detailed button span {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 520px) {
+  .fx-calendar-grid {
+    gap: 3px !important;
+  }
+  .fx-calendar-grid-detailed button {
+    min-height: 52px !important;
+    padding: 5px 3px !important;
+  }
+  .fx-calendar-grid-detailed button span:not(:first-child) {
+    font-size: 9px !important;
   }
 }
 

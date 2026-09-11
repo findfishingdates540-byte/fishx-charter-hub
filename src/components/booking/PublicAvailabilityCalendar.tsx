@@ -18,7 +18,7 @@ export type PublicSlot = {
   priceCents: number;
 };
 
-const DAY_NAMES = ["S", "M", "T", "W", "T", "F", "S"];
+const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const iso = (d: Date) =>
   `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 
@@ -174,7 +174,10 @@ export function PublicAvailabilityCalendar({
           </button>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 4 }}>
+        <div
+          className="fx-calendar-grid"
+          style={{ display: "grid", gridTemplateColumns: "repeat(7,minmax(0,1fr))", gap: 4 }}
+        >
           {DAY_NAMES.map((d, i) => (
             <div key={i} style={{ textAlign: "center", fontSize: 10, fontWeight: 700, color: T.muted }}>
               {d}
