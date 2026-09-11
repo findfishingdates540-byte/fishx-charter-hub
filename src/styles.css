@@ -1144,6 +1144,14 @@ body.dc-body { margin:0; background:#072057; }
   grid-template-columns: repeat(7, minmax(0, 1fr)) !important;
 }
 
+/* Override the authenticated-shell mobile rule that collapses every inline
+   grid to one column. Calendars must always retain their seven day columns. */
+.fx-authed .fx-calendar-grid {
+  display: grid !important;
+  grid-template-columns: repeat(7, minmax(0, 1fr)) !important;
+  gap: 4px !important;
+}
+
 .fx-calendar-grid > * {
   min-width: 0;
 }
@@ -1174,7 +1182,8 @@ body.dc-body { margin:0; background:#072057; }
 }
 
 @media (max-width: 520px) {
-  .fx-calendar-grid {
+  .fx-calendar-grid,
+  .fx-authed .fx-calendar-grid {
     gap: 3px !important;
   }
   .fx-calendar-grid-detailed button {
