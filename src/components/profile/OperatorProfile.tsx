@@ -390,7 +390,12 @@ export function OperatorProfile({
                         <article key={group.key} style={{ background: "#14202B", border: `1px solid ${open ? "rgba(45,226,242,.5)" : "rgba(255,255,255,.07)"}`, borderRadius: 18, overflow: "hidden" }}>
                           <button
                             type="button"
-                            onClick={() => setOpenCharterKey(open ? null : group.key)}
+                            aria-expanded={open}
+                            onClick={() => {
+                              if (open) { setOpenCharterKey(null); return; }
+                              setOpenCharterKey(group.key);
+                              if (group.services[0]) setSelectedServiceId(group.services[0].id);
+                            }}
                             style={{ width: "100%", display: "flex", alignItems: "center", gap: 16, padding: 14, background: "transparent", border: 0, cursor: "pointer", textAlign: "left", color: "#F0F2F5" }}
                           >
                             <div style={{ width: 96, height: 72, borderRadius: 12, flex: "none", background: group.image ? `#0D161F url(${group.image}) center/cover` : "linear-gradient(135deg,#1C2936,#0D161F)" }} />
@@ -403,12 +408,30 @@ export function OperatorProfile({
                                 ].join(" · ")}
                               </div>
                             </div>
-                            <div style={{ textAlign: "right", flex: "none" }}>
+                            <div style={{ textAlign: "right", flex: "none", display: "grid", gap: 8, justifyItems: "end" }}>
                               <div>
                                 <span style={{ fontSize: 11, color: "#92A0AB" }}>from </span>
                                 <span style={{ fontFamily: "'Outfit', Georgia, serif", fontSize: 20, fontWeight: 600, color: "#2DE2F2" }}>{fmtPrice(group.minPriceCents)}</span>
                               </div>
-                              <div style={{ fontSize: 11.5, color: "#92A0AB" }}>{open ? "Hide packages ▲" : "View packages ▼"}</div>
+                              <span
+                                style={{
+                                  display: "inline-flex",
+                                  alignItems: "center",
+                                  gap: 6,
+                                  background: open ? "rgba(45,226,242,.14)" : "#2DE2F2",
+                                  color: open ? "#2DE2F2" : "#04121B",
+                                  border: open ? "1px solid rgba(45,226,242,.45)" : "1px solid transparent",
+                                  borderRadius: 999,
+                                  padding: "7px 14px",
+                                  fontSize: 11.5,
+                                  fontWeight: 800,
+                                  letterSpacing: ".06em",
+                                  textTransform: "uppercase",
+                                  whiteSpace: "nowrap",
+                                }}
+                              >
+                                {open ? "Hide packages ▲" : "Choose a package ▼"}
+                              </span>
                             </div>
                           </button>
                           {open && (
@@ -416,7 +439,17 @@ export function OperatorProfile({
                               {group.services.map((s) => {
                                 const active = selectedServiceId === s.id;
                                 return (
-                                  <div key={s.id} className="fx-storefront-package" style={{ background: "#1C2936", border: `1px solid ${active ? "#2DE2F2" : "rgba(255,255,255,.07)"}`, borderRadius: 14, padding: 12, display: "flex", alignItems: "center", gap: 14 }}>
+                                  <div
+                                    key={s.id}
+                                    role="button"
+                                    tabIndex={0}
+                                    onClick={() => setSelectedServiceId(s.id)}
+                                    onKeyDown={(e) => {
+                                      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setSelectedServiceId(s.id); }
+                                    }}
+                                    className="fx-storefront-package"
+                                    style={{ cursor: "pointer", background: "#1C2936", border: `1px solid ${active ? "#2DE2F2" : "rgba(255,255,255,.07)"}`, borderRadius: 14, padding: 12, display: "flex", alignItems: "center", gap: 14 }}
+                                  >
                                     <div style={{ width: 84, height: 62, borderRadius: 10, flex: "none", background: s.hero_url ? `#e9edf1 url(${s.hero_url}) center/cover` : "linear-gradient(135deg,#F0F2F5,#031029)" }} />
                                     <div style={{ flex: 1, minWidth: 0 }}>
                                       <div style={{ fontWeight: 600, fontSize: 15, color: "#F0F2F5" }}>{s.title}</div>
@@ -433,10 +466,11 @@ export function OperatorProfile({
                                       <div style={{ fontSize: 11, color: "#92A0AB" }}>per trip</div>
                                     </div>
                                     <button
-                                      onClick={() => setSelectedServiceId(s.id)}
-                                      style={{ flex: "none", background: active ? "#0D161F" : "#2DE2F2", color: active ? "#F0F2F5" : "#04121B", border: 0, borderRadius: 10, padding: "10px 16px", fontSize: 12, fontWeight: 700, cursor: "pointer" }}
+                                      type="button"
+                                      onClick={(e) => { e.stopPropagation(); setSelectedServiceId(s.id); }}
+                                      style={{ flex: "none", background: active ? "#0D161F" : "#2DE2F2", color: active ? "#F0F2F5" : "#04121B", border: active ? "1px solid #2DE2F2" : 0, borderRadius: 10, padding: "10px 16px", fontSize: 12, fontWeight: 700, cursor: "pointer" }}
                                     >
-                                      {active ? "Selected" : "Select"}
+                                      {active ? "✓ Selected" : "Select"}
                                     </button>
                                   </div>
                                 );
@@ -444,6 +478,7 @@ export function OperatorProfile({
                             </div>
                           )}
                         </article>
+
                       );
                     })
                   : charterGroups.flatMap((group) => group.services).map((s) => {
