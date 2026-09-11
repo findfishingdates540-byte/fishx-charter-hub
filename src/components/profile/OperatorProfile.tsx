@@ -201,7 +201,12 @@ export function OperatorProfile({
 }: Props) {
   const isTripStorefront = b.category_key === "charter" || b.category_key === "guide_service";
   const storefrontServices = useMemo(
-    () => isTripStorefront ? services.filter((s) => s.kind === "charter_trip" || s.kind === "guided_trip") : services,
+    () =>
+      isTripStorefront
+        ? services.filter(
+            (s) => s.kind === "charter_trip" || s.kind === "guided_trip" || Boolean(s.charter_id),
+          )
+        : services,
     [isTripStorefront, services],
   );
   const [selectedServiceId, setSelectedServiceId] = useState<string | null>(storefrontServices[0]?.id ?? null);
