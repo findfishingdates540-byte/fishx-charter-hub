@@ -281,6 +281,7 @@ export const getCaptainThread = createServerFn({ method: "GET" })
       angler,
       guestName: angler?.display_name || angler?.full_name || booking.customer?.full_name || "Guest",
       messages: messagesRes.data ?? [],
+      reactions: (reactionsRes as any).data ?? [],
       viewerId: userId,
     };
   });
