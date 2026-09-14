@@ -20,6 +20,7 @@ export const Route = createFileRoute("/api/public/hooks/dispatch-events")({
         const denied = assertCronCaller(request);
         if (denied) return denied;
 
+        try {
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
         const { data: pending, error: fetchErr } = await supabaseAdmin
