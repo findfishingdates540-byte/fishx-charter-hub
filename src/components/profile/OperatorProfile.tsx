@@ -210,7 +210,7 @@ export function OperatorProfile({
     [isTripStorefront, services],
   );
   const [selectedServiceId, setSelectedServiceId] = useState<string | null>(storefrontServices[0]?.id ?? null);
-  const [openCharterKey, setOpenCharterKey] = useState<string | null>(null);
+  const [openCharterKey, setOpenCharterKey] = useState<string>("");
   const selected = useMemo(
     () => storefrontServices.find((s) => s.id === selectedServiceId) ?? storefrontServices[0],
     [storefrontServices, selectedServiceId],
@@ -385,14 +385,14 @@ export function OperatorProfile({
 
                 {isTripStorefront
                   ? charterGroups.map((group) => {
-                      const open = (openCharterKey ?? charterGroups[0]?.key) === group.key;
+                      const open = (openCharterKey || charterGroups[0]?.key) === group.key;
                       return (
                         <article key={group.key} style={{ background: "#14202B", border: `1px solid ${open ? "rgba(45,226,242,.5)" : "rgba(255,255,255,.07)"}`, borderRadius: 18, overflow: "hidden" }}>
                           <button
                             type="button"
                             aria-expanded={open}
                             onClick={() => {
-                              if (open) { setOpenCharterKey(null); return; }
+                              if (open) { setOpenCharterKey(""); return; }
                               setOpenCharterKey(group.key);
                               if (group.services[0]) setSelectedServiceId(group.services[0].id);
                             }}
