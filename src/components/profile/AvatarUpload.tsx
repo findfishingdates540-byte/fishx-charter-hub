@@ -7,6 +7,7 @@
  */
 import { useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useMediaUrl } from "@/lib/media-url";
 
 const MAX_BYTES = 5 * 1024 * 1024;
 
@@ -28,6 +29,9 @@ export function AvatarUpload({
   const fileRef = useRef<HTMLInputElement | null>(null);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  // Stored value is a private-bucket path; resolve it to a signed URL so the
+  // preview shows up in the editor and on every host.
+  const preview = useMediaUrl(value);
 
   async function upload(file: File) {
     setErr(null);
