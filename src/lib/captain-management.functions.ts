@@ -251,11 +251,20 @@ export const getCaptainThread = createServerFn({ method: "GET" })
 
     const messagesRes = await supabase
       .from("booking_messages")
-      .select("id,body,sender_id,created_at,read_at")
+      .select("id,body,sender_id,created_at,read_at,is_deleted,reply_to_id")
       .eq("booking_id", data.bookingId)
       .order("created_at", { ascending: true })
       .limit(500);
     if (messagesRes.error) throw new Response(messagesRes.error.message, { status: 500 });
+
+    const msgIds = (messagesRes.data ?? []).map((m: any) => m.id);
+    const reactionsRes = msgIds.length
+      ? await supabase
+          .from("booking_message_reactions")
+          .select("message_id,emoji,user_id")
+          .in("message_id", msgIds)
+      : { data: [], error: null };
+
 
     let angler: any = null;
     if (booking.angler_id) {
