@@ -283,6 +283,7 @@ export function BusinessInbox({
           display: isMobile && !activeId ? "none" : "flex",
           flexDirection: "column",
           minHeight: 0,
+          height: fullHeight ? "100%" : undefined,
         }}
       >
         <div
