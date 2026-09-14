@@ -42,6 +42,7 @@ import { Route as ApiPublicFishxWebhookRouteImport } from './routes/api/public/f
 import { Route as ApiPublicStripeWebhookRouteImport } from './routes/api/public/stripe-webhook'
 import { Route as AuthenticatedCaptainChartersNewRouteImport } from './routes/_authenticated/captain.charters.new'
 import { Route as AuthenticatedCaptainPackagesPackageIdRouteImport } from './routes/_authenticated/captain.packages.$packageId'
+import { Route as AuthenticatedShopProductsNewRouteImport } from './routes/_authenticated/shop.products.new'
 import { Route as ApiPublicAvatarsSplatRouteImport } from './routes/api/public/avatars/$'
 import { Route as ApiPublicHooksBookingTimersRouteImport } from './routes/api/public/hooks/booking-timers'
 import { Route as ApiPublicHooksDispatchEventsRouteImport } from './routes/api/public/hooks/dispatch-events'
@@ -51,6 +52,7 @@ import { Route as ApiPublicHooksRemindersRouteImport } from './routes/api/public
 import { Route as ApiPublicHooksSyncCronSecretRouteImport } from './routes/api/public/hooks/sync-cron-secret'
 import { Route as ApiPublicMediaSplatRouteImport } from './routes/api/public/media/$'
 import { Route as AuthenticatedCaptainChartersCharterIdEditRouteImport } from './routes/_authenticated/captain.charters.$charterId.edit'
+import { Route as AuthenticatedShopProductsProductIdEditRouteImport } from './routes/_authenticated/shop.products.$productId.edit'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -222,6 +224,12 @@ const AuthenticatedCaptainPackagesPackageIdRoute =
     path: '/captain/packages/$packageId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedShopProductsNewRoute =
+  AuthenticatedShopProductsNewRouteImport.update({
+    id: '/shop/products/new',
+    path: '/shop/products/new',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const ApiPublicAvatarsSplatRoute = ApiPublicAvatarsSplatRouteImport.update({
   id: '/api/public/avatars/$',
   path: '/api/public/avatars/$',
@@ -273,6 +281,12 @@ const AuthenticatedCaptainChartersCharterIdEditRoute =
     path: '/captain/charters/$charterId/edit',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedShopProductsProductIdEditRoute =
+  AuthenticatedShopProductsProductIdEditRouteImport.update({
+    id: '/shop/products/$productId/edit',
+    path: '/shop/products/$productId/edit',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -307,6 +321,7 @@ export interface FileRoutesByFullPath {
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/captain/charters/new': typeof AuthenticatedCaptainChartersNewRoute
   '/captain/packages/$packageId': typeof AuthenticatedCaptainPackagesPackageIdRoute
+  '/shop/products/new': typeof AuthenticatedShopProductsNewRoute
   '/api/public/avatars/$': typeof ApiPublicAvatarsSplatRoute
   '/api/public/hooks/booking-timers': typeof ApiPublicHooksBookingTimersRoute
   '/api/public/hooks/dispatch-events': typeof ApiPublicHooksDispatchEventsRoute
@@ -316,6 +331,7 @@ export interface FileRoutesByFullPath {
   '/api/public/hooks/sync-cron-secret': typeof ApiPublicHooksSyncCronSecretRoute
   '/api/public/media/$': typeof ApiPublicMediaSplatRoute
   '/captain/charters/$charterId/edit': typeof AuthenticatedCaptainChartersCharterIdEditRoute
+  '/shop/products/$productId/edit': typeof AuthenticatedShopProductsProductIdEditRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -350,6 +366,7 @@ export interface FileRoutesByTo {
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/captain/charters/new': typeof AuthenticatedCaptainChartersNewRoute
   '/captain/packages/$packageId': typeof AuthenticatedCaptainPackagesPackageIdRoute
+  '/shop/products/new': typeof AuthenticatedShopProductsNewRoute
   '/api/public/avatars/$': typeof ApiPublicAvatarsSplatRoute
   '/api/public/hooks/booking-timers': typeof ApiPublicHooksBookingTimersRoute
   '/api/public/hooks/dispatch-events': typeof ApiPublicHooksDispatchEventsRoute
@@ -359,6 +376,7 @@ export interface FileRoutesByTo {
   '/api/public/hooks/sync-cron-secret': typeof ApiPublicHooksSyncCronSecretRoute
   '/api/public/media/$': typeof ApiPublicMediaSplatRoute
   '/captain/charters/$charterId/edit': typeof AuthenticatedCaptainChartersCharterIdEditRoute
+  '/shop/products/$productId/edit': typeof AuthenticatedShopProductsProductIdEditRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -395,6 +413,7 @@ export interface FileRoutesById {
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/_authenticated/captain/charters/new': typeof AuthenticatedCaptainChartersNewRoute
   '/_authenticated/captain/packages/$packageId': typeof AuthenticatedCaptainPackagesPackageIdRoute
+  '/_authenticated/shop/products/new': typeof AuthenticatedShopProductsNewRoute
   '/api/public/avatars/$': typeof ApiPublicAvatarsSplatRoute
   '/api/public/hooks/booking-timers': typeof ApiPublicHooksBookingTimersRoute
   '/api/public/hooks/dispatch-events': typeof ApiPublicHooksDispatchEventsRoute
@@ -404,6 +423,7 @@ export interface FileRoutesById {
   '/api/public/hooks/sync-cron-secret': typeof ApiPublicHooksSyncCronSecretRoute
   '/api/public/media/$': typeof ApiPublicMediaSplatRoute
   '/_authenticated/captain/charters/$charterId/edit': typeof AuthenticatedCaptainChartersCharterIdEditRoute
+  '/_authenticated/shop/products/$productId/edit': typeof AuthenticatedShopProductsProductIdEditRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -440,6 +460,7 @@ export interface FileRouteTypes {
     | '/api/public/stripe-webhook'
     | '/captain/charters/new'
     | '/captain/packages/$packageId'
+    | '/shop/products/new'
     | '/api/public/avatars/$'
     | '/api/public/hooks/booking-timers'
     | '/api/public/hooks/dispatch-events'
@@ -449,6 +470,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/sync-cron-secret'
     | '/api/public/media/$'
     | '/captain/charters/$charterId/edit'
+    | '/shop/products/$productId/edit'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -483,6 +505,7 @@ export interface FileRouteTypes {
     | '/api/public/stripe-webhook'
     | '/captain/charters/new'
     | '/captain/packages/$packageId'
+    | '/shop/products/new'
     | '/api/public/avatars/$'
     | '/api/public/hooks/booking-timers'
     | '/api/public/hooks/dispatch-events'
@@ -492,6 +515,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/sync-cron-secret'
     | '/api/public/media/$'
     | '/captain/charters/$charterId/edit'
+    | '/shop/products/$productId/edit'
   id:
     | '__root__'
     | '/'
@@ -527,6 +551,7 @@ export interface FileRouteTypes {
     | '/api/public/stripe-webhook'
     | '/_authenticated/captain/charters/new'
     | '/_authenticated/captain/packages/$packageId'
+    | '/_authenticated/shop/products/new'
     | '/api/public/avatars/$'
     | '/api/public/hooks/booking-timers'
     | '/api/public/hooks/dispatch-events'
@@ -536,6 +561,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/sync-cron-secret'
     | '/api/public/media/$'
     | '/_authenticated/captain/charters/$charterId/edit'
+    | '/_authenticated/shop/products/$productId/edit'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -801,6 +827,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCaptainPackagesPackageIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/shop/products/new': {
+      id: '/_authenticated/shop/products/new'
+      path: '/shop/products/new'
+      fullPath: '/shop/products/new'
+      preLoaderRoute: typeof AuthenticatedShopProductsNewRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/api/public/avatars/$': {
       id: '/api/public/avatars/$'
       path: '/api/public/avatars/$'
@@ -864,6 +897,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCaptainChartersCharterIdEditRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/shop/products/$productId/edit': {
+      id: '/_authenticated/shop/products/$productId/edit'
+      path: '/shop/products/$productId/edit'
+      fullPath: '/shop/products/$productId/edit'
+      preLoaderRoute: typeof AuthenticatedShopProductsProductIdEditRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
@@ -882,7 +922,9 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedTripsDetailRoute: typeof AuthenticatedTripsDetailRoute
   AuthenticatedCaptainChartersNewRoute: typeof AuthenticatedCaptainChartersNewRoute
   AuthenticatedCaptainPackagesPackageIdRoute: typeof AuthenticatedCaptainPackagesPackageIdRoute
+  AuthenticatedShopProductsNewRoute: typeof AuthenticatedShopProductsNewRoute
   AuthenticatedCaptainChartersCharterIdEditRoute: typeof AuthenticatedCaptainChartersCharterIdEditRoute
+  AuthenticatedShopProductsProductIdEditRoute: typeof AuthenticatedShopProductsProductIdEditRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -901,8 +943,11 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCaptainChartersNewRoute: AuthenticatedCaptainChartersNewRoute,
   AuthenticatedCaptainPackagesPackageIdRoute:
     AuthenticatedCaptainPackagesPackageIdRoute,
+  AuthenticatedShopProductsNewRoute: AuthenticatedShopProductsNewRoute,
   AuthenticatedCaptainChartersCharterIdEditRoute:
     AuthenticatedCaptainChartersCharterIdEditRoute,
+  AuthenticatedShopProductsProductIdEditRoute:
+    AuthenticatedShopProductsProductIdEditRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
