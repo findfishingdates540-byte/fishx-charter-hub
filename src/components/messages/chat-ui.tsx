@@ -824,6 +824,57 @@ export function ChatComposer({
             </button>
           </>
         )}
+        <div style={{ position: "relative", flex: "none" }}>
+          <button
+            type="button"
+            aria-label="Insert an emoji"
+            title="Insert an emoji"
+            onClick={() => setEmojiOpen((v) => !v)}
+            style={iconBtn(c)}
+          >
+            😊
+          </button>
+          {emojiOpen && (
+            <div
+              style={{
+                position: "absolute",
+                bottom: 52,
+                left: 0,
+                zIndex: 40,
+                display: "grid",
+                gridTemplateColumns: "repeat(8, 30px)",
+                gap: 4,
+                padding: 8,
+                borderRadius: 14,
+                background: c.surface,
+                border: `1px solid ${c.line}`,
+                boxShadow: "0 14px 34px rgba(0,0,0,.28)",
+              }}
+            >
+              {EMOJI_PICKER.map((e) => (
+                <button
+                  key={e}
+                  type="button"
+                  onClick={() => {
+                    onChange(value + e);
+                    setEmojiOpen(false);
+                    ref.current?.focus();
+                  }}
+                  style={{
+                    background: "transparent",
+                    border: 0,
+                    cursor: "pointer",
+                    fontSize: 18,
+                    lineHeight: 1,
+                    padding: 3,
+                  }}
+                >
+                  {e}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
         <textarea
           ref={ref}
           value={value}
