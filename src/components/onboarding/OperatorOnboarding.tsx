@@ -1286,8 +1286,8 @@ function ListingStep({
                 className="border rounded-full px-[14px] py-[8px] text-[12.5px] font-semibold"
                 style={{
                   background: on ? "#2DE2F2" : "#14202B",
-                  borderColor: on ? "#2DE2F2" : "rgba(13,34,54,.10)",
-                  color: on ? "#2DE2F2" : "#F0F2F5",
+                  borderColor: on ? "#2DE2F2" : "rgba(255,255,255,.12)",
+                  color: on ? "#0D161F" : "#F0F2F5",
                 }}
               >
                 {ch.label}
