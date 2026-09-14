@@ -81,11 +81,8 @@ const relativeTime = (iso: string | null | undefined) => {
   return new Date(then).toLocaleDateString("en-US", { month: "short", day: "numeric" });
 };
 
-const timeLabel = (iso: string) =>
-  new Date(iso).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
 
-const dayLabel = (iso: string) =>
-  new Date(iso).toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" });
+
 
 function useToast() {
   const [toast, setToast] = useState("");
