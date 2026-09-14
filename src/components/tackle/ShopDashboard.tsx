@@ -436,6 +436,82 @@ export function ProductForm({
           />
         </Field>
       </div>
+      <div style={{ marginTop: 14 }}>
+        <Field label="Tags">
+          <div
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: 8,
+              alignItems: "center",
+              border: "1px solid rgba(45,226,242,.22)",
+              borderRadius: 10,
+              background: "#0D161F",
+              padding: "8px 10px",
+            }}
+          >
+            {tags.map((t) => (
+              <span
+                key={t}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 6,
+                  background: "#2DE2F2",
+                  color: "#0D161F",
+                  fontSize: 12,
+                  fontWeight: 700,
+                  borderRadius: 999,
+                  padding: "4px 10px",
+                }}
+              >
+                {t}
+                <button
+                  type="button"
+                  aria-label={`Remove tag ${t}`}
+                  onClick={() => setTags((prev) => prev.filter((x) => x !== t))}
+                  style={{
+                    border: "none",
+                    background: "transparent",
+                    color: "#0D161F",
+                    cursor: "pointer",
+                    fontSize: 13,
+                    lineHeight: 1,
+                    padding: 0,
+                  }}
+                >
+                  ×
+                </button>
+              </span>
+            ))}
+            <input
+              value={tagDraft}
+              onChange={(e) => setTagDraft(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === ",") {
+                  e.preventDefault();
+                  addTag(tagDraft);
+                } else if (e.key === "Backspace" && !tagDraft) {
+                  setTags((prev) => prev.slice(0, -1));
+                }
+              }}
+              onBlur={() => addTag(tagDraft)}
+              placeholder={tags.length ? "Add another…" : "Type a tag and press Enter"}
+              style={{
+                ...inputStyle,
+                border: "none",
+                background: "transparent",
+                padding: "4px 2px",
+                flex: 1,
+                minWidth: 160,
+              }}
+            />
+          </div>
+        </Field>
+        <div style={{ fontSize: 11.5, color: "#92A0AB", marginTop: 6 }}>
+          Your own labels — press Enter or comma after each one. Up to 20.
+        </div>
+      </div>
       <div style={{ marginTop: 18 }}>
         <div
           style={{
