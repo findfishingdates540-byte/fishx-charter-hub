@@ -15,6 +15,7 @@ import {
   getShippingSettings,
   saveShippingSettings,
   refundProductOrder,
+  getShopBookings,
 } from "@/lib/tackle.functions";
 import {
   OperatorShell,
@@ -43,6 +44,8 @@ export type Product = {
   images: string[];
   /** Signed, renderable versions of `images`. */
   imageUrls: (string | null)[];
+  /** Owner-authored free-text tags (stored in product metadata). */
+  tags?: string[];
 };
 
 type Order = {
@@ -129,6 +132,7 @@ export function ShopDashboard({
       icon: <CartIcon />,
       badge: data.kpis.toShip || undefined,
     },
+    { key: "bookings", label: "Bookings", icon: <CartIcon /> },
     { key: "wholesale", label: "Wholesale", icon: <TagIcon /> },
     { key: "messages", label: "Messages", icon: <CartIcon /> },
     { key: "payments", label: "Payments", icon: <TagIcon /> },
@@ -139,6 +143,10 @@ export function ShopDashboard({
     overview: { t: "Shop overview", s: "Revenue, orders and inventory health." },
     products: { t: `${copy.productLabel} catalog`, s: "Publish, edit, restock." },
     orders: { t: copy.ordersLabel, s: "Fulfillment queue and history." },
+    bookings: {
+      t: "Bookings",
+      s: "Trips booked on your storefront. Confirmed trips appear here automatically.",
+    },
     wholesale: {
       t: "Wholesale & variants",
       s: "Trade pricing, price breaks, buyer approvals and product options.",
@@ -163,6 +171,7 @@ export function ShopDashboard({
       {active === "overview" && <Overview data={data} />}
       {active === "products" && <Products data={data} />}
       {active === "orders" && <Orders businessId={businessId} data={data} />}
+      {active === "bookings" && <Bookings businessId={businessId} />}
       {active === "wholesale" && (
         <WholesalePanel businessId={businessId} products={data.products} />
       )}
@@ -329,6 +338,25 @@ function Products({ data }: { data: any }) {
                   <div style={{ minWidth: 0 }}>
                     <div style={{ fontSize: 14, fontWeight: 600, color: "#F0F2F5" }}>{p.title}</div>
                     <div style={{ fontSize: 12, color: "#92A0AB" }}>{p.category ?? "Uncategorised"}</div>
+                    {!!p.tags?.length && (
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginTop: 5 }}>
+                        {p.tags.slice(0, 4).map((t) => (
+                          <span
+                            key={t}
+                            style={{
+                              fontSize: 10.5,
+                              fontWeight: 700,
+                              color: "#2DE2F2",
+                              border: "1px solid rgba(45,226,242,.3)",
+                              borderRadius: 999,
+                              padding: "2px 8px",
+                            }}
+                          >
+                            {t}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
                 <span style={{ fontSize: 13, color: "#F0F2F5" }}>{p.sku ?? "—"}</span>
@@ -373,6 +401,7 @@ export function ProductForm({
     lowStockThreshold: number;
     isPublished: boolean;
     images: string[];
+    tags: string[];
   }) => void;
   onDelete?: () => void;
   saving: boolean;
@@ -387,6 +416,19 @@ export function ProductForm({
   // Seed from the saved product, otherwise editing silently wipes the copy.
   const [description, setDescription] = useState(initial?.description ?? "");
   const [images, setImages] = useState<string[]>(initial?.images ?? []);
+  const [tags, setTags] = useState<string[]>(initial?.tags ?? []);
+  const [tagDraft, setTagDraft] = useState("");
+
+  const addTag = (raw: string) => {
+    const next = raw.trim().replace(/,+$/, "");
+    if (!next) return;
+    setTags((prev) =>
+      prev.some((t) => t.toLowerCase() === next.toLowerCase()) || prev.length >= 20
+        ? prev
+        : [...prev, next.slice(0, 40)],
+    );
+    setTagDraft("");
+  };
 
   return (
     <Card title={initial ? "Edit product" : "Add product"}>
@@ -419,6 +461,82 @@ export function ProductForm({
             style={{ ...inputStyle, fontFamily: "inherit" }}
           />
         </Field>
+      </div>
+      <div style={{ marginTop: 14 }}>
+        <Field label="Tags">
+          <div
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: 8,
+              alignItems: "center",
+              border: "1px solid rgba(45,226,242,.22)",
+              borderRadius: 10,
+              background: "#0D161F",
+              padding: "8px 10px",
+            }}
+          >
+            {tags.map((t) => (
+              <span
+                key={t}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 6,
+                  background: "#2DE2F2",
+                  color: "#0D161F",
+                  fontSize: 12,
+                  fontWeight: 700,
+                  borderRadius: 999,
+                  padding: "4px 10px",
+                }}
+              >
+                {t}
+                <button
+                  type="button"
+                  aria-label={`Remove tag ${t}`}
+                  onClick={() => setTags((prev) => prev.filter((x) => x !== t))}
+                  style={{
+                    border: "none",
+                    background: "transparent",
+                    color: "#0D161F",
+                    cursor: "pointer",
+                    fontSize: 13,
+                    lineHeight: 1,
+                    padding: 0,
+                  }}
+                >
+                  ×
+                </button>
+              </span>
+            ))}
+            <input
+              value={tagDraft}
+              onChange={(e) => setTagDraft(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === ",") {
+                  e.preventDefault();
+                  addTag(tagDraft);
+                } else if (e.key === "Backspace" && !tagDraft) {
+                  setTags((prev) => prev.slice(0, -1));
+                }
+              }}
+              onBlur={() => addTag(tagDraft)}
+              placeholder={tags.length ? "Add another…" : "Type a tag and press Enter"}
+              style={{
+                ...inputStyle,
+                border: "none",
+                background: "transparent",
+                padding: "4px 2px",
+                flex: 1,
+                minWidth: 160,
+              }}
+            />
+          </div>
+        </Field>
+        <div style={{ fontSize: 11.5, color: "#92A0AB", marginTop: 6 }}>
+          Your own labels — press Enter or comma after each one. Up to 20.
+        </div>
       </div>
       <div style={{ marginTop: 18 }}>
         <div
@@ -493,6 +611,9 @@ export function ProductForm({
               lowStockThreshold: Number(low) || 5,
               isPublished,
               images,
+              tags: tagDraft.trim()
+                ? Array.from(new Set([...tags, tagDraft.trim().slice(0, 40)]))
+                : tags,
             })
           }
           style={btnPrimary}
@@ -994,5 +1115,109 @@ function GearIcon() {
       <circle cx="12" cy="12" r="3" />
       <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1A1.7 1.7 0 0 0 9 19.4a1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1A1.7 1.7 0 0 0 15 4.6a1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1A1.7 1.7 0 0 0 19.4 9v.1a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z" />
     </svg>
+  );
+}
+
+/** Trips booked on this storefront — confirmed ones land here automatically. */
+function Bookings({ businessId }: { businessId: string }) {
+  const fetchBookings = useServerFn(getShopBookings);
+  const { data, isLoading } = useQuery({
+    queryKey: ["shop-bookings", businessId],
+    queryFn: () => fetchBookings({ data: { businessId } }),
+  });
+  const [tab, setTab] = useState<"upcoming" | "confirmed" | "all">("confirmed");
+
+  const rows = (data ?? []) as any[];
+  const today = new Date().toISOString().slice(0, 10);
+  const filtered = rows.filter((b) => {
+    if (tab === "all") return true;
+    if (tab === "confirmed") return b.status === "confirmed";
+    return (
+      (b.status === "confirmed" || b.status === "in_progress") &&
+      (b.tripDate ?? "") >= today
+    );
+  });
+
+  const tone = (status: string) =>
+    status === "confirmed" || status === "completed"
+      ? "green"
+      : status === "cancelled" || status === "declined" || status === "expired"
+        ? "red"
+        : "gold";
+
+  return (
+    <Card
+      title="Booked trips"
+      right={
+        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+          {(["confirmed", "upcoming", "all"] as const).map((k) => (
+            <button
+              key={k}
+              onClick={() => setTab(k)}
+              style={{
+                background: tab === k ? "#2DE2F2" : "transparent",
+                color: tab === k ? "#0D161F" : "#92A0AB",
+                border: "1px solid rgba(45,226,242,.22)",
+                borderRadius: 999,
+                padding: "5px 12px",
+                fontSize: 12,
+                fontWeight: 700,
+                cursor: "pointer",
+                textTransform: "capitalize",
+              }}
+            >
+              {k}
+            </button>
+          ))}
+        </div>
+      }
+    >
+      {isLoading ? (
+        <div style={{ color: "#92A0AB", fontSize: 13 }}>Loading bookings…</div>
+      ) : filtered.length === 0 ? (
+        <Empty label="No bookings here yet. Confirmed trips from your storefront show up automatically." />
+      ) : (
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          {filtered.map((b) => (
+            <div
+              key={b.id}
+              style={{
+                display: "flex",
+                flexWrap: "wrap",
+                alignItems: "center",
+                gap: 12,
+                border: "1px solid rgba(255,255,255,.06)",
+                borderRadius: 12,
+                padding: "12px 14px",
+                background: "#14202B",
+              }}
+            >
+              <div style={{ minWidth: 180, flex: 1 }}>
+                <div style={{ color: "#F0F2F5", fontWeight: 700, fontSize: 14 }}>
+                  {b.title}
+                </div>
+                <div style={{ color: "#92A0AB", fontSize: 12.5, marginTop: 2 }}>
+                  {b.anglerName} · {b.partySize} angler{b.partySize === 1 ? "" : "s"} · Ref {b.reference}
+                </div>
+              </div>
+              <div style={{ color: "#F0F2F5", fontSize: 13, minWidth: 140 }}>
+                {b.tripDate
+                  ? new Date(`${b.tripDate}T00:00:00`).toLocaleDateString("en-US", {
+                      weekday: "short",
+                      month: "short",
+                      day: "numeric",
+                    })
+                  : "Date TBC"}
+                {b.startTime ? ` · ${b.startTime}` : ""}
+              </div>
+              <div style={{ color: "#F0F2F5", fontSize: 13, fontWeight: 700, minWidth: 90 }}>
+                {money(b.totalCents)}
+              </div>
+              <StatusPill label={String(b.status).replace(/_/g, " ")} tone={tone(b.status) as any} />
+            </div>
+          ))}
+        </div>
+      )}
+    </Card>
   );
 }
