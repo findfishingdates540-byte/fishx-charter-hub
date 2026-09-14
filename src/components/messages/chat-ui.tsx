@@ -690,3 +690,58 @@ export function useScrollToBottom(dep: unknown) {
   }, [dep]);
   return ref;
 }
+
+/* --------------------------------------------------------------- outbox --- */
+
+type OutboxItem = ChatMessage & { _reply: string | null };
+
+/**
+ * Optimistic send queue: the message appears instantly, shows "Sending…",
+ * and offers a Retry button if the server call fails.
+ */
+export function useOutbox(
+  viewerId: string,
+  send: (body: string, replyToId: string | null) => Promise<unknown>,
+  onSent: () => void,
+) {
+  const [items, setItems] = useState<OutboxItem[]>([]);
+  const sendRef = useRef(send);
+  sendRef.current = send;
+  const sentRef = useRef(onSent);
+  sentRef.current = onSent;
+
+  const run = (entry: OutboxItem) => {
+    setItems((prev) => prev.map((i) => (i.id === entry.id ? { ...i, pending: true, failed: false } : i)));
+    void sendRef
+      .current(entry.body ?? "", entry._reply)
+      .then(() => {
+        setItems((prev) => prev.filter((i) => i.id !== entry.id));
+        sentRef.current();
+      })
+      .catch(() => {
+        setItems((prev) =>
+          prev.map((i) => (i.id === entry.id ? { ...i, pending: false, failed: true } : i)),
+        );
+      });
+  };
+
+  const push = (body: string, replyToId: string | null) => {
+    const entry: OutboxItem = {
+      id: `local-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+      body,
+      sender_id: viewerId,
+      created_at: new Date().toISOString(),
+      pending: true,
+      _reply: replyToId,
+    };
+    setItems((prev) => [...prev, entry]);
+    run(entry);
+  };
+
+  const retry = (id: string) => {
+    const entry = items.find((i) => i.id === id);
+    if (entry) run(entry);
+  };
+
+  return { items, push, retry };
+}
