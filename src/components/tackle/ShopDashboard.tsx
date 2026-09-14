@@ -177,11 +177,11 @@ export function ShopDashboard({
       nav={nav}
       active={active}
       onNav={setActive}
-      pageTitle={titles[active].t}
-      pageSub={titles[active].s}
+      pageTitle={(titles[active] ?? titles.overview).t}
+      pageSub={(titles[active] ?? titles.overview).s}
     >
       {active === "overview" && <Overview data={data} />}
-      {active === "products" && <Products data={data} />}
+      {active === "products" && <Products data={data} businessId={businessId} />}
       {active === "orders" && <Orders businessId={businessId} data={data} />}
       {active === "bookings" && <Bookings businessId={businessId} />}
       {active === "wholesale" && (
