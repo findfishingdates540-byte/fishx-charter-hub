@@ -214,6 +214,145 @@ function Ticks({ read, c, onAccent }: { read: boolean; c: ChatPalette; onAccent:
   );
 }
 
+function iconBtn(c: ChatPalette): CSSProperties {
+  return {
+    flex: "none",
+    width: 44,
+    height: 44,
+    borderRadius: 14,
+    border: `1px solid ${c.line}`,
+    background: c.field,
+    color: c.text,
+    fontSize: 16,
+    lineHeight: 1,
+    cursor: "pointer",
+    display: "grid",
+    placeItems: "center",
+  };
+}
+
+const clock = (ms: number) => {
+  const total = Math.max(0, Math.round(ms / 1000));
+  return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, "0")}`;
+};
+
+/** Voice note player: play/pause, scrubber and running time. */
+export function VoiceMessagePlayer({
+  c,
+  url,
+  durationMs,
+  mine,
+}: {
+  c: ChatPalette;
+  url: string;
+  durationMs?: number | null;
+  mine: boolean;
+}) {
+  const audio = useRef<HTMLAudioElement | null>(null);
+  const [playing, setPlaying] = useState(false);
+  const [pos, setPos] = useState(0);
+  const [len, setLen] = useState((durationMs ?? 0) / 1000);
+  const fg = mine ? c.bubbleOutText : c.text;
+
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 190, padding: "2px 0" }}>
+      <audio
+        ref={audio}
+        src={url}
+        preload="metadata"
+        onLoadedMetadata={(e) => {
+          const d = (e.target as HTMLAudioElement).duration;
+          if (Number.isFinite(d) && d > 0) setLen(d);
+        }}
+        onTimeUpdate={(e) => setPos((e.target as HTMLAudioElement).currentTime)}
+        onEnded={() => {
+          setPlaying(false);
+          setPos(0);
+        }}
+      />
+      <button
+        type="button"
+        aria-label={playing ? "Pause voice note" : "Play voice note"}
+        onClick={() => {
+          const el = audio.current;
+          if (!el) return;
+          if (playing) {
+            el.pause();
+            setPlaying(false);
+          } else {
+            void el.play();
+            setPlaying(true);
+          }
+        }}
+        style={{
+          width: 32,
+          height: 32,
+          borderRadius: "50%",
+          border: 0,
+          flex: "none",
+          cursor: "pointer",
+          background: mine ? "rgba(255,255,255,.22)" : c.accentSoft,
+          color: fg,
+          fontSize: 12,
+        }}
+      >
+        {playing ? "❚❚" : "▶"}
+      </button>
+      <div style={{ flex: 1, minWidth: 90 }}>
+        <div style={{ height: 4, borderRadius: 3, background: mine ? "rgba(255,255,255,.25)" : c.quote }}>
+          <div
+            style={{
+              height: "100%",
+              borderRadius: 3,
+              background: mine ? c.bubbleOutText : c.accent,
+              width: `${len ? Math.min(100, (pos / len) * 100) : 0}%`,
+            }}
+          />
+        </div>
+      </div>
+      <span style={{ fontSize: 11, opacity: 0.85, color: fg, flex: "none" }}>
+        {clock((playing || pos ? pos : len) * 1000)}
+      </span>
+    </div>
+  );
+}
+
+/** Image or voice note shown inside a bubble. */
+export function AttachmentView({
+  c,
+  url,
+  kind,
+  durationMs,
+  mine,
+}: {
+  c: ChatPalette;
+  url: string;
+  kind: "image" | "audio";
+  durationMs?: number | null;
+  mine: boolean;
+}) {
+  if (kind === "audio") {
+    return <VoiceMessagePlayer c={c} url={url} durationMs={durationMs} mine={mine} />;
+  }
+  return (
+    <a href={url} target="_blank" rel="noreferrer" style={{ display: "block", marginBottom: 4 }}>
+      <MediaImg
+        src={url}
+        alt="Shared photo"
+        style={{
+          display: "block",
+          maxWidth: 260,
+          width: "100%",
+          maxHeight: 320,
+          objectFit: "cover",
+          borderRadius: 12,
+          border: `1px solid ${c.line}`,
+        }}
+      />
+    </a>
+  );
+}
+
 /** One message row: quoted reply, bubble, reactions, hover actions. */
 export function MessageBubble({
   c,
@@ -338,7 +477,7 @@ export function MessageBubble({
             </div>
           )}
           {!deleted && message.attachment_url && (
-            <Attachment
+            <AttachmentView
               c={c}
               url={message.attachment_url}
               kind={message.attachment_type === "audio" ? "audio" : "image"}
@@ -891,4 +1030,45 @@ export function useOutbox(
   };
 
   return { items, push, retry };
+}
+
+
+/* ---------------------------------------------------------------- paging -- */
+
+/**
+ * Progressive rendering without a "show more" button: keeps a window of the
+ * newest `step` items and grows it automatically as the user scrolls up.
+ * Attach `sentinelRef` to an element rendered above the first visible item.
+ */
+export function useGrowOnScroll(total: number, step = 30) {
+  const [count, setCount] = useState(step);
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    setCount((c) => Math.min(Math.max(c, step), Math.max(total, step)));
+  }, [total, step]);
+
+  useEffect(() => {
+    const node = sentinelRef.current;
+    if (!node || count >= total) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          setCount((c) => Math.min(c + step, total));
+        }
+      },
+      { rootMargin: "120px" },
+    );
+    io.observe(node);
+    return () => io.disconnect();
+  }, [count, total, step]);
+
+  return { count, sentinelRef, hasMore: count < total };
+}
+
+/** Small "loading older messages" strip rendered at the top of a transcript. */
+export function LoadingOlder({ c, label = "Loading earlier messages…" }: { c: ChatPalette; label?: string }) {
+  return (
+    <div style={{ textAlign: "center", fontSize: 11.5, color: c.mut, padding: "6px 0" }}>{label}</div>
+  );
 }
