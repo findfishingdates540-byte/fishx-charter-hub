@@ -62,6 +62,14 @@ export function chatPalette(theme: ChatTheme) {
 
 export const REACTION_CHOICES = ["👍", "❤️", "😂", "🎣", "🔥", "🙏"];
 
+/** Compact emoji palette for the composer. */
+export const EMOJI_PICKER = [
+  "😀","😄","😅","😂","🙂","😉","😍","😎",
+  "🤙","👍","👏","🙏","💪","🤝","🔥","✨",
+  "🎣","🐟","🐠","🦈","⚓","🚤","🌊","🌅",
+  "☀️","🌧️","💨","🧭","📍","⏰","✅","❌",
+];
+
 /* ------------------------------------------------------------- formatting -- */
 
 export const relativeTime = (iso?: string | null) => {
