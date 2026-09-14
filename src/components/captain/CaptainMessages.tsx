@@ -7,8 +7,26 @@ import { MediaImg } from "@/components/media/MediaImg";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { listCaptainConversations, getCaptainThread } from "@/lib/captain-management.functions";
-import { sendMessage, markThreadRead } from "@/lib/messages.functions";
+import {
+  sendMessage,
+  markThreadRead,
+  deleteBookingMessage,
+  toggleBookingReaction,
+} from "@/lib/messages.functions";
 import { BusinessInbox } from "@/components/messages/BusinessInbox";
+import {
+  ChatAvatar,
+  ChatComposer,
+  DaySeparator,
+  MessageBubble,
+  chatPalette,
+  dayLabel,
+  summariseReactions,
+  useOutbox,
+  useRealtimeTable,
+  useScrollToBottom,
+  type ChatMessage,
+} from "@/components/messages/chat-ui";
 
 const C = {
   card: "var(--card, #14202B)",
