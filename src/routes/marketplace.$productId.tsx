@@ -56,9 +56,17 @@ export const Route = createFileRoute("/marketplace/$productId")({
         variants: [] as ProductVariant[],
       };
     // Real vendor inventory row (UUID id).
-    const isUuid = /^[0-9a-f-]{36}$/i.test(params.productId);
+    const isUuid =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+        params.productId,
+      );
     if (isUuid) {
-      const row = await getStoreProduct({ data: { productId: params.productId } });
+      let row: StoreProduct | null = null;
+      try {
+        row = await getStoreProduct({ data: { productId: params.productId } });
+      } catch {
+        row = null;
+      }
       if (row) {
         return {
           product: rowToProduct(row) as Product | null,
@@ -66,10 +74,11 @@ export const Route = createFileRoute("/marketplace/$productId")({
           variants: (row.variants ?? []) as ProductVariant[],
         };
       }
-      // Owner preview mode: product may be unpublished; load client-side.
-      if (deps.preview) return { product: null, businessId: null, variants: [] };
     }
+    // Owner preview mode: product may be unpublished; load client-side.
+    if (deps.preview) return { product: null, businessId: null, variants: [] };
     throw notFound();
+
   },
 
   head: ({ loaderData }) => {
