@@ -155,9 +155,13 @@ export const sendBusinessMessage = createServerFn({ method: "POST" })
     z
       .object({
         conversationId: z.string().uuid(),
-        body: z.string().trim().min(1).max(4000),
+        body: z.string().trim().max(4000).default(""),
         replyToId: z.string().uuid().nullish(),
+        attachmentUrl: z.string().max(600).nullish(),
+        attachmentType: z.enum(["image", "audio"]).nullish(),
+        attachmentDurationMs: z.number().int().positive().nullish(),
       })
+      .refine((v) => v.body.trim().length > 0 || !!v.attachmentUrl, "Message is empty")
       .parse(input),
   )
   .handler(async ({ data, context }) => {
@@ -173,6 +177,9 @@ export const sendBusinessMessage = createServerFn({ method: "POST" })
         sender_side: side,
         body: data.body,
         reply_to_id: data.replyToId ?? null,
+        attachment_url: data.attachmentUrl ?? null,
+        attachment_type: data.attachmentUrl ? data.attachmentType ?? null : null,
+        attachment_duration_ms: data.attachmentDurationMs ?? null,
       })
       .select("id,body,sender_id,sender_side,created_at,read_at,is_deleted,reply_to_id,attachment_url,attachment_type,attachment_duration_ms")
       .single();
