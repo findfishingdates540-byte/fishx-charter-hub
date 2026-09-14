@@ -89,8 +89,56 @@ export const Route = createFileRoute("/marketplace/$productId")({
       ],
     };
   },
-  component: ProductDetail,
+  component: ProductPage,
 });
+
+function ProductPage() {
+  const data = Route.useLoaderData();
+  const { preview } = Route.useSearch();
+  const { productId } = Route.useParams();
+  const previewFn = useServerFn(previewStoreProduct);
+  const q = useQuery({
+    queryKey: ["product-preview", productId],
+    enabled: preview && !data.product,
+    queryFn: () => previewFn({ data: { productId } }),
+  });
+
+  if (data.product) {
+    return (
+      <ProductDetail
+        product={data.product}
+        businessId={data.businessId}
+        variants={data.variants}
+        preview={preview}
+      />
+    );
+  }
+  if (preview) {
+    if (q.isLoading) {
+      return (
+        <div style={{ minHeight: "60vh", display: "grid", placeItems: "center", fontFamily: V.sans, color: V.tmut }}>
+          Loading product preview…
+        </div>
+      );
+    }
+    if (q.isError || !q.data) {
+      return (
+        <div style={{ minHeight: "60vh", display: "grid", placeItems: "center", fontFamily: V.sans, color: V.tmut, padding: 24, textAlign: "center" }}>
+          We couldn't load that preview. Make sure you're signed in with the shop account that owns this product.
+        </div>
+      );
+    }
+    return (
+      <ProductDetail
+        product={rowToProduct(q.data)}
+        businessId={q.data.businessId}
+        variants={q.data.variants ?? []}
+        preview
+      />
+    );
+  }
+  return null;
+}
 
 const V = {
   serif: "'Outfit',Georgia,serif",
@@ -109,8 +157,17 @@ const V = {
   lined: "rgba(255,255,255,.12)",
 };
 
-function ProductDetail() {
-  const { product, businessId, variants } = Route.useLoaderData();
+function ProductDetail({
+  product,
+  businessId,
+  variants,
+  preview = false,
+}: {
+  product: Product;
+  businessId: string | null;
+  variants: ProductVariant[];
+  preview?: boolean;
+}) {
   const tile = tileFor(product.cat);
   const related = CATALOG.filter((p) => p.cat === product.cat && p.id !== product.id).slice(0, 3);
   const startCheckout = useServerFn(createProductCheckout);
