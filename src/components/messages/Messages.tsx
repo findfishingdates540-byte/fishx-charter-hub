@@ -187,6 +187,12 @@ function ThreadList({ activeId }: { activeId: string | null }) {
     queryKey: ["message-threads"],
     queryFn: () => listMessageThreads(),
   });
+  // Conversations stream in as the list is scrolled — no "show more" button.
+  const {
+    count: listCount,
+    sentinelRef: listSentinel,
+    hasMore: moreThreads,
+  } = useGrowOnScroll(data.threads.length, 15);
 
   return (
     <aside
@@ -360,6 +366,11 @@ function ThreadList({ activeId }: { activeId: string | null }) {
               </Link>
             );
           })}
+          {moreThreads && (
+            <div ref={listSentinel}>
+              <LoadingOlder c={chatPalette("light")} label="Loading more conversations…" />
+            </div>
+          )}
         </div>
       )}
     </aside>

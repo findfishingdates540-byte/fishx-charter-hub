@@ -186,7 +186,7 @@ export function BusinessInbox({
           overflowY: "auto",
         }}
       >
-        {threads.map((t) => {
+        {threads.slice(0, listCount).map((t) => {
           const on = t.id === activeId;
           const snippet = t.lastMessage?.is_deleted
             ? "Message deleted"
