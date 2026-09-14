@@ -43,7 +43,7 @@ const dayLabel = (iso: string) =>
 function Avatar({ label, url, size = 44 }: { label: string; url?: string | null; size?: number }) {
   if (url) {
     return (
-      <img
+      <MediaImg
         src={url}
         alt={label}
         style={{ width: size, height: size, borderRadius: "50%", objectFit: "cover", flex: "none" }}

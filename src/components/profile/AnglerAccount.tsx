@@ -263,7 +263,7 @@ export function AnglerAccount({ embedded = false }: { embedded?: boolean } = {})
         }}
       >
         {avatarUrl ? (
-          <img
+          <MediaImg
             src={avatarUrl}
             alt=""
             style={{

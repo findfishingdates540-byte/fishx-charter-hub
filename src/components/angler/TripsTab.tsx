@@ -212,7 +212,7 @@ function TripCard({ trip, bucket }: { trip: Trip; bucket: Bucket }) {
       className="fx-trip-card"
     >
       <div style={{ position: "relative", minHeight: 240 }}>
-        <img
+        <MediaImg
           src={trip.service?.hero_url || trip.business?.hero_url || FALLBACK}
           alt={trip.service?.title ?? "Charter"}
           style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }}

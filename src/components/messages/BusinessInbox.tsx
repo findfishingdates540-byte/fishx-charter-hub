@@ -63,7 +63,7 @@ const timeLabel = (iso: string) =>
 
 function Avatar({ label, url, size = 44, c }: { label: string; url?: string | null; size?: number; c: ReturnType<typeof palette> }) {
   if (url) {
-    return <img src={url} alt={label} style={{ width: size, height: size, borderRadius: "50%", objectFit: "cover", flex: "none" }} />;
+    return <MediaImg src={url} alt={label} style={{ width: size, height: size, borderRadius: "50%", objectFit: "cover", flex: "none" }} />;
   }
   return (
     <span

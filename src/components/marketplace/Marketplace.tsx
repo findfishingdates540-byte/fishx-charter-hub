@@ -563,7 +563,7 @@ export function Marketplace() {
                       }}
                     >
                       {p.image ? (
-                        <img
+                        <MediaImg
                           src={p.image}
                           alt={p.name}
                           loading="lazy"

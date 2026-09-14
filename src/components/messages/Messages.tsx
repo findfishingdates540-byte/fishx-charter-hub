@@ -135,7 +135,7 @@ function CounterpartAvatar({
 }) {
   if (url) {
     return (
-      <img
+      <MediaImg
         src={url}
         alt=""
         style={{ width: size, height: size, borderRadius: "50%", objectFit: "cover", flex: "none" }}

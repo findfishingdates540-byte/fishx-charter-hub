@@ -230,7 +230,7 @@ export function WishlistSection() {
             style={{ display: "block", height: 140, background: "rgba(255,255,255,.04)" }}
           >
             {w.image && (
-              <img src={w.image} alt={w.title} loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+              <MediaImg src={w.image} alt={w.title} loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
             )}
           </Link>
           <div style={{ padding: 14, display: "flex", flexDirection: "column", gap: 6, flex: 1 }}>
@@ -310,7 +310,7 @@ export function FollowedSellersSection() {
               }}
             >
               {s.logoUrl ? (
-                <img src={s.logoUrl} alt={s.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                <MediaImg src={s.logoUrl} alt={s.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
               ) : (
                 s.name.slice(0, 1)
               )}

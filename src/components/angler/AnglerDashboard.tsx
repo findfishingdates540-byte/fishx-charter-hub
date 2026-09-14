@@ -298,7 +298,7 @@ function HomeTab(props: {
       {/* NEXT TRIP HERO */}
       <div style={{ position: "relative", background: "var(--navy)", borderRadius: 22, overflow: "hidden", display: "grid", gridTemplateColumns: "1.05fr 1fr", minHeight: 300, marginBottom: 22 }}>
         <div style={{ position: "relative", minHeight: 240 }}>
-          <img src={nextHero} alt="Upcoming charter" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "50% 40%" }} />
+          <MediaImg src={nextHero} alt="Upcoming charter" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "50% 40%" }} />
           <div style={{ position: "absolute", inset: 0, background: "linear-gradient(90deg,rgba(10,34,54,0) 40%,rgba(10,34,54,.9))" }} />
           <span style={{ position: "absolute", top: 18, left: 18, display: "inline-flex", alignItems: "center", gap: 7, background: "rgba(6,21,31,.66)", backdropFilter: "blur(4px)", color: "#fff", fontSize: 11, fontWeight: 700, letterSpacing: ".08em", textTransform: "uppercase", padding: "7px 12px", borderRadius: 30 }}>
             <span style={{ width: 7, height: 7, borderRadius: "50%", background: "var(--cyan)" }} /> Escrow-protected
@@ -389,7 +389,7 @@ function HomeTab(props: {
               search={{ id: b.id }}
               style={{ display: "flex", alignItems: "center", gap: 14, padding: "13px 0", textDecoration: "none", cursor: "pointer", borderBottom: i < upcoming.length - 1 ? "1px solid var(--line)" : "none" }}
             >
-              <img src={b.service?.hero_url || b.business?.hero_url || DEFAULT_HERO} style={{ width: 56, height: 56, borderRadius: 12, objectFit: "cover", flex: "none" }} alt="" />
+              <MediaImg src={b.service?.hero_url || b.business?.hero_url || DEFAULT_HERO} style={{ width: 56, height: 56, borderRadius: 12, objectFit: "cover", flex: "none" }} alt="" />
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: 14, fontWeight: 600, color: "var(--ink)" }}>{b.service?.title ?? "Charter"}</div>
                 <div style={{ fontSize: 12.5, color: "var(--tmut)" }}>

@@ -1,4 +1,5 @@
 import { PublicHeader } from "@/components/public/PublicHeader";
+import { MediaImg } from "@/components/media/MediaImg";
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { useServerFn } from "@tanstack/react-start";
@@ -280,7 +281,7 @@ function ProductDetail() {
           <div style={{ background: V.card, border: `1px solid ${V.line}`, borderRadius: 22, overflow: "hidden" }}>
             <div style={{ position: "relative", aspectRatio: "1 / 1", background: tile.bg, display: "grid", placeItems: "center" }}>
               {product.image ? (
-                <img src={product.image} alt={product.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                <MediaImg src={product.image} alt={product.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
               ) : (
                 <span style={{ color: tile.ink, opacity: 0.9 }}>
                   <ProductIcon kind={product.icon} size={180} />

@@ -260,7 +260,7 @@ function ContextCard({ data }: { data: ReviewContext }) {
         flexWrap: "wrap",
       }}
     >
-      <img
+      <MediaImg
         src={data.service?.hero_url ?? DEFAULT_HERO}
         alt=""
         style={{ width: 64, height: 52, borderRadius: 10, objectFit: "cover", flex: "none" }}
@@ -369,7 +369,7 @@ function SuccessState({
             marginBottom: 28,
           }}
         >
-          <img
+          <MediaImg
             src={data.service?.hero_url ?? DEFAULT_HERO}
             alt=""
             style={{ width: 72, height: 72, borderRadius: 12, objectFit: "cover", flex: "none" }}
