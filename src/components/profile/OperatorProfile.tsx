@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { MediaImg } from "@/components/media/MediaImg";
+import { cachedMediaUrl } from "@/lib/media-url";
 import { BrandLogo } from "@/components/brand/BrandLogo";
 import { MarinaServiceRequest } from "@/components/profile/MarinaServiceRequest";
 import { StorefrontBooking } from "@/components/profile/StorefrontBooking";
@@ -276,7 +277,7 @@ export function OperatorProfile({
       </header>
 
       {/* Cover */}
-      <div style={{ position: "relative", height: 280, overflow: "hidden", background: b.hero_url ? `#0D161F url(${b.hero_url}) center/cover` : heroFallback }}>
+      <div style={{ position: "relative", height: 280, overflow: "hidden", background: b.hero_url ? `#0D161F url(${cachedMediaUrl(b.hero_url)}) center/cover` : heroFallback }}>
         <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg,rgba(10,34,54,.35) 0%,rgba(10,34,54,0) 40%,rgba(238,242,245,0) 70%,#F0F2F5 100%)" }} />
       </div>
 
@@ -399,7 +400,7 @@ export function OperatorProfile({
                             }}
                             style={{ width: "100%", display: "flex", alignItems: "center", gap: 16, padding: 14, background: "transparent", border: 0, cursor: "pointer", textAlign: "left", color: "#F0F2F5" }}
                           >
-                            <div style={{ width: 96, height: 72, borderRadius: 12, flex: "none", background: group.image ? `#0D161F url(${group.image}) center/cover` : "linear-gradient(135deg,#1C2936,#0D161F)" }} />
+                            <div style={{ width: 96, height: 72, borderRadius: 12, flex: "none", background: group.image ? `#0D161F url(${cachedMediaUrl(group.image)}) center/cover` : "linear-gradient(135deg,#1C2936,#0D161F)" }} />
                             <div style={{ flex: 1, minWidth: 0 }}>
                               <h3 style={{ fontFamily: "'Outfit', Georgia, serif", fontWeight: 600, fontSize: 19, margin: 0 }}>{group.charterName}</h3>
                               <div style={{ fontSize: 12.5, color: "#92A0AB", marginTop: 4 }}>
@@ -451,7 +452,7 @@ export function OperatorProfile({
                                     className="fx-storefront-package"
                                     style={{ cursor: "pointer", background: "#1C2936", border: `1px solid ${active ? "#2DE2F2" : "rgba(255,255,255,.07)"}`, borderRadius: 14, padding: 12, display: "flex", alignItems: "center", gap: 14 }}
                                   >
-                                    <div style={{ width: 84, height: 62, borderRadius: 10, flex: "none", background: s.hero_url ? `#e9edf1 url(${s.hero_url}) center/cover` : "linear-gradient(135deg,#F0F2F5,#031029)" }} />
+                                    <div style={{ width: 84, height: 62, borderRadius: 10, flex: "none", background: s.hero_url ? `#e9edf1 url(${cachedMediaUrl(s.hero_url)}) center/cover` : "linear-gradient(135deg,#F0F2F5,#031029)" }} />
                                     <div style={{ flex: 1, minWidth: 0 }}>
                                       <div style={{ fontWeight: 600, fontSize: 15, color: "#F0F2F5" }}>{s.title}</div>
                                       <div style={{ fontSize: 12.5, color: "#92A0AB", marginTop: 3 }}>
@@ -486,7 +487,7 @@ export function OperatorProfile({
                       const active = selectedServiceId === s.id;
                       return (
                         <article key={s.id} className="fx-storefront-package" style={{ background: "#14202B", border: `1px solid ${active ? "#2DE2F2" : "rgba(255,255,255,.07)"}`, borderRadius: 18, padding: 16, display: "flex", alignItems: "center", gap: 18 }}>
-                          <div style={{ width: 104, height: 80, borderRadius: 12, flex: "none", background: s.hero_url ? `#e9edf1 url(${s.hero_url}) center/cover` : "linear-gradient(135deg,#F0F2F5,#031029)" }} />
+                          <div style={{ width: 104, height: 80, borderRadius: 12, flex: "none", background: s.hero_url ? `#e9edf1 url(${cachedMediaUrl(s.hero_url)}) center/cover` : "linear-gradient(135deg,#F0F2F5,#031029)" }} />
                           <div style={{ flex: 1, minWidth: 0 }}>
                             <h3 style={{ fontFamily: "'Outfit', Georgia, serif", fontWeight: 600, fontSize: 19, margin: 0, color: "#F0F2F5" }}>{s.title}</h3>
                             <div style={{ fontSize: 13, color: "#92A0AB", marginTop: 4 }}>
@@ -522,8 +523,8 @@ export function OperatorProfile({
                 <h2 style={sectionTitle}>The fleet</h2>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(240px,1fr))", gap: 16 }}>
                   {boats.map((bt) => {
-                    const cover = bt.hero_image_url ?? bt.image_urls?.[0] ?? null;
-                    const extra = (bt.image_urls ?? []).filter((u) => u && u !== cover);
+                    const cover = cachedMediaUrl(bt.hero_image_url ?? bt.image_urls?.[0] ?? null) || null;
+                    const extra = (bt.image_urls ?? []).map((u) => cachedMediaUrl(u)).filter((u) => u && u !== cover);
                     return (
                       <article key={bt.id} style={{ background: "#1C2936", border: "1px solid rgba(255,255,255,.07)", borderRadius: 16, overflow: "hidden" }}>
                         {cover ? (

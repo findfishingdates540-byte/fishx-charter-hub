@@ -24,7 +24,12 @@ const BUCKETS: Array<{ prefix: string; bucket: string }> = [
   { prefix: "avatars/", bucket: "avatars" },
 ];
 
+const SIGN_RE = /\/storage\/v1\/object\/sign\/(business-media|avatars)\/([^?]+)/;
+
 function match(value: string) {
+  // Legacy signed URLs stored in the DB expire — rewrite them to public URLs.
+  const sign = SIGN_RE.exec(value);
+  if (sign) return { bucket: sign[1]!, path: sign[2]! };
   for (const b of BUCKETS) {
     if (value.startsWith(b.prefix)) return { bucket: b.bucket, path: value.slice(b.prefix.length) };
   }

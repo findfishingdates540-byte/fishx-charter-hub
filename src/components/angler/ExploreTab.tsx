@@ -4,6 +4,7 @@
  * dashboard: results render in-tab and every card books through /booking.
  */
 import { Link } from "@tanstack/react-router";
+import { cachedMediaUrl } from "@/lib/media-url";
 import { useState } from "react";
 import { useSuspenseQuery, useQuery, queryOptions } from "@tanstack/react-query";
 import { getCharterDirectory, searchCharters } from "@/lib/charters.functions";
@@ -358,7 +359,7 @@ function CharterCard({ l, rating }: { l: Listing; rating?: { avg: number; count:
         color: "#031029",
       }}
     >
-      <div style={{ aspectRatio: "16/10", background: `#e9edf1 url(${l.hero_url || DEFAULT_HERO}) center/cover` }} />
+      <div style={{ aspectRatio: "16/10", background: `#e9edf1 url(${cachedMediaUrl(l.hero_url) || DEFAULT_HERO}) center/cover` }} />
       <div style={{ padding: 18, display: "flex", flexDirection: "column", gap: 6, flex: 1 }}>
         <div style={{ fontSize: 12, color: "#5c6b78" }}>
           {[l.business?.city, l.business?.region].filter(Boolean).join(", ") || l.departure_location || "—"}

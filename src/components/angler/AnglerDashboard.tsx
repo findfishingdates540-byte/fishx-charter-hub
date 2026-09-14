@@ -3,6 +3,7 @@
  * Pixel-close to the DC template, wired to live Supabase data.
  */
 import { useMemo, useState, useEffect, Suspense } from "react";
+import { cachedMediaUrl } from "@/lib/media-url";
 import { MediaImg } from "@/components/media/MediaImg";
 import { BrandLogo } from "@/components/brand/BrandLogo";
 import { Link, useNavigate, useSearch } from "@tanstack/react-router";
@@ -476,7 +477,7 @@ function RecoCard({ c }: { c: Reco }) {
   return (
     <article style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 18, overflow: "hidden" }}>
       <div style={{ position: "relative", height: 150 }}>
-        <div style={{ width: "100%", height: "100%", backgroundImage: `url(${c.hero_url ?? DEFAULT_HERO})`, backgroundSize: "cover", backgroundPosition: "center" }} />
+        <div style={{ width: "100%", height: "100%", backgroundImage: `url(${cachedMediaUrl(c.hero_url) || DEFAULT_HERO})`, backgroundSize: "cover", backgroundPosition: "center" }} />
       </div>
       <div style={{ padding: "16px 18px 18px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "var(--tmut)", marginBottom: 6 }}>

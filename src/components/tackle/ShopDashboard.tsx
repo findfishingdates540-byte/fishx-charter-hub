@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useNavigate } from "@tanstack/react-router";
 import { MediaImg } from "@/components/media/MediaImg";
 import { WholesalePanel } from "@/components/tackle/WholesalePanel";
 import {
@@ -10,8 +11,6 @@ import {
 import { useServerFn } from "@tanstack/react-start";
 import {
   getShopOverview,
-  upsertProduct,
-  deleteProduct,
   updateOrderStatus,
   getShippingSettings,
   saveShippingSettings,
@@ -31,7 +30,7 @@ import { BusinessInbox } from "@/components/messages/BusinessInbox";
 import { ImageUpload } from "@/components/business/ImageUpload";
 import { useQuery } from "@tanstack/react-query";
 
-type Product = {
+export type Product = {
   id: string;
   sku: string | null;
   title: string;
@@ -65,7 +64,7 @@ type Order = {
   items: { id: string; title: string; quantity: number; unit_price_cents: number }[];
 };
 
-const overviewQO = (businessId: string) =>
+export const overviewQO = (businessId: string) =>
   queryOptions({
     queryKey: ["shop-overview", businessId],
     queryFn: () => getShopOverview({ data: { businessId } }),
@@ -109,15 +108,17 @@ export function ShopDashboard({
   workspaceName,
   operatorName,
   categoryKey,
+  initialTab,
 }: {
   businessId: string;
   workspaceName: string;
   operatorName: string;
   categoryKey: string;
+  initialTab?: string;
 }) {
   const copy = KIND_COPY[categoryKey] ?? KIND_COPY.tackle_shop;
   const { data } = useSuspenseQuery(overviewQO(businessId));
-  const [active, setActive] = useState("overview");
+  const [active, setActive] = useState(initialTab ?? "overview");
 
   const nav: OperatorNavItem[] = [
     { key: "overview", label: "Overview", icon: <BoxIcon /> },
@@ -160,7 +161,7 @@ export function ShopDashboard({
       pageSub={titles[active].s}
     >
       {active === "overview" && <Overview data={data} />}
-      {active === "products" && <Products businessId={businessId} data={data} />}
+      {active === "products" && <Products data={data} />}
       {active === "orders" && <Orders businessId={businessId} data={data} />}
       {active === "wholesale" && (
         <WholesalePanel businessId={businessId} products={data.products} />
@@ -247,32 +248,15 @@ function Overview({ data }: { data: any }) {
   );
 }
 
-function Products({ businessId, data }: { businessId: string; data: any }) {
-  const qc = useQueryClient();
-  const upsertFn = useServerFn(upsertProduct);
-  const deleteFn = useServerFn(deleteProduct);
-  const [editing, setEditing] = useState<Product | null>(null);
-  const [showForm, setShowForm] = useState(false);
-
-  const upsertM = useMutation({
-    mutationFn: upsertFn,
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["shop-overview", businessId] });
-      setEditing(null);
-      setShowForm(false);
-    },
-  });
-  const deleteM = useMutation({
-    mutationFn: deleteFn,
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["shop-overview", businessId] }),
-  });
+function Products({ data }: { data: any }) {
+  const navigate = useNavigate();
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
       <Card
         title="Catalog"
         right={
-          <button onClick={() => { setEditing(null); setShowForm(true); }} style={btnPrimary}>
+          <button onClick={() => navigate({ to: "/shop/products/new" })} style={btnPrimary}>
             + Add product
           </button>
         }
@@ -304,7 +288,9 @@ function Products({ businessId, data }: { businessId: string; data: any }) {
             {data.products.map((p: Product) => (
               <button
                 key={p.id}
-                onClick={() => { setEditing(p); setShowForm(true); }}
+                onClick={() =>
+                  navigate({ to: "/shop/products/$productId/edit", params: { productId: p.id } })
+                }
                 style={{
                   display: "grid",
                   gridTemplateColumns: "1.8fr .8fr .8fr .8fr .6fr",
@@ -362,29 +348,11 @@ function Products({ businessId, data }: { businessId: string; data: any }) {
           </div>
         )}
       </Card>
-
-      {showForm && (
-        <ProductForm
-          businessId={businessId}
-          key={editing?.id ?? "new"}
-          initial={editing ?? undefined}
-          saving={upsertM.isPending}
-          onCancel={() => { setEditing(null); setShowForm(false); }}
-          onSave={(v) =>
-            upsertM.mutate({ data: { ...v, businessId, id: editing?.id } })
-          }
-          onDelete={
-            editing
-              ? () => deleteM.mutate({ data: { id: editing.id, businessId } })
-              : undefined
-          }
-        />
-      )}
     </div>
   );
 }
 
-function ProductForm({
+export function ProductForm({
   businessId,
   initial,
   onCancel,
@@ -928,7 +896,7 @@ function Settings({ businessId }: { businessId: string }) {
 
 /* --- shared UI helpers --- */
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+export function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label style={{ display: "flex", flexDirection: "column", gap: 6 }}>
       <span
@@ -947,7 +915,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   );
 }
 
-const inputStyle: React.CSSProperties = {
+export const inputStyle: React.CSSProperties = {
   border: "1px solid rgba(255,255,255,.09)",
   borderRadius: 10,
   padding: "10px 12px",
@@ -958,7 +926,7 @@ const inputStyle: React.CSSProperties = {
   outline: "none",
 };
 
-const btnPrimary: React.CSSProperties = {
+export const btnPrimary: React.CSSProperties = {
   background: "#0D161F",
   color: "#F0F2F5",
   border: 0,
@@ -970,7 +938,7 @@ const btnPrimary: React.CSSProperties = {
   cursor: "pointer",
 };
 
-const btnGhost: React.CSSProperties = {
+export const btnGhost: React.CSSProperties = {
   background: "transparent",
   color: "#F0F2F5",
   border: "1px solid rgba(255,255,255,.09)",
@@ -989,6 +957,8 @@ function Empty({ label }: { label: string }) {
     </div>
   );
 }
+
+
 
 /* icons */
 function BoxIcon() {

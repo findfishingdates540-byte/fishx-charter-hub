@@ -4,6 +4,7 @@
  * rentals, marina experiences).
  */
 import { useState } from "react";
+import { cachedMediaUrl } from "@/lib/media-url";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import {
@@ -199,7 +200,7 @@ export function ServicesManager({
                 width: 82,
                 height: 60,
                 borderRadius: 12,
-                background: s.hero_url ? `center/cover url(${s.hero_url})` : "#e6ecf1",
+                background: s.hero_url ? `center/cover url(${cachedMediaUrl(s.hero_url)})` : "#e6ecf1",
                 flex: "none",
               }}
             />

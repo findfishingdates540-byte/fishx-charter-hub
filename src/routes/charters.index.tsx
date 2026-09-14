@@ -3,6 +3,7 @@
  * destinations by state/port, and a featured charter rail.
  */
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { cachedMediaUrl } from "@/lib/media-url";
 import { useState } from "react";
 import { useSuspenseQuery, queryOptions } from "@tanstack/react-query";
 import { getCharterDirectory } from "@/lib/charters.functions";
@@ -338,7 +339,7 @@ export function CharterCard({
 
   const body = (
     <>
-      <div style={{ aspectRatio: "16/10", background: `#e9edf1 url(${l.hero_url || DEFAULT_HERO}) center/cover` }} />
+      <div style={{ aspectRatio: "16/10", background: `#e9edf1 url(${cachedMediaUrl(l.hero_url) || DEFAULT_HERO}) center/cover` }} />
       <div style={{ padding: 18, display: "flex", flexDirection: "column", gap: 6, flex: 1 }}>
         <div style={{ fontSize: 12, color: "#5c6b78" }}>
           {[l.business?.city, l.business?.region].filter(Boolean).join(", ") || l.departure_location || "—"}

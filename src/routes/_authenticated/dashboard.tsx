@@ -290,6 +290,7 @@ function Dashboard() {
             workspaceName={biz.name}
             operatorName={operatorName}
             categoryKey={key}
+            initialTab={tab}
           />
         );
       if (key === "guide_service")
