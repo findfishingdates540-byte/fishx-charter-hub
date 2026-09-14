@@ -44,9 +44,8 @@ const rowToProduct = (row: StoreProduct): Product => {
 };
 
 export const Route = createFileRoute("/marketplace/$productId")({
-  validateSearch: (s: Record<string, unknown>) => ({
-    preview: s.preview === true || s.preview === "1",
-  }),
+  validateSearch: (s: Record<string, unknown>): { preview?: boolean } =>
+    s.preview === true || s.preview === "1" ? { preview: true } : {},
   loaderDeps: ({ search }) => ({ preview: search.preview }),
   loader: async ({ params, deps }) => {
     const demo = CATALOG.find((p) => p.id === params.productId);
