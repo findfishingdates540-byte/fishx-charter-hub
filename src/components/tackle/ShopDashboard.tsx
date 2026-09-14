@@ -121,7 +121,19 @@ export function ShopDashboard({
 }) {
   const copy = KIND_COPY[categoryKey] ?? KIND_COPY.tackle_shop;
   const { data } = useSuspenseQuery(overviewQO(businessId));
-  const [active, setActive] = useState(initialTab ?? "overview");
+  const SHOP_TABS = [
+    "overview",
+    "products",
+    "orders",
+    "bookings",
+    "wholesale",
+    "messages",
+    "payments",
+    "settings",
+  ];
+  const [active, setActive] = useState(
+    initialTab && SHOP_TABS.includes(initialTab) ? initialTab : "overview",
+  );
 
   const nav: OperatorNavItem[] = [
     { key: "overview", label: "Overview", icon: <BoxIcon /> },
