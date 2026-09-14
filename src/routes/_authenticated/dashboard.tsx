@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect, isRedirect } from "@tanstack/react-router";
 import { useSuspenseQuery, queryOptions } from "@tanstack/react-query";
 import { lazy, Suspense } from "react";
 
@@ -88,7 +88,7 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
     ...(search.as === "angler" ? { as: "angler" as const } : {}),
   }),
   head: () => ({ meta: [{ title: "Dashboard — FISH-X.COM Bookings & Marketplace" }] }),
-  loader: async ({ context }) => {
+  loader: async ({ context, location }) => {
     try {
       // One request returns roles, businesses and profile together, then the
       // persona data is warmed in the background so the shell paints straight
@@ -101,8 +101,16 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
       context.queryClient.setQueryData(myProfileQO.queryKey, boot?.profile ?? null);
       const primary = hasPrimaryRole(roles);
 
+      const wantsAngler =
+        (location.search as { as?: string } | undefined)?.as === "angler";
 
       if (businesses.length === 0) {
+        // A brand-new operator account has no workspace yet: send them to
+        // business setup instead of the angler dashboard. Anglers (and anyone
+        // explicitly browsing as one) still land on the angler dashboard.
+        if (isOperatorRole(primary) && !wantsAngler) {
+          throw redirect({ to: "/onboarding" });
+        }
         void context.queryClient.prefetchQuery({
           queryKey: ["angler-dashboard"],
           queryFn: () => getAnglerDashboard(),
@@ -116,6 +124,7 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
         void import("@/components/angler/AnglerDashboard");
         return;
       }
+
 
       const biz = pickPrimaryBusiness(businesses, primary) as { id: string; category_key: string } | undefined;
       const key = biz?.category_key ?? roleCategoryKey(primary);
@@ -154,6 +163,7 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
         });
       }
     } catch (e) {
+      if (isRedirect(e)) throw e;
       // Surface real failure reasons instead of crashing on raw Response
       // objects thrown by server functions (they have no .message).
       if (e instanceof Response) {
@@ -225,7 +235,12 @@ function Dashboard() {
   function renderDashboard() {
     if (anglerMode && businesses.length === 0) return <AnglerDashboard />;
     if (primaryRole === "angler" && businesses.length === 0) return <AnglerDashboard />;
-    if (businesses.length === 0) return <AnglerDashboard />;
+    // Operator with no workspace yet: the loader redirects to setup, this is
+    // just the fallback while that navigation happens.
+    if (businesses.length === 0) {
+      if (isOperatorRole(primaryRole)) return <DashboardLoading />;
+      return <AnglerDashboard />;
+    }
 
     {
       const biz = pickPrimaryBusiness(businesses, primaryRole) as
