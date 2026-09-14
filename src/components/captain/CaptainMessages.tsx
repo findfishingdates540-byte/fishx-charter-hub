@@ -128,9 +128,9 @@ export function CaptainMessages({
         ))}
       </div>
       {mode === "trips" ? (
-        <BookingThreads />
+        <BookingThreads fullHeight={fullHeight} />
       ) : businessId ? (
-        <BusinessInbox theme="dark" businessId={businessId} />
+        <BusinessInbox theme="dark" businessId={businessId} fullHeight={fullHeight} />
       ) : (
         <div style={{ padding: 24, color: C.tmut, fontSize: 13 }}>
           Connect your charter business to receive direct enquiries.
