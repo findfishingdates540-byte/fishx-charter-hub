@@ -30,12 +30,14 @@ export function CaptainPageShell({
   children,
   backLabel = "← Back to dashboard",
   backSearch,
+  actions,
 }: {
   title: string;
   subtitle?: string;
   children: React.ReactNode;
   backLabel?: string;
   backSearch?: { tab?: string };
+  actions?: React.ReactNode;
 }) {
   return (
     <div style={shell}>
@@ -63,22 +65,24 @@ export function CaptainPageShell({
             <div style={{ fontSize: 12.5, color: "var(--tmut)", marginTop: 2 }}>{subtitle}</div>
           )}
         </div>
-        <Link
-          to="/dashboard"
-          search={backSearch ?? {}}
-          style={{
-            marginLeft: "auto",
-            fontSize: 12.5,
-            fontWeight: 600,
-            color: "var(--cyan)",
-            textDecoration: "none",
-            border: "1px solid var(--line)",
-            borderRadius: 10,
-            padding: "8px 14px",
-          }}
-        >
-          {backLabel}
-        </Link>
+        <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 10 }}>
+          {actions}
+          <Link
+            to="/dashboard"
+            search={backSearch ?? {}}
+            style={{
+              fontSize: 12.5,
+              fontWeight: 600,
+              color: "var(--cyan)",
+              textDecoration: "none",
+              border: "1px solid var(--line)",
+              borderRadius: 10,
+              padding: "8px 14px",
+            }}
+          >
+            {backLabel}
+          </Link>
+        </div>
       </header>
       <main style={{ padding: "24px 20px 60px", maxWidth: 980, width: "100%", margin: "0 auto" }}>
         {children}

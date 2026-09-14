@@ -60,6 +60,25 @@ function EditProductPage() {
       subtitle={product.title}
       backLabel="← Back to catalog"
       backSearch={{ tab: "products" }}
+      actions={
+        <a
+          href={`/marketplace/${product.id}?preview=1`}
+          target="_blank"
+          rel="noreferrer"
+          style={{
+            fontSize: 12.5,
+            fontWeight: 700,
+            color: "#0D161F",
+            background: "#2DE2F2",
+            textDecoration: "none",
+            borderRadius: 10,
+            padding: "8px 14px",
+            whiteSpace: "nowrap",
+          }}
+        >
+          Preview product ↗
+        </a>
+      }
     >
       {error && (
         <div style={{ color: "#F87171", fontSize: 13, marginBottom: 12 }}>{error}</div>

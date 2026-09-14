@@ -443,6 +443,58 @@ export const createProductCheckout = createServerFn({ method: "POST" })
     return { orderIds, totalCents: grandTotal, checkoutUrl: session.url };
   });
 
+/** Owner preview of a product regardless of publish state (preview mode). */
+export const previewStoreProduct = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: unknown) => z.object({ productId: z.string().uuid() }).parse(i))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const { data: p, error } = await supabase
+      .from("inventory_products")
+      .select(
+        "id,title,description,category,price_cents,compare_at_cents,stock_qty,images,business_id,is_published,business:businesses(name,category_key)",
+      )
+      .eq("id", data.productId)
+      .maybeSingle();
+    if (error) throw new Response(error.message, { status: 500 });
+    if (!p) return null;
+    const { data: member } = await supabase.rpc("is_business_member", {
+      _business_id: p.business_id,
+      _user_id: userId,
+      _min_role: "staff",
+    });
+    if (!member) throw new Response("Forbidden", { status: 403 });
+    const [{ data: variants }, { data: wholesale }] = await Promise.all([
+      supabase
+        .from("product_variants")
+        .select("id,option_name,option_value,sku,price_delta_cents,stock_qty")
+        .eq("product_id", p.id)
+        .eq("is_active", true)
+        .order("sort_order"),
+      supabase
+        .from("product_wholesale_settings")
+        .select("wholesale_only")
+        .eq("product_id", p.id)
+        .maybeSingle(),
+    ]);
+    const product: StoreProduct = {
+      id: p.id,
+      title: p.title,
+      description: p.description,
+      category: p.category,
+      priceCents: p.price_cents ?? 0,
+      compareAtCents: p.compare_at_cents,
+      stockQty: p.stock_qty ?? 0,
+      image: firstImage(p.images),
+      businessId: p.business_id,
+      sellerName: (p.business as { name?: string } | null)?.name ?? "Fish-X vendor",
+      sellerCategory: (p.business as { category_key?: string } | null)?.category_key ?? null,
+      variants: variants ?? [],
+      wholesaleOnly: wholesale?.wholesale_only ?? false,
+    };
+    return product;
+  });
+
 /** Single published vendor product (public — used by the product detail page). */
 export const getStoreProduct = createServerFn({ method: "GET" })
   .inputValidator((i: unknown) => z.object({ productId: z.string().uuid() }).parse(i))
