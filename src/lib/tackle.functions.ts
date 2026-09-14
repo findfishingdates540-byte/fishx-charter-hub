@@ -364,3 +364,61 @@ export const refundProductOrder = createServerFn({ method: "POST" })
 
     return { ok: true };
   });
+
+/**
+ * Trips booked on this business's storefront (charters, guided trips, slips).
+ * Shops that also sell experiences need these on their dashboard once an
+ * angler's booking is confirmed.
+ */
+export const getShopBookings = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: { businessId: string }) =>
+    z.object({ businessId: z.string().uuid() }).parse(i),
+  )
+  .handler(async ({ data, context }) => {
+    await assertMember(context, data.businessId);
+    const { supabase } = context;
+
+    const { data: rows, error } = await supabase
+      .from("bookings")
+      .select(
+        "id, trip_date, start_time, party_size, status, escrow_state, total_cents, deposit_cents, payout_cents, notes, angler_id, created_at, service:bookable_services(title, duration_minutes, departure_location)",
+      )
+      .eq("business_id", data.businessId)
+      .order("trip_date", { ascending: false })
+      .limit(200);
+    if (error) throw new Response(error.message, { status: 400 });
+
+    const anglerIds = Array.from(
+      new Set((rows ?? []).map((b: any) => b.angler_id).filter(Boolean)),
+    );
+    const profileMap = new Map<string, any>();
+    if (anglerIds.length) {
+      const { data: profiles } = await supabase
+        .from("profiles")
+        .select("id, full_name, display_name")
+        .in("id", anglerIds);
+      (profiles ?? []).forEach((p: any) => profileMap.set(p.id, p));
+    }
+
+    return (rows ?? []).map((b: any) => {
+      const p = profileMap.get(b.angler_id);
+      return {
+        id: b.id as string,
+        reference: String(b.id).slice(0, 8).toUpperCase(),
+        tripDate: b.trip_date as string | null,
+        startTime: b.start_time ? String(b.start_time).slice(0, 5) : null,
+        partySize: (b.party_size as number) ?? 1,
+        status: b.status as string,
+        escrowState: (b.escrow_state as string | null) ?? null,
+        totalCents: (b.total_cents as number) ?? 0,
+        depositCents: (b.deposit_cents as number) ?? 0,
+        payoutCents: (b.payout_cents as number) ?? 0,
+        notes: (b.notes as string | null) ?? null,
+        anglerName: p?.display_name || p?.full_name || "Angler",
+        title: b.service?.title ?? "Trip",
+        departure: b.service?.departure_location ?? null,
+        createdAt: b.created_at as string,
+      };
+    });
+  });
