@@ -247,32 +247,15 @@ function Overview({ data }: { data: any }) {
   );
 }
 
-function Products({ businessId, data }: { businessId: string; data: any }) {
-  const qc = useQueryClient();
-  const upsertFn = useServerFn(upsertProduct);
-  const deleteFn = useServerFn(deleteProduct);
-  const [editing, setEditing] = useState<Product | null>(null);
-  const [showForm, setShowForm] = useState(false);
-
-  const upsertM = useMutation({
-    mutationFn: upsertFn,
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["shop-overview", businessId] });
-      setEditing(null);
-      setShowForm(false);
-    },
-  });
-  const deleteM = useMutation({
-    mutationFn: deleteFn,
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["shop-overview", businessId] }),
-  });
+function Products({ data }: { data: any }) {
+  const navigate = useNavigate();
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
       <Card
         title="Catalog"
         right={
-          <button onClick={() => { setEditing(null); setShowForm(true); }} style={btnPrimary}>
+          <button onClick={() => navigate({ to: "/shop/products/new" })} style={btnPrimary}>
             + Add product
           </button>
         }
@@ -304,7 +287,9 @@ function Products({ businessId, data }: { businessId: string; data: any }) {
             {data.products.map((p: Product) => (
               <button
                 key={p.id}
-                onClick={() => { setEditing(p); setShowForm(true); }}
+                onClick={() =>
+                  navigate({ to: "/shop/products/$productId/edit", params: { productId: p.id } })
+                }
                 style={{
                   display: "grid",
                   gridTemplateColumns: "1.8fr .8fr .8fr .8fr .6fr",
@@ -362,24 +347,6 @@ function Products({ businessId, data }: { businessId: string; data: any }) {
           </div>
         )}
       </Card>
-
-      {showForm && (
-        <ProductForm
-          businessId={businessId}
-          key={editing?.id ?? "new"}
-          initial={editing ?? undefined}
-          saving={upsertM.isPending}
-          onCancel={() => { setEditing(null); setShowForm(false); }}
-          onSave={(v) =>
-            upsertM.mutate({ data: { ...v, businessId, id: editing?.id } })
-          }
-          onDelete={
-            editing
-              ? () => deleteM.mutate({ data: { id: editing.id, businessId } })
-              : undefined
-          }
-        />
-      )}
     </div>
   );
 }
