@@ -31,6 +31,7 @@ export function MessagesFullScreen({
 
   return (
     <div
+      className="fx-msg-fullscreen"
       style={{
         position: "fixed",
         inset: 0,
