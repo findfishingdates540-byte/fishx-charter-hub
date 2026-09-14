@@ -116,7 +116,7 @@ export const getBusinessThread = createServerFn({ method: "GET" })
     const convo = await loadConversation(supabase, data.conversationId);
     const msgRes = await supabase
       .from("business_messages")
-      .select("id,body,sender_id,sender_side,created_at,read_at,is_deleted,reply_to_id")
+      .select("id,body,sender_id,sender_side,created_at,read_at,is_deleted,reply_to_id,attachment_url,attachment_type,attachment_duration_ms")
       .eq("conversation_id", data.conversationId)
       .order("created_at", { ascending: true })
       .limit(500);
@@ -174,7 +174,7 @@ export const sendBusinessMessage = createServerFn({ method: "POST" })
         body: data.body,
         reply_to_id: data.replyToId ?? null,
       })
-      .select("id,body,sender_id,sender_side,created_at,read_at,is_deleted,reply_to_id")
+      .select("id,body,sender_id,sender_side,created_at,read_at,is_deleted,reply_to_id,attachment_url,attachment_type,attachment_duration_ms")
       .single();
     if (ins.error) throw new Response(ins.error.message, { status: 500 });
 

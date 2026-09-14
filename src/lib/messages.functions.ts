@@ -129,7 +129,7 @@ export const getThread = createServerFn({ method: "GET" })
         : Promise.resolve({ data: null, error: null }),
       supabase
         .from("booking_messages")
-        .select("id,body,sender_id,created_at,read_at,is_deleted,reply_to_id")
+        .select("id,body,sender_id,created_at,read_at,is_deleted,reply_to_id,attachment_url,attachment_type,attachment_duration_ms")
         .eq("booking_id", data.bookingId)
         .order("created_at", { ascending: true })
         .limit(500),
