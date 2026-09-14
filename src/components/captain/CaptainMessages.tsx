@@ -90,11 +90,23 @@ function Avatar({ label, url, size = 44 }: { label: string; url?: string | null;
   );
 }
 
-export function CaptainMessages({ businessId }: { businessId?: string | null }) {
+export function CaptainMessages({
+  businessId,
+  fullHeight = false,
+}: {
+  businessId?: string | null;
+  fullHeight?: boolean;
+}) {
   const [mode, setMode] = useState<"trips" | "direct">("trips");
   return (
-    <div>
-      <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
+    <div
+      style={
+        fullHeight
+          ? { height: "100%", display: "flex", flexDirection: "column", minHeight: 0, padding: "14px 16px 0" }
+          : undefined
+      }
+    >
+      <div style={{ display: "flex", gap: 8, marginBottom: 16, flex: "none" }}>
         {([["trips", "Trip threads"], ["direct", "Direct enquiries"]] as const).map(([k, label]) => (
           <button
             key={k}
