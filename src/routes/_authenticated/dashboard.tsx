@@ -102,7 +102,7 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
       const primary = hasPrimaryRole(roles);
 
       const wantsAngler =
-        new URLSearchParams(location.searchStr ?? "").get("as") === "angler";
+        (location.search as { as?: string } | undefined)?.as === "angler";
 
       if (businesses.length === 0) {
         // A brand-new operator account has no workspace yet: send them to
