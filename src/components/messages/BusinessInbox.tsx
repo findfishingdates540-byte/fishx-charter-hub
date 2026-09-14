@@ -5,6 +5,7 @@
  * operator side to scope threads to that workspace.
  */
 import { useEffect, useMemo, useRef, useState } from "react";
+import { MediaImg } from "@/components/media/MediaImg";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";

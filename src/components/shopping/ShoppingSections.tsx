@@ -3,6 +3,7 @@
  * order history, saved items (wishlist) and followed sellers.
  */
 import { Link } from "@tanstack/react-router";
+import { MediaImg } from "@/components/media/MediaImg";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import {

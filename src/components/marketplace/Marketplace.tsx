@@ -6,6 +6,7 @@
  * the webhook then pays each vendor 80% via Stripe Connect.
  */
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
+import { MediaImg } from "@/components/media/MediaImg";
 import { Link, useNavigate, useSearch } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";

@@ -3,6 +3,7 @@
  * Renders live booking data via getTripDetail, with real message sending & cancel.
  */
 import { useMemo, useRef, useState } from "react";
+import { MediaImg } from "@/components/media/MediaImg";
 import { Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";

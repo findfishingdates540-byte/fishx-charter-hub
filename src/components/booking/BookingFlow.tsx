@@ -5,6 +5,7 @@
  * angler. Stripe wiring is TODO — for now escrow is simulated in the DB.
  */
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
+import { MediaImg } from "@/components/media/MediaImg";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";

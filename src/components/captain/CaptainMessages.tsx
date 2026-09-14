@@ -3,6 +3,7 @@
  * (thread list + open thread), re-skinned for the dark operator theme.
  */
 import { useEffect, useMemo, useRef, useState } from "react";
+import { MediaImg } from "@/components/media/MediaImg";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { listCaptainConversations, getCaptainThread } from "@/lib/captain-management.functions";

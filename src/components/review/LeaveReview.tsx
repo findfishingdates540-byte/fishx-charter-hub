@@ -5,6 +5,7 @@
  * reviews via src/lib/review.functions.ts. One review per booking.
  */
 import { useState } from "react";
+import { MediaImg } from "@/components/media/MediaImg";
 import { Link } from "@tanstack/react-router";
 import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";

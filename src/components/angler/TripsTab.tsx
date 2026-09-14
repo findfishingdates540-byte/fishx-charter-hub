@@ -4,6 +4,7 @@
  * Gold) and wired to live Supabase bookings.
  */
 import { useState } from "react";
+import { MediaImg } from "@/components/media/MediaImg";
 import { Link } from "@tanstack/react-router";
 import { useSuspenseQuery, queryOptions } from "@tanstack/react-query";
 import { listAnglerTrips } from "@/lib/angler-trips.functions";

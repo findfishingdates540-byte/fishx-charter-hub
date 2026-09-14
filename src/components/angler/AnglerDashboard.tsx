@@ -3,6 +3,7 @@
  * Pixel-close to the DC template, wired to live Supabase data.
  */
 import { useMemo, useState, useEffect, Suspense } from "react";
+import { MediaImg } from "@/components/media/MediaImg";
 import { BrandLogo } from "@/components/brand/BrandLogo";
 import { Link, useNavigate, useSearch } from "@tanstack/react-router";
 import { useSuspenseQuery, queryOptions } from "@tanstack/react-query";

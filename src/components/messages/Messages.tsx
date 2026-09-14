@@ -5,6 +5,7 @@
  * ResolutionCenter.tsx. No Tailwind, no icon fonts — inline styles + emoji only.
  */
 import { useEffect, useRef, useState } from "react";
+import { MediaImg } from "@/components/media/MediaImg";
 import { Link } from "@tanstack/react-router";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
