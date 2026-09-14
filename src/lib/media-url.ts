@@ -16,7 +16,12 @@ import { supabase } from "@/integrations/supabase/client";
 const PUBLIC_BUCKETS = new Set(["business-media", "avatars"]);
 const BUCKETS: Array<{ prefix: string; bucket: string }> = [
   { prefix: "/api/public/media/", bucket: "business-media" },
+  { prefix: "api/public/media/", bucket: "business-media" },
   { prefix: "/api/public/avatars/", bucket: "avatars" },
+  { prefix: "api/public/avatars/", bucket: "avatars" },
+  { prefix: "/storage/v1/object/public/business-media/", bucket: "business-media" },
+  { prefix: "business-media/", bucket: "business-media" },
+  { prefix: "avatars/", bucket: "avatars" },
 ];
 
 function match(value: string) {

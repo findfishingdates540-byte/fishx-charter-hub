@@ -6,6 +6,7 @@
  * transition_booking RPC.
  */
 import { useRef, useState } from "react";
+import { MediaImg } from "@/components/media/MediaImg";
 import { BrandLogo } from "@/components/brand/BrandLogo";
 import { Link } from "@tanstack/react-router";
 import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
@@ -254,7 +255,7 @@ function BookingPicker() {
                   color: V.ink,
                 }}
               >
-                <img
+                <MediaImg
                   src={b.service?.hero_url ?? DEFAULT_HERO}
                   alt=""
                   style={{ width: 64, height: 52, borderRadius: 10, objectFit: "cover", flex: "none" }}
@@ -400,7 +401,7 @@ function ResolutionForBooking({ bookingId }: { bookingId: string }) {
         flexWrap: "wrap",
       }}
     >
-      <img
+      <MediaImg
         src={data.service?.hero_url ?? DEFAULT_HERO}
         alt=""
         style={{ width: 64, height: 52, borderRadius: 10, objectFit: "cover", flex: "none" }}

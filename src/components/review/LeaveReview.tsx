@@ -5,6 +5,7 @@
  * reviews via src/lib/review.functions.ts. One review per booking.
  */
 import { useState } from "react";
+import { MediaImg } from "@/components/media/MediaImg";
 import { Link } from "@tanstack/react-router";
 import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -260,7 +261,7 @@ function ContextCard({ data }: { data: ReviewContext }) {
         flexWrap: "wrap",
       }}
     >
-      <img
+      <MediaImg
         src={data.service?.hero_url ?? DEFAULT_HERO}
         alt=""
         style={{ width: 64, height: 52, borderRadius: 10, objectFit: "cover", flex: "none" }}
@@ -369,7 +370,7 @@ function SuccessState({
             marginBottom: 28,
           }}
         >
-          <img
+          <MediaImg
             src={data.service?.hero_url ?? DEFAULT_HERO}
             alt=""
             style={{ width: 72, height: 72, borderRadius: 12, objectFit: "cover", flex: "none" }}

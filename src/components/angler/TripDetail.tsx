@@ -3,6 +3,7 @@
  * Renders live booking data via getTripDetail, with real message sending & cancel.
  */
 import { useMemo, useRef, useState } from "react";
+import { MediaImg } from "@/components/media/MediaImg";
 import { Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -243,7 +244,7 @@ export function TripDetail({ bookingId }: { bookingId: string }) {
             {/* MEETING */}
             <section style={{ background: V.card, border: `1px solid ${V.line}`, borderRadius: 20, overflow: "hidden" }}>
               <div style={{ position: "relative", height: 150 }}>
-                <img src={heroImg} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "50% 45%" }} />
+                <MediaImg src={heroImg} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "50% 45%" }} />
                 <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg,rgba(10,34,54,.1),rgba(10,34,54,.55))" }} />
                 <div style={{ position: "absolute", left: 20, bottom: 14, color: "#fff", fontFamily: V.serif, fontSize: 20, fontWeight: 600 }}>
                   Aboard "{boatName}"
@@ -326,7 +327,7 @@ export function TripDetail({ bookingId }: { bookingId: string }) {
             {/* MESSAGES */}
             <section style={{ background: V.card, border: `1px solid ${V.line}`, borderRadius: 20, overflow: "hidden", display: "flex", flexDirection: "column" }}>
               <div style={{ padding: "16px 22px", borderBottom: `1px solid ${V.line}`, display: "flex", alignItems: "center", gap: 12 }}>
-                <img src={captainAvatar} alt="" style={{ width: 38, height: 38, borderRadius: "50%", objectFit: "cover" }} />
+                <MediaImg src={captainAvatar} alt="" style={{ width: 38, height: 38, borderRadius: "50%", objectFit: "cover" }} />
                 <div>
                   <div style={{ fontSize: 14, fontWeight: 600, color: V.ink }}>{captainName}</div>
                   <div style={{ fontSize: 12, color: V.green }}>Usually replies within an hour</div>
@@ -410,7 +411,7 @@ export function TripDetail({ bookingId }: { bookingId: string }) {
             {/* CAPTAIN */}
             <div style={{ background: V.card, border: `1px solid ${V.line}`, borderRadius: 20, padding: 22 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 13, marginBottom: 14 }}>
-                <img src={captainAvatar} alt="" style={{ width: 52, height: 52, borderRadius: "50%", objectFit: "cover", border: `1px solid ${V.line}` }} />
+                <MediaImg src={captainAvatar} alt="" style={{ width: 52, height: 52, borderRadius: "50%", objectFit: "cover", border: `1px solid ${V.line}` }} />
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 14.5, fontWeight: 700, color: V.ink }}>{captainName}</div>
                   <div style={{ fontSize: 12.5, color: V.tmut }}>

@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router";
+import { MediaImg } from "@/components/media/MediaImg";
 import { BrandLogo } from "@/components/brand/BrandLogo";
 import { MarinaServiceRequest } from "@/components/profile/MarinaServiceRequest";
 import { StorefrontBooking } from "@/components/profile/StorefrontBooking";
@@ -284,7 +285,7 @@ export function OperatorProfile({
         <div style={{ display: "flex", alignItems: "flex-end", gap: 22, marginTop: -64, position: "relative", flexWrap: "wrap" }}>
           <div style={{ position: "relative", flex: "none" }}>
             {b.logo_url ? (
-              <img src={b.logo_url} alt={b.name} style={{ width: 128, height: 128, borderRadius: 24, objectFit: "cover", border: "5px solid #273744", boxShadow: "0 24px 48px -24px rgba(4,10,16,.62)" }} />
+              <MediaImg src={b.logo_url} alt={b.name} style={{ width: 128, height: 128, borderRadius: 24, objectFit: "cover", border: "5px solid #273744", boxShadow: "0 24px 48px -24px rgba(4,10,16,.62)" }} />
             ) : (
               <div style={{ width: 128, height: 128, borderRadius: 24, background: "#0D161F", border: "5px solid #273744", display: "grid", placeItems: "center", color: "#2DE2F2", fontFamily: "'Outfit', Georgia, serif", fontSize: 44, fontWeight: 600, boxShadow: "0 24px 48px -24px rgba(4,10,16,.62)" }}>
                 {b.name.charAt(0)}
@@ -358,7 +359,7 @@ export function OperatorProfile({
                 <h2 style={sectionTitle}>Photos</h2>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(180px,1fr))", gap: 10 }}>
                   {gallery.map((src, i) => (
-                    <img
+                    <MediaImg
                       key={`${i}-${src}`}
                       src={src}
                       alt={`${b.name} photo ${i + 1}`}
@@ -526,7 +527,7 @@ export function OperatorProfile({
                     return (
                       <article key={bt.id} style={{ background: "#1C2936", border: "1px solid rgba(255,255,255,.07)", borderRadius: 16, overflow: "hidden" }}>
                         {cover ? (
-                          <img src={cover} alt={bt.name} style={{ width: "100%", height: 150, objectFit: "cover", display: "block" }} />
+                          <MediaImg src={cover} alt={bt.name} style={{ width: "100%", height: 150, objectFit: "cover", display: "block" }} />
                         ) : (
                           <div style={{ height: 150, background: "linear-gradient(135deg,#0D161F,#1C2936)" }} />
                         )}
@@ -548,7 +549,7 @@ export function OperatorProfile({
                           {extra.length > 0 && (
                             <div style={{ display: "flex", gap: 6, marginTop: 10 }}>
                               {extra.slice(0, 4).map((u, idx) => (
-                                <img key={idx} src={u} alt="" style={{ width: 42, height: 42, borderRadius: 8, objectFit: "cover" }} />
+                                <MediaImg key={idx} src={u} alt="" style={{ width: 42, height: 42, borderRadius: 8, objectFit: "cover" }} />
                               ))}
                             </div>
                           )}
@@ -576,7 +577,7 @@ export function OperatorProfile({
                       style={{ textDecoration: "none", color: "#F0F2F5", background: "#1C2936", border: "1px solid rgba(255,255,255,.07)", borderRadius: 16, overflow: "hidden", display: "block" }}
                     >
                       {p.image ? (
-                        <img src={p.image} alt={p.title} style={{ width: "100%", height: 130, objectFit: "cover", display: "block" }} />
+                        <MediaImg src={p.image} alt={p.title} style={{ width: "100%", height: 130, objectFit: "cover", display: "block" }} />
                       ) : (
                         <div style={{ height: 130, background: "linear-gradient(135deg,#0D161F,#1C2936)" }} />
                       )}
@@ -736,7 +737,7 @@ export function OperatorProfile({
                   <figure key={r.id} style={{ margin: 0, padding: "20px 0", borderTop: "1px solid rgba(255,255,255,.07)" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 10 }}>
                       {r.angler?.avatar_url ? (
-                        <img src={r.angler.avatar_url} alt="" style={{ width: 42, height: 42, borderRadius: "50%", objectFit: "cover" }} />
+                        <MediaImg src={r.angler.avatar_url} alt="" style={{ width: 42, height: 42, borderRadius: "50%", objectFit: "cover" }} />
                       ) : (
                         <div style={{ width: 42, height: 42, borderRadius: "50%", background: "#0D161F", color: "#2DE2F2", display: "grid", placeItems: "center", fontWeight: 600 }}>
                           {(r.angler?.display_name ?? "A").charAt(0)}

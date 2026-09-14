@@ -8,6 +8,7 @@
  * (it lives in auth, not `profiles`).
  */
 import { useRef, useState } from "react";
+import { MediaImg } from "@/components/media/MediaImg";
 import { BrandLogo } from "@/components/brand/BrandLogo";
 import { Link } from "@tanstack/react-router";
 import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
@@ -263,7 +264,7 @@ export function AnglerAccount({ embedded = false }: { embedded?: boolean } = {})
         }}
       >
         {avatarUrl ? (
-          <img
+          <MediaImg
             src={avatarUrl}
             alt=""
             style={{

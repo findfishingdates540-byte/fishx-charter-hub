@@ -3,6 +3,7 @@
  * (thread list + open thread), re-skinned for the dark operator theme.
  */
 import { useEffect, useMemo, useRef, useState } from "react";
+import { MediaImg } from "@/components/media/MediaImg";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { listCaptainConversations, getCaptainThread } from "@/lib/captain-management.functions";
@@ -43,7 +44,7 @@ const dayLabel = (iso: string) =>
 function Avatar({ label, url, size = 44 }: { label: string; url?: string | null; size?: number }) {
   if (url) {
     return (
-      <img
+      <MediaImg
         src={url}
         alt={label}
         style={{ width: size, height: size, borderRadius: "50%", objectFit: "cover", flex: "none" }}

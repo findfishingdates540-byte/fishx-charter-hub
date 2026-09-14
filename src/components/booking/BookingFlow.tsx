@@ -5,6 +5,7 @@
  * angler. Stripe wiring is TODO — for now escrow is simulated in the DB.
  */
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
+import { MediaImg } from "@/components/media/MediaImg";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -513,7 +514,7 @@ export function BookingFlow({
 
             {/* GALLERY */}
             <div className="fx-booking-gallery" style={{ display: "grid", gridTemplateColumns: "1.6fr 1fr", gap: 18, marginBottom: 34 }}>
-              <img
+              <MediaImg
                 src={visibleTiles[0]}
                 alt={listingTitle ?? "Charter"}
                 style={{ width: "100%", height: 520, objectFit: "cover", borderRadius: 14, border: `1px solid ${V.line}` }}
@@ -523,7 +524,7 @@ export function BookingFlow({
                   const isLast = i === visibleTiles.length - 2;
                   return (
                     <div key={i} style={{ position: "relative", borderRadius: 14, overflow: "hidden", border: `1px solid ${V.line}` }}>
-                      <img src={u} alt="" style={{ width: "100%", height: 251, objectFit: "cover", display: "block" }} />
+                      <MediaImg src={u} alt="" style={{ width: "100%", height: 251, objectFit: "cover", display: "block" }} />
                       {isLast && hiddenCount > 0 && (
                         <div
                           style={{
@@ -660,7 +661,7 @@ export function BookingFlow({
                   <h2 style={h2Light}>Your Captain</h2>
                   <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
                     {business?.logo_url ? (
-                      <img src={business.logo_url} alt="" style={{ width: 66, height: 66, borderRadius: "50%", objectFit: "cover", flex: "none" }} />
+                      <MediaImg src={business.logo_url} alt="" style={{ width: 66, height: 66, borderRadius: "50%", objectFit: "cover", flex: "none" }} />
                     ) : (
                       <div style={{ width: 66, height: 66, borderRadius: "50%", background: V.ond, color: V.sand, display: "grid", placeItems: "center", fontFamily: V.serif, fontSize: 26, flex: "none" }}>
                         {(business?.name ?? "F").slice(0, 1)}
@@ -1122,7 +1123,7 @@ export function BookingFlow({
                     </div>
                     {sec.n === 1 && (
                       <div style={{ display: "flex", gap: 16 }}>
-                        <img src={heroUrl} alt="" style={{ width: 96, height: 74, borderRadius: 12, objectFit: "cover", flex: "none" }} />
+                        <MediaImg src={heroUrl} alt="" style={{ width: 96, height: 74, borderRadius: 12, objectFit: "cover", flex: "none" }} />
                         <div style={{ flex: 1 }}>
                           <div style={{ fontSize: 15, fontWeight: 600 }}>{svc.title}</div>
                           <div style={{ fontSize: 13, color: V.tmut, marginTop: 3 }}>{businessLine}</div>
@@ -1400,7 +1401,7 @@ export function BookingFlow({
             {/* Recap */}
             <div style={{ background: V.card, border: `1px solid ${V.line}`, borderRadius: 20, padding: 24, marginBottom: 18 }}>
               <div style={{ display: "flex", gap: 18, alignItems: "center" }}>
-                <img src={heroUrl} alt="" style={{ width: 104, height: 80, borderRadius: 13, objectFit: "cover", flex: "none" }} />
+                <MediaImg src={heroUrl} alt="" style={{ width: 104, height: 80, borderRadius: 13, objectFit: "cover", flex: "none" }} />
                 <div style={{ flex: 1 }}>
                   <div style={{ fontFamily: V.serif, fontSize: 21, fontWeight: 600 }}>{svc.title}</div>
                   <div style={{ fontSize: 13.5, color: V.tmut, marginTop: 4 }}>{dateLabel} · {time} · {party} anglers</div>

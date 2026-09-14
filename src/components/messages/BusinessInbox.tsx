@@ -5,6 +5,7 @@
  * operator side to scope threads to that workspace.
  */
 import { useEffect, useMemo, useRef, useState } from "react";
+import { MediaImg } from "@/components/media/MediaImg";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -63,7 +64,7 @@ const timeLabel = (iso: string) =>
 
 function Avatar({ label, url, size = 44, c }: { label: string; url?: string | null; size?: number; c: ReturnType<typeof palette> }) {
   if (url) {
-    return <img src={url} alt={label} style={{ width: size, height: size, borderRadius: "50%", objectFit: "cover", flex: "none" }} />;
+    return <MediaImg src={url} alt={label} style={{ width: size, height: size, borderRadius: "50%", objectFit: "cover", flex: "none" }} />;
   }
   return (
     <span
