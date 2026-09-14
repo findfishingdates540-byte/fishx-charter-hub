@@ -160,7 +160,19 @@ function BookingThreads({ fullHeight = false }: { fullHeight?: boolean }) {
   };
 
   return (
-    <div className="fx-msg-grid" data-thread-open={mobileThreadOpen} style={{ display: "grid", gridTemplateColumns: "minmax(280px,360px) 1fr", gap: 18, alignItems: "stretch", minHeight: 560 }}>
+    <div
+      className="fx-msg-grid"
+      data-thread-open={mobileThreadOpen}
+      style={{
+        display: "grid",
+        gridTemplateColumns: "minmax(280px,360px) 1fr",
+        gap: 18,
+        alignItems: "stretch",
+        minHeight: fullHeight ? 0 : 560,
+        flex: fullHeight ? 1 : undefined,
+        paddingBottom: fullHeight ? 14 : 0,
+      }}
+    >
       <aside
         className="fx-msg-list"
         style={{
