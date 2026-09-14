@@ -149,7 +149,7 @@ function ServiceResults() {
                 onClick={() => void logListing("click", r.id, { position: i + 1 })}
                 style={{ textDecoration: "none", color: "inherit", background: "#fff", borderRadius: 16, border: "1px solid rgba(13,34,54,.08)", overflow: "hidden", display: "block" }}
               >
-                <div style={{ height: 160, background: r.heroUrl ? `url(${r.heroUrl}) center/cover` : "linear-gradient(135deg,#072057,#1f9fbe)" }} />
+                <div style={{ height: 160, background: r.heroUrl ? `url(${cachedMediaUrl(r.heroUrl)}) center/cover` : "linear-gradient(135deg,#072057,#1f9fbe)" }} />
                 <div style={{ padding: 16 }}>
                   <div style={{ fontSize: 11, letterSpacing: ".1em", textTransform: "uppercase", color: "#1F9FBE", fontWeight: 800 }}>
                     {SERVICE_KINDS.find((k) => k.key === r.kind)?.label ?? r.kind}

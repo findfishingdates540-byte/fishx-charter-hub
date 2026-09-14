@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { cachedMediaUrl } from "@/lib/media-url";
 import {
   useSuspenseQuery,
   useMutation,
@@ -390,7 +391,7 @@ function Roster({ data }: { data: any }) {
                 width: 52,
                 height: 52,
                 borderRadius: "50%",
-                background: g.avatarUrl ? `url(${g.avatarUrl}) center/cover` : "#F0F2F5",
+                background: g.avatarUrl ? `url(${cachedMediaUrl(g.avatarUrl)}) center/cover` : "#F0F2F5",
                 border: "1px solid rgba(255,255,255,.07)",
                 display: "grid",
                 placeItems: "center",

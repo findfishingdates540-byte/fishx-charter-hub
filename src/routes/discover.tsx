@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { cachedMediaUrl } from "@/lib/media-url";
 import { useSuspenseQuery, queryOptions } from "@tanstack/react-query";
 import { listPublicBusinesses, listCategories } from "@/lib/businesses.functions";
 import { PublicHeader } from "@/components/public/PublicHeader";
@@ -90,7 +91,7 @@ function DiscoverPage() {
                 onClick={() => void logListing("click", r.id, { position: i + 1, query: { surface: "discover" } })}
                 style={{ textDecoration: "none", color: "inherit", background: "#fff", borderRadius: 14, border: "1px solid rgba(13,34,54,.08)", overflow: "hidden" }}
               >
-                <div style={{ height: 120, background: r.heroUrl ? `url(${r.heroUrl}) center/cover` : "linear-gradient(135deg,#072057,#1f9fbe)" }} />
+                <div style={{ height: 120, background: r.heroUrl ? `url(${cachedMediaUrl(r.heroUrl)}) center/cover` : "linear-gradient(135deg,#072057,#1f9fbe)" }} />
                 <div style={{ padding: 14 }}>
                   <div style={{ fontWeight: 700, fontSize: 15 }}>{r.title}</div>
                   <div style={{ fontSize: 13, color: "#5c6b78" }}>{r.business?.name}</div>
@@ -147,7 +148,7 @@ function DiscoverPage() {
               transition: "transform .2s, box-shadow .2s",
             }}
           >
-            <div style={{ aspectRatio: "4/3", background: b.hero_url ? `#e9edf1 url(${b.hero_url}) center/cover` : "linear-gradient(135deg,#072057,#031029)" }} />
+            <div style={{ aspectRatio: "4/3", background: b.hero_url ? `#e9edf1 url(${cachedMediaUrl(b.hero_url)}) center/cover` : "linear-gradient(135deg,#072057,#031029)" }} />
             <div style={{ padding: 18 }}>
               <div style={{ fontSize: 11, letterSpacing: ".18em", textTransform: "uppercase", color: "#1F9FBE", fontWeight: 700 }}>
                 {b.category_key.replace(/_/g, " ")}

@@ -199,7 +199,7 @@ export function ServicesManager({
                 width: 82,
                 height: 60,
                 borderRadius: 12,
-                background: s.hero_url ? `center/cover url(${s.hero_url})` : "#e6ecf1",
+                background: s.hero_url ? `center/cover url(${cachedMediaUrl(s.hero_url)})` : "#e6ecf1",
                 flex: "none",
               }}
             />

@@ -338,7 +338,7 @@ export function CharterCard({
 
   const body = (
     <>
-      <div style={{ aspectRatio: "16/10", background: `#e9edf1 url(${l.hero_url || DEFAULT_HERO}) center/cover` }} />
+      <div style={{ aspectRatio: "16/10", background: `#e9edf1 url(${cachedMediaUrl(l.hero_url) || DEFAULT_HERO}) center/cover` }} />
       <div style={{ padding: 18, display: "flex", flexDirection: "column", gap: 6, flex: 1 }}>
         <div style={{ fontSize: 12, color: "#5c6b78" }}>
           {[l.business?.city, l.business?.region].filter(Boolean).join(", ") || l.departure_location || "—"}
