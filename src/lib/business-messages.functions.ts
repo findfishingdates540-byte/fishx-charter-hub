@@ -71,7 +71,7 @@ export const listBusinessThreads = createServerFn({ method: "GET" })
     const ids = convos.map((c: any) => c.id);
     const { data: msgs, error: mErr } = await supabase
       .from("business_messages")
-      .select("conversation_id,body,created_at,read_at,sender_id,sender_side")
+      .select("conversation_id,body,created_at,read_at,sender_id,sender_side,is_deleted")
       .in("conversation_id", ids)
       .order("created_at", { ascending: false });
     if (mErr) throw new Response(mErr.message, { status: 500 });
@@ -116,11 +116,20 @@ export const getBusinessThread = createServerFn({ method: "GET" })
     const convo = await loadConversation(supabase, data.conversationId);
     const msgRes = await supabase
       .from("business_messages")
-      .select("id,body,sender_id,sender_side,created_at,read_at")
+      .select("id,body,sender_id,sender_side,created_at,read_at,is_deleted,reply_to_id")
       .eq("conversation_id", data.conversationId)
       .order("created_at", { ascending: true })
       .limit(500);
     if (msgRes.error) throw new Response(msgRes.error.message, { status: 500 });
+
+    const messages = msgRes.data ?? [];
+    const ids = messages.map((m: any) => m.id);
+    const reactionsRes = ids.length
+      ? await supabase
+          .from("business_message_reactions")
+          .select("message_id,emoji,user_id")
+          .in("message_id", ids)
+      : { data: [], error: null };
 
     let angler: any = null;
     const profRes = await supabase
@@ -135,7 +144,8 @@ export const getBusinessThread = createServerFn({ method: "GET" })
       angler,
       viewerId: userId,
       viewerSide: (convo.angler_id === userId ? "angler" : "business") as Side,
-      messages: msgRes.data ?? [],
+      messages,
+      reactions: (reactionsRes as any).data ?? [],
     };
   });
 
@@ -146,6 +156,7 @@ export const sendBusinessMessage = createServerFn({ method: "POST" })
       .object({
         conversationId: z.string().uuid(),
         body: z.string().trim().min(1).max(4000),
+        replyToId: z.string().uuid().nullish(),
       })
       .parse(input),
   )
@@ -161,8 +172,9 @@ export const sendBusinessMessage = createServerFn({ method: "POST" })
         sender_id: userId,
         sender_side: side,
         body: data.body,
+        reply_to_id: data.replyToId ?? null,
       })
-      .select("id,body,sender_id,sender_side,created_at,read_at")
+      .select("id,body,sender_id,sender_side,created_at,read_at,is_deleted,reply_to_id")
       .single();
     if (ins.error) throw new Response(ins.error.message, { status: 500 });
 
@@ -173,6 +185,52 @@ export const sendBusinessMessage = createServerFn({ method: "POST" })
 
     return ins.data;
   });
+
+/** Soft-delete your own direct message. */
+export const deleteBusinessMessage = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input) => z.object({ messageId: z.string().uuid() }).parse(input))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const { error } = await supabase
+      .from("business_messages")
+      .update({ is_deleted: true, body: "" })
+      .eq("id", data.messageId)
+      .eq("sender_id", userId);
+    if (error) throw new Response(error.message, { status: 500 });
+    return { ok: true as const };
+  });
+
+/** Add or remove one emoji reaction on a direct message. */
+export const toggleBusinessReaction = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input) =>
+    z.object({ messageId: z.string().uuid(), emoji: z.string().min(1).max(8) }).parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const existing = await supabase
+      .from("business_message_reactions")
+      .select("id")
+      .eq("message_id", data.messageId)
+      .eq("user_id", userId)
+      .eq("emoji", data.emoji)
+      .maybeSingle();
+    if (existing.data) {
+      const { error } = await supabase
+        .from("business_message_reactions")
+        .delete()
+        .eq("id", existing.data.id);
+      if (error) throw new Response(error.message, { status: 500 });
+      return { on: false as const };
+    }
+    const { error } = await supabase
+      .from("business_message_reactions")
+      .insert({ message_id: data.messageId, user_id: userId, emoji: data.emoji });
+    if (error) throw new Response(error.message, { status: 500 });
+    return { on: true as const };
+  });
+
 
 export const markBusinessThreadRead = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])

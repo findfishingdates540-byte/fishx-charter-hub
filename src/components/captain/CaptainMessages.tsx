@@ -7,8 +7,26 @@ import { MediaImg } from "@/components/media/MediaImg";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { listCaptainConversations, getCaptainThread } from "@/lib/captain-management.functions";
-import { sendMessage, markThreadRead } from "@/lib/messages.functions";
+import {
+  sendMessage,
+  markThreadRead,
+  deleteBookingMessage,
+  toggleBookingReaction,
+} from "@/lib/messages.functions";
 import { BusinessInbox } from "@/components/messages/BusinessInbox";
+import {
+  ChatAvatar,
+  ChatComposer,
+  DaySeparator,
+  MessageBubble,
+  chatPalette,
+  dayLabel,
+  summariseReactions,
+  useOutbox,
+  useRealtimeTable,
+  useScrollToBottom,
+  type ChatMessage,
+} from "@/components/messages/chat-ui";
 
 const C = {
   card: "var(--card, #14202B)",
@@ -35,11 +53,8 @@ const relativeTime = (iso: string | null | undefined) => {
   return new Date(then).toLocaleDateString("en-US", { month: "short", day: "numeric" });
 };
 
-const timeLabel = (iso: string) =>
-  new Date(iso).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
 
-const dayLabel = (iso: string) =>
-  new Date(iso).toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" });
+
 
 function Avatar({ label, url, size = 44 }: { label: string; url?: string | null; size?: number }) {
   if (url) {
@@ -305,52 +320,60 @@ function Placeholder() {
 }
 
 function CaptainThread({ bookingId, onBack }: { bookingId: string; onBack?: () => void }) {
+  const c = chatPalette("dark");
   const qc = useQueryClient();
   const threadFn = useServerFn(getCaptainThread);
   const sendFn = useServerFn(sendMessage);
   const readFn = useServerFn(markThreadRead);
+  const deleteFn = useServerFn(deleteBookingMessage);
+  const reactFn = useServerFn(toggleBookingReaction);
   const [draft, setDraft] = useState("");
-  const endRef = useRef<HTMLDivElement | null>(null);
+  const [replyTo, setReplyTo] = useState<ChatMessage | null>(null);
 
   const { data, isLoading } = useQuery({
     queryKey: ["captain-thread", bookingId],
     queryFn: () => threadFn({ data: { bookingId } }),
   });
 
+  const refresh = () => {
+    qc.invalidateQueries({ queryKey: ["captain-thread", bookingId] });
+    qc.invalidateQueries({ queryKey: ["captain-conversations"] });
+  };
+
+  useRealtimeTable("booking_messages", `booking_id=eq.${bookingId}`, refresh);
+
   useEffect(() => {
     readFn({ data: { bookingId } })
       .then(() => qc.invalidateQueries({ queryKey: ["captain-conversations"] }))
       .catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bookingId]);
 
-  useEffect(() => {
-    endRef.current?.scrollIntoView({ block: "end" });
-  }, [data]);
-
-  const sendMut = useMutation({
-    mutationFn: (body: string) => sendFn({ data: { bookingId, body } }),
-    onSuccess: () => {
-      setDraft("");
-      qc.invalidateQueries({ queryKey: ["captain-thread", bookingId] });
-      qc.invalidateQueries({ queryKey: ["captain-conversations"] });
-    },
-  });
-
-  const groups = useMemo(() => {
-    const messages: any[] = (data as any)?.messages ?? [];
-    const out: Array<{ day: string; items: any[] }> = [];
-    for (const m of messages) {
-      const day = dayLabel(m.created_at);
-      const last = out[out.length - 1];
-      if (last && last.day === day) last.items.push(m);
-      else out.push({ day, items: [m] });
-    }
-    return out;
-  }, [data]);
-
   const guestName = (data as any)?.guestName ?? "Guest";
+  const guestPhoto = (data as any)?.angler?.avatar_url ?? null;
   const booking: any = (data as any)?.booking ?? null;
-  const viewerId = (data as any)?.viewerId;
+  const viewerId: string = (data as any)?.viewerId ?? "";
+
+  const outbox = useOutbox(
+    viewerId,
+    (body, replyToId) => sendFn({ data: { bookingId, body, replyToId } }),
+    refresh,
+  );
+
+  const serverMessages: ChatMessage[] = ((data as any)?.messages ?? []) as ChatMessage[];
+  const allMessages = [...serverMessages, ...outbox.items];
+  const byId = new Map(serverMessages.map((m) => [m.id, m]));
+  const endRef = useScrollToBottom(allMessages.length);
+
+  const submit = () => {
+    const body = draft.trim();
+    if (!body) return;
+    outbox.push(body, replyTo?.id ?? null);
+    setDraft("");
+    setReplyTo(null);
+  };
+
+  let lastDay = "";
 
   return (
     <section
@@ -362,6 +385,7 @@ function CaptainThread({ bookingId, onBack }: { bookingId: string; onBack?: () =
         display: "flex",
         flexDirection: "column",
         minHeight: 0,
+        overflow: "hidden",
       }}
     >
       <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "16px 20px", borderBottom: `1px solid ${C.line}` }}>
@@ -385,7 +409,7 @@ function CaptainThread({ bookingId, onBack }: { bookingId: string; onBack?: () =
             ← Back
           </button>
         )}
-        <Avatar label={guestName} url={(data as any)?.angler?.avatar_url} size={42} />
+        <ChatAvatar c={c} label={guestName} url={guestPhoto} size={42} />
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontSize: 15, fontWeight: 700 }}>{guestName}</div>
           <div style={{ fontSize: 12, color: C.tmut, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
@@ -396,91 +420,80 @@ function CaptainThread({ bookingId, onBack }: { bookingId: string; onBack?: () =
         </div>
       </div>
 
-      <div style={{ flex: 1, minHeight: 260, overflowY: "auto", padding: "18px 20px", display: "grid", gap: 14, alignContent: "start" }}>
+      <div
+        style={{
+          flex: 1,
+          minHeight: 260,
+          overflowY: "auto",
+          padding: "18px 20px",
+          display: "flex",
+          flexDirection: "column",
+          gap: 12,
+          background: c.canvas,
+        }}
+      >
         {isLoading && <div style={{ fontSize: 13, color: C.tmut }}>Loading thread…</div>}
-        {!isLoading && groups.length === 0 && (
+        {!isLoading && allMessages.length === 0 && (
           <div style={{ fontSize: 13, color: C.tmut }}>
             No messages yet — say hello and share what your guest should bring.
           </div>
         )}
-        {groups.map((g) => (
-          <div key={g.day} style={{ display: "grid", gap: 10 }}>
-            <div style={{ textAlign: "center", fontSize: 11, color: C.tmut, textTransform: "uppercase", letterSpacing: ".08em" }}>
-              {g.day}
+        {allMessages.map((m) => {
+          const mine = m.sender_id === viewerId;
+          const day = dayLabel(m.created_at);
+          const showDay = day !== lastDay;
+          lastDay = day;
+          const quoted = m.reply_to_id ? byId.get(m.reply_to_id) : null;
+          return (
+            <div key={m.id} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              {showDay && <DaySeparator label={day} c={c} />}
+              <MessageBubble
+                c={c}
+                message={m}
+                mine={mine}
+                senderLabel={guestName}
+                senderPhoto={guestPhoto}
+                replyTo={
+                  quoted
+                    ? {
+                        body: quoted.is_deleted ? null : quoted.body,
+                        mine: quoted.sender_id === viewerId,
+                        label: guestName,
+                      }
+                    : null
+                }
+                reactions={summariseReactions((data as any)?.reactions, m.id, viewerId)}
+                onReply={() => setReplyTo(m)}
+                onReact={(emoji) =>
+                  reactFn({ data: { messageId: m.id, emoji } }).then(refresh).catch(() => {})
+                }
+                onDelete={
+                  mine
+                    ? () => deleteFn({ data: { messageId: m.id } }).then(refresh).catch(() => {})
+                    : undefined
+                }
+                onRetry={m.failed ? () => outbox.retry(m.id) : undefined}
+              />
             </div>
-            {g.items.map((m) => {
-              const mine = m.sender_id === viewerId;
-              return (
-                <div key={m.id} style={{ display: "flex", justifyContent: mine ? "flex-end" : "flex-start", gap: 8 }}>
-                  {!mine && <Avatar label={guestName} url={(data as any)?.angler?.avatar_url} size={28} />}
-                  <div
-                    style={{
-                      maxWidth: "72%",
-                      background: mine ? C.cyan : "rgba(255,255,255,.05)",
-                      color: mine ? "#04121B" : "inherit",
-                      border: mine ? "none" : `1px solid ${C.line}`,
-                      borderRadius: 14,
-                      padding: "10px 13px",
-                      fontSize: 13.5,
-                      lineHeight: 1.55,
-                      whiteSpace: "pre-wrap",
-                    }}
-                  >
-                    {m.body}
-                    <div style={{ fontSize: 10.5, opacity: 0.7, marginTop: 5, textAlign: "right" }}>
-                      {timeLabel(m.created_at)}
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        ))}
+          );
+        })}
         <div ref={endRef} />
       </div>
 
-      <div style={{ display: "flex", gap: 10, padding: "14px 18px", borderTop: `1px solid ${C.line}` }}>
-        <input
-          value={draft}
-          onChange={(e) => setDraft(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && !e.shiftKey && draft.trim()) {
-              e.preventDefault();
-              sendMut.mutate(draft.trim());
-            }
-          }}
-          placeholder="Write a message…"
-          style={{
-            flex: 1,
-            height: 44,
-            borderRadius: 14,
-            border: `1px solid ${C.line}`,
-            background: "rgba(255,255,255,.04)",
-            color: "inherit",
-            padding: "0 14px",
-            fontSize: 13.5,
-          }}
-        />
-        <button
-          onClick={() => draft.trim() && sendMut.mutate(draft.trim())}
-          disabled={sendMut.isPending || !draft.trim()}
-          style={{
-            flex: "none",
-            background: C.cyan,
-            color: "#04121B",
-            border: 0,
-            borderRadius: 14,
-            padding: "0 22px",
-            height: 44,
-            fontSize: 12.5,
-            fontWeight: 700,
-            cursor: "pointer",
-            opacity: sendMut.isPending || !draft.trim() ? 0.6 : 1,
-          }}
-        >
-          {sendMut.isPending ? "Sending…" : "Send"}
-        </button>
-      </div>
+      <ChatComposer
+        c={c}
+        value={draft}
+        onChange={setDraft}
+        onSubmit={submit}
+        placeholder="Write a message…"
+        replyPreview={
+          replyTo
+            ? { label: replyTo.sender_id === viewerId ? "yourself" : guestName, body: replyTo.body }
+            : null
+        }
+        onCancelReply={() => setReplyTo(null)}
+      />
     </section>
   );
 }
+

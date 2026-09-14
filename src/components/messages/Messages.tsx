@@ -11,11 +11,26 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import {
+  deleteBookingMessage,
   getThread,
   listMessageThreads,
   markThreadRead,
   sendMessage,
+  toggleBookingReaction,
 } from "@/lib/messages.functions";
+import {
+  ChatAvatar,
+  ChatComposer,
+  DaySeparator,
+  MessageBubble,
+  chatPalette,
+  dayLabel,
+  summariseReactions,
+  useOutbox,
+  useRealtimeTable,
+  useScrollToBottom,
+  type ChatMessage,
+} from "@/components/messages/chat-ui";
 
 const V = {
   serif: "'Outfit',Georgia,serif",
@@ -66,11 +81,8 @@ const relativeTime = (iso: string | null | undefined) => {
   return new Date(then).toLocaleDateString("en-US", { month: "short", day: "numeric" });
 };
 
-const timeLabel = (iso: string) =>
-  new Date(iso).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
 
-const dayLabel = (iso: string) =>
-  new Date(iso).toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" });
+
 
 function useToast() {
   const [toast, setToast] = useState("");
@@ -354,6 +366,7 @@ function ThreadList({ activeId }: { activeId: string | null }) {
 /* -------------------------------------------------------------- Thread view -- */
 
 function ThreadView({ bookingId, mobile = false }: { bookingId: string; mobile?: boolean }) {
+  const c = chatPalette("light");
   const { data } = useSuspenseQuery({
     queryKey: ["thread", bookingId],
     queryFn: () => getThread({ data: { bookingId } }),
@@ -363,11 +376,25 @@ function ThreadView({ bookingId, mobile = false }: { bookingId: string; mobile?:
 
   const sendFn = useServerFn(sendMessage);
   const markReadFn = useServerFn(markThreadRead);
+  const deleteFn = useServerFn(deleteBookingMessage);
+  const reactFn = useServerFn(toggleBookingReaction);
 
   const [draft, setDraft] = useState("");
+  const [replyTo, setReplyTo] = useState<ChatMessage | null>(null);
 
   const name = counterpartName(data.business, data.captain);
   const capName = captainName(data.captain);
+  const photo =
+    (data.business as any)?.logo_url || (data.business as any)?.hero_url || data.captain?.avatar_url;
+
+  const refresh = () => {
+    queryClient.invalidateQueries({ queryKey: ["thread", bookingId] });
+    queryClient.invalidateQueries({ queryKey: ["message-threads"] });
+  };
+
+  // Live updates for this booking's messages and reactions.
+  useRealtimeTable("booking_messages", `booking_id=eq.${bookingId}`, refresh);
+  useRealtimeTable("booking_message_reactions", null, refresh, false);
 
   // Fire-and-forget read receipts when this thread opens / changes.
   useEffect(() => {
@@ -384,31 +411,44 @@ function ThreadView({ bookingId, mobile = false }: { bookingId: string; mobile?:
     };
   }, [bookingId, markReadFn, queryClient]);
 
-  const sendMut = useMutation({
-    mutationFn: (body: string) => sendFn({ data: { bookingId, body } }),
-    onSuccess: () => {
-      setDraft("");
-      queryClient.invalidateQueries({ queryKey: ["thread", bookingId] });
-      queryClient.invalidateQueries({ queryKey: ["message-threads"] });
-    },
-    onError: (e) => showToast(e instanceof Error ? e.message : "Couldn't send"),
-  });
+  const outbox = useOutbox(
+    data.viewerId,
+    (body, replyToId) => sendFn({ data: { bookingId, body, replyToId } }),
+    refresh,
+  );
 
   const submit = () => {
     const body = draft.trim();
-    if (!body || sendMut.isPending) return;
-    sendMut.mutate(body);
+    if (!body) return;
+    outbox.push(body, replyTo?.id ?? null);
+    setDraft("");
+    setReplyTo(null);
   };
 
-  // Group messages by calendar day for the date separators.
+  const removeMsg = (id: string) => {
+    deleteFn({ data: { messageId: id } })
+      .then(refresh)
+      .catch(() => showToast("Couldn't delete that message"));
+  };
+  const react = (id: string, emoji: string) => {
+    reactFn({ data: { messageId: id, emoji } })
+      .then(refresh)
+      .catch(() => showToast("Couldn't add that reaction"));
+  };
+
+  const serverMessages = (data.messages ?? []) as unknown as ChatMessage[];
+  const allMessages = [...serverMessages, ...outbox.items];
+  const byId = new Map(serverMessages.map((m) => [m.id, m]));
+  const endRef = useScrollToBottom(allMessages.length);
+
   let lastDay = "";
 
   return (
     <section
       style={{
         height: "100%",
-        background: V.card,
-        border: mobile ? "none" : `1px solid ${V.line}`,
+        background: c.surface,
+        border: mobile ? "none" : `1px solid ${c.line}`,
         borderRadius: mobile ? 0 : 20,
         overflow: "hidden",
         display: "flex",
@@ -423,7 +463,7 @@ function ThreadView({ bookingId, mobile = false }: { bookingId: string; mobile?:
           alignItems: "center",
           gap: mobile ? 10 : 14,
           padding: mobile ? "10px 12px" : "16px 22px",
-          borderBottom: `1px solid ${V.line}`,
+          borderBottom: `1px solid ${c.line}`,
         }}
       >
         {mobile && (
@@ -434,7 +474,7 @@ function ThreadView({ bookingId, mobile = false }: { bookingId: string; mobile?:
             style={{
               flex: "none",
               textDecoration: "none",
-              color: V.ink,
+              color: c.text,
               fontSize: 20,
               lineHeight: 1,
               padding: "4px 2px",
@@ -443,14 +483,14 @@ function ThreadView({ bookingId, mobile = false }: { bookingId: string; mobile?:
             ←
           </Link>
         )}
-        <CounterpartAvatar url={(data.business as any)?.logo_url || (data.business as any)?.hero_url || data.captain?.avatar_url} label={name} size={mobile ? 36 : 42} />
+        <ChatAvatar c={c} url={photo} label={name} size={mobile ? 36 : 42} />
         <div style={{ flex: 1, minWidth: 0 }}>
           <div
             style={{
               fontFamily: V.serif,
               fontSize: 18,
               fontWeight: 600,
-              color: V.ink,
+              color: c.text,
               whiteSpace: "nowrap",
               overflow: "hidden",
               textOverflow: "ellipsis",
@@ -458,7 +498,7 @@ function ThreadView({ bookingId, mobile = false }: { bookingId: string; mobile?:
           >
             {name}
           </div>
-          <div style={{ fontSize: 12, color: V.tmut, marginTop: 1 }}>
+          <div style={{ fontSize: 12, color: c.mut, marginTop: 1 }}>
             {data.service?.title ?? "Charter trip"} · {capName}
           </div>
         </div>
@@ -470,12 +510,12 @@ function ThreadView({ bookingId, mobile = false }: { bookingId: string; mobile?:
             display: "inline-flex",
             alignItems: "center",
             gap: 6,
-            border: `1px solid ${V.line}`,
+            border: `1px solid ${c.line}`,
             borderRadius: 30,
             padding: "8px 14px",
             fontSize: 11.5,
             fontWeight: 600,
-            color: V.ink,
+            color: c.text,
             textDecoration: "none",
           }}
         >
@@ -493,150 +533,75 @@ function ThreadView({ bookingId, mobile = false }: { bookingId: string; mobile?:
           padding: "20px 22px",
           display: "flex",
           flexDirection: "column",
-          gap: 14,
-          background: V.paper,
+          gap: 12,
+          background: c.canvas,
         }}
       >
-        {data.messages.length === 0 && (
-          <div style={{ textAlign: "center", color: V.tmut, fontSize: 13, padding: "24px 0" }}>
+        {allMessages.length === 0 && (
+          <div style={{ textAlign: "center", color: c.mut, fontSize: 13, padding: "24px 0" }}>
             No messages in this thread yet. Say hello to {capName}.
           </div>
         )}
-        {data.messages.map((m) => {
+        {allMessages.map((m) => {
           const mine = m.sender_id === data.viewerId;
           const day = dayLabel(m.created_at);
           const showDay = day !== lastDay;
           lastDay = day;
+          const quoted = m.reply_to_id ? byId.get(m.reply_to_id) : null;
           return (
-            <div key={m.id} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-              {showDay && (
-                <div style={{ display: "flex", justifyContent: "center" }}>
-                  <span
-                    style={{
-                      background: V.card,
-                      border: `1px solid ${V.line}`,
-                      borderRadius: 30,
-                      padding: "4px 12px",
-                      fontSize: 10.5,
-                      fontWeight: 700,
-                      letterSpacing: ".06em",
-                      textTransform: "uppercase",
-                      color: V.tmut,
-                    }}
-                  >
-                    {day}
-                  </span>
-                </div>
-              )}
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: mine ? "row-reverse" : "row",
-                  alignItems: "flex-end",
-                  gap: 10,
-                  maxWidth: "82%",
-                  marginLeft: mine ? "auto" : 0,
-                  marginRight: mine ? 0 : "auto",
-                }}
-              >
-                {!mine && <CounterpartAvatar url={(data.business as any)?.logo_url || (data.business as any)?.hero_url || data.captain?.avatar_url} label={name} size={30} />}
-                <div style={{ minWidth: 0 }}>
-                  <div
-                    style={{
-                      background: mine ? V.navy : V.card,
-                      color: mine ? "#fff" : V.ink,
-                      border: mine ? "0" : `1px solid ${V.line}`,
-                      borderRadius: 16,
-                      borderTopRightRadius: mine ? 4 : 16,
-                      borderTopLeftRadius: mine ? 16 : 4,
-                      padding: "11px 15px",
-                      fontSize: 14,
-                      lineHeight: 1.55,
-                      whiteSpace: "pre-wrap",
-                      overflowWrap: "anywhere",
-                    }}
-                  >
-                    {m.body}
-                  </div>
-                  <div
-                    style={{
-                      fontSize: 10.5,
-                      color: V.tmut,
-                      marginTop: 4,
-                      textAlign: mine ? "right" : "left",
-                    }}
-                  >
-                    {timeLabel(m.created_at)}
-                  </div>
-                </div>
-              </div>
+            <div key={m.id} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              {showDay && <DaySeparator label={day} c={c} />}
+              <MessageBubble
+                c={c}
+                message={m}
+                mine={mine}
+                senderLabel={name}
+                senderPhoto={photo}
+                replyTo={
+                  quoted
+                    ? {
+                        body: quoted.is_deleted ? null : quoted.body,
+                        mine: quoted.sender_id === data.viewerId,
+                        label: name,
+                      }
+                    : null
+                }
+                reactions={summariseReactions(
+                  (data as any).reactions,
+                  m.id,
+                  data.viewerId,
+                )}
+                onReply={() => setReplyTo(m)}
+                onReact={(emoji) => react(m.id, emoji)}
+                onDelete={mine ? () => removeMsg(m.id) : undefined}
+                onRetry={m.failed ? () => outbox.retry(m.id) : undefined}
+              />
             </div>
           );
         })}
+        <div ref={endRef} />
       </div>
 
-      {/* Composer */}
-      <div
-        style={{
-          padding: "14px 18px",
-          borderTop: `1px solid ${V.line}`,
-          display: "flex",
-          gap: 10,
-          alignItems: "flex-end",
-        }}
-      >
-        <textarea
-          value={draft}
-          onChange={(e) => setDraft(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && !e.shiftKey) {
-              e.preventDefault();
-              submit();
-            }
-          }}
-          rows={1}
-          placeholder="Type a message…"
-          style={{
-            flex: 1,
-            resize: "none",
-            minHeight: 44,
-            maxHeight: 120,
-            background: V.paper,
-            border: `1px solid ${V.line}`,
-            borderRadius: 14,
-            padding: "12px 15px",
-            fontFamily: V.sans,
-            fontSize: 14,
-            lineHeight: 1.5,
-            color: V.ink,
-            outline: "none",
-          }}
-        />
-        <button
-          onClick={submit}
-          disabled={sendMut.isPending || !draft.trim()}
-          style={{
-            flex: "none",
-            background: V.sand,
-            color: "#04121B",
-            border: 0,
-            borderRadius: 14,
-            padding: "0 22px",
-            height: 44,
-            fontFamily: V.sans,
-            fontSize: 12.5,
-            fontWeight: 700,
-            cursor: "pointer",
-            opacity: sendMut.isPending || !draft.trim() ? 0.6 : 1,
-          }}
-        >
-          {sendMut.isPending ? "Sending…" : "Send"}
-        </button>
-      </div>
+      <ChatComposer
+        c={c}
+        value={draft}
+        onChange={setDraft}
+        onSubmit={submit}
+        replyPreview={
+          replyTo
+            ? {
+                label: replyTo.sender_id === data.viewerId ? "yourself" : name,
+                body: replyTo.body,
+              }
+            : null
+        }
+        onCancelReply={() => setReplyTo(null)}
+      />
       <Toast toast={toast} />
     </section>
   );
 }
+
 
 /* ------------------------------------------------------------- Placeholder -- */
 

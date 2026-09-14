@@ -308,14 +308,48 @@ export type Database = {
           },
         ]
       }
+      booking_message_reactions: {
+        Row: {
+          created_at: string
+          emoji: string
+          id: string
+          message_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          emoji: string
+          id?: string
+          message_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          emoji?: string
+          id?: string
+          message_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "booking_message_reactions_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "booking_messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       booking_messages: {
         Row: {
           body: string | null
           booking_id: string
           created_at: string
           id: string
+          is_deleted: boolean
           media_json: Json
           read_at: string | null
+          reply_to_id: string | null
           sender_id: string
         }
         Insert: {
@@ -323,8 +357,10 @@ export type Database = {
           booking_id: string
           created_at?: string
           id?: string
+          is_deleted?: boolean
           media_json?: Json
           read_at?: string | null
+          reply_to_id?: string | null
           sender_id: string
         }
         Update: {
@@ -332,8 +368,10 @@ export type Database = {
           booking_id?: string
           created_at?: string
           id?: string
+          is_deleted?: boolean
           media_json?: Json
           read_at?: string | null
+          reply_to_id?: string | null
           sender_id?: string
         }
         Relationships: [
@@ -342,6 +380,13 @@ export type Database = {
             columns: ["booking_id"]
             isOneToOne: false
             referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "booking_messages_reply_to_id_fkey"
+            columns: ["reply_to_id"]
+            isOneToOne: false
+            referencedRelation: "booking_messages"
             referencedColumns: ["id"]
           },
         ]
@@ -756,14 +801,48 @@ export type Database = {
           },
         ]
       }
+      business_message_reactions: {
+        Row: {
+          created_at: string
+          emoji: string
+          id: string
+          message_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          emoji: string
+          id?: string
+          message_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          emoji?: string
+          id?: string
+          message_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_message_reactions_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "business_messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       business_messages: {
         Row: {
           body: string | null
           conversation_id: string
           created_at: string
           id: string
+          is_deleted: boolean
           media_json: Json
           read_at: string | null
+          reply_to_id: string | null
           sender_id: string
           sender_side: string
         }
@@ -772,8 +851,10 @@ export type Database = {
           conversation_id: string
           created_at?: string
           id?: string
+          is_deleted?: boolean
           media_json?: Json
           read_at?: string | null
+          reply_to_id?: string | null
           sender_id: string
           sender_side: string
         }
@@ -782,8 +863,10 @@ export type Database = {
           conversation_id?: string
           created_at?: string
           id?: string
+          is_deleted?: boolean
           media_json?: Json
           read_at?: string | null
+          reply_to_id?: string | null
           sender_id?: string
           sender_side?: string
         }
@@ -793,6 +876,13 @@ export type Database = {
             columns: ["conversation_id"]
             isOneToOne: false
             referencedRelation: "business_conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "business_messages_reply_to_id_fkey"
+            columns: ["reply_to_id"]
+            isOneToOne: false
+            referencedRelation: "business_messages"
             referencedColumns: ["id"]
           },
         ]

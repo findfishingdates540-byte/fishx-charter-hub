@@ -27,12 +27,16 @@ export const listMessageThreads = createServerFn({ method: "GET" })
 
     const messagesRes = await supabase
       .from("booking_messages")
-      .select("id,booking_id,body,sender_id,created_at,read_at")
+      .select("id,booking_id,body,sender_id,created_at,read_at,is_deleted")
       .in("booking_id", bookingIds)
       .order("created_at", { ascending: true })
       .limit(2000);
     if (messagesRes.error) throw new Response(messagesRes.error.message, { status: 500 });
-    const messages = messagesRes.data ?? [];
+    const messages = (messagesRes.data ?? []).map((m: any) => ({
+      ...m,
+      body: m.is_deleted ? "Message deleted" : m.body,
+    }));
+
 
     // Derive per-booking activity in JS (one query for all threads).
     type LastMessage = { body: string | null; created_at: string; sender_id: string };
@@ -125,28 +129,45 @@ export const getThread = createServerFn({ method: "GET" })
         : Promise.resolve({ data: null, error: null }),
       supabase
         .from("booking_messages")
-        .select("id,body,sender_id,created_at,read_at")
+        .select("id,body,sender_id,created_at,read_at,is_deleted,reply_to_id")
         .eq("booking_id", data.bookingId)
         .order("created_at", { ascending: true })
         .limit(500),
     ]);
     if (messagesRes.error) throw new Response(messagesRes.error.message, { status: 500 });
 
+    const messages = messagesRes.data ?? [];
+    const ids = messages.map((m: any) => m.id);
+    const reactionsRes = ids.length
+      ? await supabase
+          .from("booking_message_reactions")
+          .select("message_id,emoji,user_id")
+          .in("message_id", ids)
+      : { data: [], error: null };
+
     return {
       booking,
       service: serviceRes.data,
       business: businessRes.data,
       captain: captainRes.data,
-      messages: messagesRes.data ?? [],
+      messages,
+      reactions: (reactionsRes as any).data ?? [],
       viewerId: userId,
     };
   });
 
-/** Post a message to a booking thread. */
+
+/** Post a message to a booking thread (optionally quoting an earlier one). */
 export const sendMessage = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input) =>
-    z.object({ bookingId: z.string().uuid(), body: z.string().min(1).max(2000) }).parse(input),
+    z
+      .object({
+        bookingId: z.string().uuid(),
+        body: z.string().min(1).max(2000),
+        replyToId: z.string().uuid().nullish(),
+      })
+      .parse(input),
   )
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
@@ -154,10 +175,57 @@ export const sendMessage = createServerFn({ method: "POST" })
       booking_id: data.bookingId,
       sender_id: userId,
       body: data.body.trim(),
+      reply_to_id: data.replyToId ?? null,
     });
     if (error) throw new Response(error.message, { status: 500 });
     return { ok: true as const };
   });
+
+/** Soft-delete your own message — it stays in the thread as a placeholder. */
+export const deleteBookingMessage = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input) => z.object({ messageId: z.string().uuid() }).parse(input))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const { error } = await supabase
+      .from("booking_messages")
+      .update({ is_deleted: true, body: "" })
+      .eq("id", data.messageId)
+      .eq("sender_id", userId);
+    if (error) throw new Response(error.message, { status: 500 });
+    return { ok: true as const };
+  });
+
+/** Add or remove one emoji reaction on a trip message. */
+export const toggleBookingReaction = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input) =>
+    z.object({ messageId: z.string().uuid(), emoji: z.string().min(1).max(8) }).parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const existing = await supabase
+      .from("booking_message_reactions")
+      .select("id")
+      .eq("message_id", data.messageId)
+      .eq("user_id", userId)
+      .eq("emoji", data.emoji)
+      .maybeSingle();
+    if (existing.data) {
+      const { error } = await supabase
+        .from("booking_message_reactions")
+        .delete()
+        .eq("id", existing.data.id);
+      if (error) throw new Response(error.message, { status: 500 });
+      return { on: false as const };
+    }
+    const { error } = await supabase
+      .from("booking_message_reactions")
+      .insert({ message_id: data.messageId, user_id: userId, emoji: data.emoji });
+    if (error) throw new Response(error.message, { status: 500 });
+    return { on: true as const };
+  });
+
 
 /** Best-effort read receipts: mark the counterpart's unread messages read. */
 export const markThreadRead = createServerFn({ method: "POST" })
