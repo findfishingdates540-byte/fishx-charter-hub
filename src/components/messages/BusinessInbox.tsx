@@ -43,10 +43,13 @@ export function BusinessInbox({
   theme = "light",
   businessId,
   initialConversationId,
+  fullHeight = false,
 }: {
   theme?: ChatTheme;
   businessId?: string;
   initialConversationId?: string | null;
+  /** fill the parent instead of a fixed-height card (full-screen messaging) */
+  fullHeight?: boolean;
 }) {
   const c = chatPalette(theme);
   const isMobile = useIsMobile();
