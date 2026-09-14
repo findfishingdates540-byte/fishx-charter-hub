@@ -163,6 +163,7 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
         });
       }
     } catch (e) {
+      if (isRedirect(e)) throw e;
       // Surface real failure reasons instead of crashing on raw Response
       // objects thrown by server functions (they have no .message).
       if (e instanceof Response) {
@@ -234,7 +235,12 @@ function Dashboard() {
   function renderDashboard() {
     if (anglerMode && businesses.length === 0) return <AnglerDashboard />;
     if (primaryRole === "angler" && businesses.length === 0) return <AnglerDashboard />;
-    if (businesses.length === 0) return <AnglerDashboard />;
+    // Operator with no workspace yet: the loader redirects to setup, this is
+    // just the fallback while that navigation happens.
+    if (businesses.length === 0) {
+      if (isOperatorRole(primaryRole)) return <DashboardLoading />;
+      return <AnglerDashboard />;
+    }
 
     {
       const biz = pickPrimaryBusiness(businesses, primaryRole) as
