@@ -308,6 +308,25 @@ function ProductDetail({
 
   return (
     <div style={{ minHeight: "100vh", background: V.paper, color: V.ink, fontFamily: V.sans }}>
+      {preview && (
+        <div
+          style={{
+            position: "sticky",
+            top: 0,
+            zIndex: 60,
+            background: "#072057",
+            color: "#2DE2F2",
+            textAlign: "center",
+            fontSize: 12.5,
+            fontWeight: 700,
+            letterSpacing: 0.4,
+            padding: "8px 16px",
+            textTransform: "uppercase",
+          }}
+        >
+          Preview mode — only you can see this. Publish the product to make it live.
+        </div>
+      )}
       <PublicHeader
         hideNav
         actions={
