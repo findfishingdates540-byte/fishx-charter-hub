@@ -179,18 +179,21 @@ export function BusinessInbox({
         display: isMobile ? "block" : "grid",
         gridTemplateColumns: "minmax(240px,320px) 1fr",
         gap: 0,
-        border: isMobile ? "none" : `1px solid ${c.line}`,
-        borderRadius: isMobile ? 0 : 16,
+        border: isMobile || fullHeight ? "none" : `1px solid ${c.line}`,
+        borderRadius: isMobile || fullHeight ? 0 : 16,
         overflow: "hidden",
         background: c.surface,
-        minHeight: isMobile ? 0 : 520,
+        minHeight: isMobile || fullHeight ? 0 : 520,
+        height: fullHeight ? "100%" : undefined,
+        flex: fullHeight ? 1 : undefined,
       }}
     >
       <div
         style={{
           display: isMobile && activeId ? "none" : "block",
           borderRight: isMobile ? "none" : `1px solid ${c.line}`,
-          maxHeight: isMobile ? "none" : 640,
+          maxHeight: isMobile || fullHeight ? "none" : 640,
+          height: fullHeight && !isMobile ? "100%" : undefined,
           overflowY: "auto",
         }}
       >
