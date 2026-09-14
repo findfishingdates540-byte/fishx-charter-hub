@@ -1098,3 +1098,107 @@ function GearIcon() {
     </svg>
   );
 }
+
+/** Trips booked on this storefront — confirmed ones land here automatically. */
+function Bookings({ businessId }: { businessId: string }) {
+  const fetchBookings = useServerFn(getShopBookings);
+  const { data, isLoading } = useQuery({
+    queryKey: ["shop-bookings", businessId],
+    queryFn: () => fetchBookings({ data: { businessId } }),
+  });
+  const [tab, setTab] = useState<"upcoming" | "confirmed" | "all">("confirmed");
+
+  const rows = (data ?? []) as any[];
+  const today = new Date().toISOString().slice(0, 10);
+  const filtered = rows.filter((b) => {
+    if (tab === "all") return true;
+    if (tab === "confirmed") return b.status === "confirmed";
+    return (
+      (b.status === "confirmed" || b.status === "in_progress") &&
+      (b.tripDate ?? "") >= today
+    );
+  });
+
+  const tone = (status: string) =>
+    status === "confirmed" || status === "completed"
+      ? "green"
+      : status === "cancelled" || status === "declined" || status === "expired"
+        ? "red"
+        : "gold";
+
+  return (
+    <Card
+      title="Booked trips"
+      right={
+        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+          {(["confirmed", "upcoming", "all"] as const).map((k) => (
+            <button
+              key={k}
+              onClick={() => setTab(k)}
+              style={{
+                background: tab === k ? "#2DE2F2" : "transparent",
+                color: tab === k ? "#0D161F" : "#92A0AB",
+                border: "1px solid rgba(45,226,242,.22)",
+                borderRadius: 999,
+                padding: "5px 12px",
+                fontSize: 12,
+                fontWeight: 700,
+                cursor: "pointer",
+                textTransform: "capitalize",
+              }}
+            >
+              {k}
+            </button>
+          ))}
+        </div>
+      }
+    >
+      {isLoading ? (
+        <div style={{ color: "#92A0AB", fontSize: 13 }}>Loading bookings…</div>
+      ) : filtered.length === 0 ? (
+        <Empty label="No bookings here yet. Confirmed trips from your storefront show up automatically." />
+      ) : (
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          {filtered.map((b) => (
+            <div
+              key={b.id}
+              style={{
+                display: "flex",
+                flexWrap: "wrap",
+                alignItems: "center",
+                gap: 12,
+                border: "1px solid rgba(255,255,255,.06)",
+                borderRadius: 12,
+                padding: "12px 14px",
+                background: "#14202B",
+              }}
+            >
+              <div style={{ minWidth: 180, flex: 1 }}>
+                <div style={{ color: "#F0F2F5", fontWeight: 700, fontSize: 14 }}>
+                  {b.title}
+                </div>
+                <div style={{ color: "#92A0AB", fontSize: 12.5, marginTop: 2 }}>
+                  {b.anglerName} · {b.partySize} angler{b.partySize === 1 ? "" : "s"} · Ref {b.reference}
+                </div>
+              </div>
+              <div style={{ color: "#F0F2F5", fontSize: 13, minWidth: 140 }}>
+                {b.tripDate
+                  ? new Date(`${b.tripDate}T00:00:00`).toLocaleDateString("en-US", {
+                      weekday: "short",
+                      month: "short",
+                      day: "numeric",
+                    })
+                  : "Date TBC"}
+                {b.startTime ? ` · ${b.startTime}` : ""}
+              </div>
+              <div style={{ color: "#F0F2F5", fontSize: 13, fontWeight: 700, minWidth: 90 }}>
+                {money(b.totalCents)}
+              </div>
+              <StatusPill label={String(b.status).replace(/_/g, " ")} tone={tone(b.status) as any} />
+            </div>
+          ))}
+        </div>
+      )}
+    </Card>
+  );
+}
