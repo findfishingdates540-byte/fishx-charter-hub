@@ -43,6 +43,8 @@ export type Product = {
   images: string[];
   /** Signed, renderable versions of `images`. */
   imageUrls: (string | null)[];
+  /** Owner-authored free-text tags (stored in product metadata). */
+  tags?: string[];
 };
 
 type Order = {
