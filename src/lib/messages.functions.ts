@@ -27,12 +27,16 @@ export const listMessageThreads = createServerFn({ method: "GET" })
 
     const messagesRes = await supabase
       .from("booking_messages")
-      .select("id,booking_id,body,sender_id,created_at,read_at")
+      .select("id,booking_id,body,sender_id,created_at,read_at,is_deleted")
       .in("booking_id", bookingIds)
       .order("created_at", { ascending: true })
       .limit(2000);
     if (messagesRes.error) throw new Response(messagesRes.error.message, { status: 500 });
-    const messages = messagesRes.data ?? [];
+    const messages = (messagesRes.data ?? []).map((m: any) => ({
+      ...m,
+      body: m.is_deleted ? "Message deleted" : m.body,
+    }));
+
 
     // Derive per-booking activity in JS (one query for all threads).
     type LastMessage = { body: string | null; created_at: string; sender_id: string };
