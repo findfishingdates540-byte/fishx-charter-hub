@@ -38,7 +38,7 @@ export const getShopOverview = createServerFn({ method: "GET" })
       supabase
         .from("inventory_products")
         .select(
-          "id, sku, title, description, category, price_cents, compare_at_cents, stock_qty, low_stock_threshold, is_published, images",
+          "id, sku, title, description, category, price_cents, compare_at_cents, stock_qty, low_stock_threshold, is_published, images, metadata",
         )
         .eq("business_id", data.businessId)
         .order("updated_at", { ascending: false }),
@@ -61,7 +61,11 @@ export const getShopOverview = createServerFn({ method: "GET" })
     const withImages = productRows.map((p) => {
       const imgs = imageList(p.images);
       const resolved = imgs.map((orig) => signed[cursor++] ?? orig);
-      return { ...p, images: imgs, imageUrls: resolved };
+      const meta = (p.metadata ?? {}) as Record<string, unknown>;
+      const tags = Array.isArray(meta["tags"])
+        ? (meta["tags"] as unknown[]).filter((t): t is string => typeof t === "string")
+        : [];
+      return { ...p, images: imgs, imageUrls: resolved, tags };
     });
 
     const now = new Date();
