@@ -43,10 +43,13 @@ export function BusinessInbox({
   theme = "light",
   businessId,
   initialConversationId,
+  fullHeight = false,
 }: {
   theme?: ChatTheme;
   businessId?: string;
   initialConversationId?: string | null;
+  /** fill the parent instead of a fixed-height card (full-screen messaging) */
+  fullHeight?: boolean;
 }) {
   const c = chatPalette(theme);
   const isMobile = useIsMobile();
@@ -176,18 +179,21 @@ export function BusinessInbox({
         display: isMobile ? "block" : "grid",
         gridTemplateColumns: "minmax(240px,320px) 1fr",
         gap: 0,
-        border: isMobile ? "none" : `1px solid ${c.line}`,
-        borderRadius: isMobile ? 0 : 16,
+        border: isMobile || fullHeight ? "none" : `1px solid ${c.line}`,
+        borderRadius: isMobile || fullHeight ? 0 : 16,
         overflow: "hidden",
         background: c.surface,
-        minHeight: isMobile ? 0 : 520,
+        minHeight: isMobile || fullHeight ? 0 : 520,
+        height: fullHeight ? "100%" : undefined,
+        flex: fullHeight ? 1 : undefined,
       }}
     >
       <div
         style={{
           display: isMobile && activeId ? "none" : "block",
           borderRight: isMobile ? "none" : `1px solid ${c.line}`,
-          maxHeight: isMobile ? "none" : 640,
+          maxHeight: isMobile || fullHeight ? "none" : 640,
+          height: fullHeight && !isMobile ? "100%" : undefined,
           overflowY: "auto",
         }}
       >
@@ -277,6 +283,7 @@ export function BusinessInbox({
           display: isMobile && !activeId ? "none" : "flex",
           flexDirection: "column",
           minHeight: 0,
+          height: fullHeight ? "100%" : undefined,
         }}
       >
         <div
@@ -322,8 +329,8 @@ export function BusinessInbox({
         <div
           style={{
             flex: 1,
-            minHeight: 240,
-            maxHeight: isMobile ? "none" : 460,
+            minHeight: fullHeight ? 0 : 240,
+            maxHeight: isMobile || fullHeight ? "none" : 460,
             overflowY: "auto",
             padding: isMobile ? 14 : 18,
             display: "flex",

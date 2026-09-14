@@ -28,6 +28,7 @@ import { ServicesManager } from "@/components/business/ServicesManager";
 import { RequestInbox } from "@/components/operator/RequestInbox";
 import { ReadinessGate } from "@/components/operator/ReadinessGate";
 import { BusinessInbox } from "@/components/messages/BusinessInbox";
+import { MessagesFullScreen } from "@/components/messages/MessagesFullScreen";
 
 const overviewQO = (businessId: string) =>
   queryOptions({
@@ -159,7 +160,11 @@ export function GuideDashboard({
           <PaymentsDashboard businessId={businessId} />
         </div>
       )}
-      {active === "messages" && <BusinessInbox theme="dark" businessId={businessId} />}
+      {active === "messages" && (
+        <MessagesFullScreen theme="dark" title="Messages" subtitle="Customer conversations" onBack={() => setActive("overview")}>
+          <BusinessInbox theme="dark" businessId={businessId} fullHeight />
+        </MessagesFullScreen>
+      )}
       {active === "settings" && (
         <BusinessSettings businessId={businessId} initialSection={settingsSection} />
       )}

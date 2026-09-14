@@ -18,6 +18,7 @@ import {
   getCaptainEarnings,
 } from "@/lib/captain-management.functions";
 import { CaptainMessages } from "./CaptainMessages";
+import { MessagesFullScreen } from "@/components/messages/MessagesFullScreen";
 import { PaymentsDashboard } from "@/components/operator/PaymentsDashboard";
 import { BusinessSettings } from "@/components/business/BusinessSettings";
 import { DEFAULT_HERO } from "@/lib/platform-photos";
@@ -200,7 +201,11 @@ export function CaptainDashboard({ initialTab }: { initialTab?: string } = {}) {
           {tab === "services" && <ChartersPanel data={data} />}
           {tab === "blockouts" && <BlockoutDatesPanel />}
           {tab === "fleet" && <FleetPanel businessId={data.business?.id ?? null} />}
-          {tab === "messages" && <CaptainMessages businessId={data.business?.id ?? null} />}
+          {tab === "messages" && (
+            <MessagesFullScreen theme="dark" title="Messages" subtitle="Trip threads and direct enquiries" onBack={() => setTab("overview")}>
+              <CaptainMessages businessId={data.business?.id ?? null} fullHeight />
+            </MessagesFullScreen>
+          )}
           {tab === "earnings" && <EarningsPanel businessId={data.business?.id ?? null} />}
           {tab === "settings" && <SettingsPanel data={data} section={settingsSection} />}
         </main>

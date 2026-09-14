@@ -90,11 +90,23 @@ function Avatar({ label, url, size = 44 }: { label: string; url?: string | null;
   );
 }
 
-export function CaptainMessages({ businessId }: { businessId?: string | null }) {
+export function CaptainMessages({
+  businessId,
+  fullHeight = false,
+}: {
+  businessId?: string | null;
+  fullHeight?: boolean;
+}) {
   const [mode, setMode] = useState<"trips" | "direct">("trips");
   return (
-    <div>
-      <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
+    <div
+      style={
+        fullHeight
+          ? { height: "100%", display: "flex", flexDirection: "column", minHeight: 0, padding: "14px 16px 0" }
+          : undefined
+      }
+    >
+      <div style={{ display: "flex", gap: 8, marginBottom: 16, flex: "none" }}>
         {([["trips", "Trip threads"], ["direct", "Direct enquiries"]] as const).map(([k, label]) => (
           <button
             key={k}
@@ -116,9 +128,9 @@ export function CaptainMessages({ businessId }: { businessId?: string | null }) 
         ))}
       </div>
       {mode === "trips" ? (
-        <BookingThreads />
+        <BookingThreads fullHeight={fullHeight} />
       ) : businessId ? (
-        <BusinessInbox theme="dark" businessId={businessId} />
+        <BusinessInbox theme="dark" businessId={businessId} fullHeight={fullHeight} />
       ) : (
         <div style={{ padding: 24, color: C.tmut, fontSize: 13 }}>
           Connect your charter business to receive direct enquiries.
@@ -128,7 +140,7 @@ export function CaptainMessages({ businessId }: { businessId?: string | null }) 
   );
 }
 
-function BookingThreads() {
+function BookingThreads({ fullHeight = false }: { fullHeight?: boolean }) {
   const listFn = useServerFn(listCaptainConversations);
   const { data, isLoading } = useQuery({
     queryKey: ["captain-conversations"],
@@ -148,7 +160,19 @@ function BookingThreads() {
   };
 
   return (
-    <div className="fx-msg-grid" data-thread-open={mobileThreadOpen} style={{ display: "grid", gridTemplateColumns: "minmax(280px,360px) 1fr", gap: 18, alignItems: "stretch", minHeight: 560 }}>
+    <div
+      className="fx-msg-grid"
+      data-thread-open={mobileThreadOpen}
+      style={{
+        display: "grid",
+        gridTemplateColumns: "minmax(280px,360px) 1fr",
+        gap: 18,
+        alignItems: "stretch",
+        minHeight: fullHeight ? 0 : 560,
+        flex: fullHeight ? 1 : undefined,
+        paddingBottom: fullHeight ? 14 : 0,
+      }}
+    >
       <aside
         className="fx-msg-list"
         style={{
