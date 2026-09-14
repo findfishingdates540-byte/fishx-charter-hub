@@ -116,11 +116,31 @@ export const upsertProduct = createServerFn({ method: "POST" })
         lowStockThreshold: z.number().int().min(0).optional(),
         isPublished: z.boolean(),
         images: z.array(z.string().max(500)).max(8).optional(),
+        tags: z.array(z.string().min(1).max(40)).max(20).optional(),
       })
       .parse(i),
   )
   .handler(async ({ data, context }) => {
     await assertMember(context, data.businessId);
+
+    // Tags live in the product `metadata` blob; merge so nothing else is lost.
+    let metadata: Record<string, unknown> | undefined;
+    if (data.tags) {
+      let existing: Record<string, unknown> = {};
+      if (data.id) {
+        const { data: prev } = await context.supabase
+          .from("inventory_products")
+          .select("metadata")
+          .eq("id", data.id)
+          .maybeSingle();
+        existing = ((prev?.metadata ?? {}) as Record<string, unknown>) || {};
+      }
+      const clean = Array.from(
+        new Set(data.tags.map((t) => t.trim()).filter(Boolean)),
+      );
+      metadata = { ...existing, tags: clean };
+    }
+
     const payload = {
       business_id: data.businessId,
       sku: data.sku ?? null,
