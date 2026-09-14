@@ -140,7 +140,7 @@ export function CaptainMessages({
   );
 }
 
-function BookingThreads() {
+function BookingThreads({ fullHeight = false }: { fullHeight?: boolean }) {
   const listFn = useServerFn(listCaptainConversations);
   const { data, isLoading } = useQuery({
     queryKey: ["captain-conversations"],
