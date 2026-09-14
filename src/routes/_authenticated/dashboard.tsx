@@ -1,4 +1,4 @@
-import { createFileRoute, redirect, isRedirect } from "@tanstack/react-router";
+import { createFileRoute, redirect, isRedirect, Link } from "@tanstack/react-router";
 import { useSuspenseQuery, queryOptions } from "@tanstack/react-query";
 import { lazy, Suspense } from "react";
 
