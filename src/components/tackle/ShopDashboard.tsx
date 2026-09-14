@@ -928,67 +928,8 @@ function Settings({ businessId }: { businessId: string }) {
 
 /* --- shared UI helpers --- */
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <label style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-      <span
-        style={{
-          fontSize: 11,
-          fontWeight: 700,
-          letterSpacing: ".08em",
-          textTransform: "uppercase",
-          color: "#92A0AB",
-        }}
-      >
-        {label}
-      </span>
-      {children}
-    </label>
-  );
-}
+export function Field({ label, children }: { label: string; children: React.ReactNode }) {
 
-const inputStyle: React.CSSProperties = {
-  border: "1px solid rgba(255,255,255,.09)",
-  borderRadius: 10,
-  padding: "10px 12px",
-  fontFamily: "'Outfit', system-ui, sans-serif",
-  fontSize: 14,
-  background: "#14202B",
-  color: "#F0F2F5",
-  outline: "none",
-};
-
-const btnPrimary: React.CSSProperties = {
-  background: "#0D161F",
-  color: "#F0F2F5",
-  border: 0,
-  borderRadius: 11,
-  padding: "10px 16px",
-  fontFamily: "'Outfit', system-ui, sans-serif",
-  fontSize: 13,
-  fontWeight: 700,
-  cursor: "pointer",
-};
-
-const btnGhost: React.CSSProperties = {
-  background: "transparent",
-  color: "#F0F2F5",
-  border: "1px solid rgba(255,255,255,.09)",
-  borderRadius: 11,
-  padding: "10px 16px",
-  fontFamily: "'Outfit', system-ui, sans-serif",
-  fontSize: 13,
-  fontWeight: 600,
-  cursor: "pointer",
-};
-
-function Empty({ label }: { label: string }) {
-  return (
-    <div style={{ padding: "32px 10px", textAlign: "center", color: "#92A0AB", fontSize: 14 }}>
-      {label}
-    </div>
-  );
-}
 
 /* icons */
 function BoxIcon() {
