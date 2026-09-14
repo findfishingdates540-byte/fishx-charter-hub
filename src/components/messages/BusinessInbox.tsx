@@ -135,6 +135,11 @@ export function BusinessInbox({
   const byId = new Map(serverMessages.map((m) => [m.id, m]));
   const endRef = useScrollToBottom(allMessages.length);
   const { count, sentinelRef, hasMore } = useGrowOnScroll(allMessages.length, 30);
+  const {
+    count: listCount,
+    sentinelRef: listSentinel,
+    hasMore: moreThreads,
+  } = useGrowOnScroll(threads.length, 15);
   const visibleMessages = allMessages.slice(Math.max(0, allMessages.length - count));
 
   const name = active ? counterpart(active) : "Conversation";
@@ -260,6 +265,11 @@ export function BusinessInbox({
             </button>
           );
         })}
+        {moreThreads && (
+          <div ref={listSentinel}>
+            <LoadingOlder c={c} label="Loading more conversations…" />
+          </div>
+        )}
       </div>
 
       <div
