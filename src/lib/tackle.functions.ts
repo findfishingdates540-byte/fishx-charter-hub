@@ -124,7 +124,7 @@ export const upsertProduct = createServerFn({ method: "POST" })
     await assertMember(context, data.businessId);
 
     // Tags live in the product `metadata` blob; merge so nothing else is lost.
-    let metadata: Record<string, unknown> | undefined;
+    let metadata: any;
     if (data.tags) {
       let existing: Record<string, unknown> = {};
       if (data.id) {
