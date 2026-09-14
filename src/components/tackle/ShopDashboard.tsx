@@ -31,7 +31,7 @@ import { BusinessInbox } from "@/components/messages/BusinessInbox";
 import { ImageUpload } from "@/components/business/ImageUpload";
 import { useQuery } from "@tanstack/react-query";
 
-type Product = {
+export type Product = {
   id: string;
   sku: string | null;
   title: string;
@@ -384,7 +384,7 @@ function Products({ businessId, data }: { businessId: string; data: any }) {
   );
 }
 
-function ProductForm({
+export function ProductForm({
   businessId,
   initial,
   onCancel,
