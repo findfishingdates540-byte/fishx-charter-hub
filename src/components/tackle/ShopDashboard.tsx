@@ -585,6 +585,9 @@ export function ProductForm({
               lowStockThreshold: Number(low) || 5,
               isPublished,
               images,
+              tags: tagDraft.trim()
+                ? Array.from(new Set([...tags, tagDraft.trim().slice(0, 40)]))
+                : tags,
             })
           }
           style={btnPrimary}
