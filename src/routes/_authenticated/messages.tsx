@@ -139,9 +139,10 @@ function MessagesPage() {
         {active === "trips" ? (
           <Messages bookingId={booking ?? null} />
         ) : (
-          <div style={{ height: "100%", overflowY: "auto", background: "#fff" }}>
+          <div style={{ height: "100%", display: "flex", flexDirection: "column", minHeight: 0, background: "#fff" }}>
             <BusinessInbox
               theme="light"
+              fullHeight
               initialConversationId={(convo.data as any)?.conversationId ?? null}
             />
           </div>
