@@ -23,6 +23,9 @@ import {
   dayLabel,
   summariseReactions,
   useOutbox,
+  useGrowOnScroll,
+  LoadingOlder,
+  type Attachment,
   useRealtimeTable,
   useScrollToBottom,
   type ChatMessage,
@@ -356,7 +359,17 @@ function CaptainThread({ bookingId, onBack }: { bookingId: string; onBack?: () =
 
   const outbox = useOutbox(
     viewerId,
-    (body, replyToId) => sendFn({ data: { bookingId, body, replyToId } }),
+    (body, replyToId, attachment) =>
+      sendFn({
+        data: {
+          bookingId,
+          body,
+          replyToId,
+          attachmentUrl: attachment?.url ?? null,
+          attachmentType: attachment?.kind ?? null,
+          attachmentDurationMs: attachment?.durationMs ?? null,
+        },
+      }),
     refresh,
   );
 
@@ -364,11 +377,13 @@ function CaptainThread({ bookingId, onBack }: { bookingId: string; onBack?: () =
   const allMessages = [...serverMessages, ...outbox.items];
   const byId = new Map(serverMessages.map((m) => [m.id, m]));
   const endRef = useScrollToBottom(allMessages.length);
+  const { count, sentinelRef, hasMore } = useGrowOnScroll(allMessages.length, 30);
+  const visibleMessages = allMessages.slice(Math.max(0, allMessages.length - count));
 
-  const submit = () => {
+  const submit = (attachment?: Attachment | null) => {
     const body = draft.trim();
-    if (!body) return;
-    outbox.push(body, replyTo?.id ?? null);
+    if (!body && !attachment) return;
+    outbox.push(body, replyTo?.id ?? null, attachment ?? null);
     setDraft("");
     setReplyTo(null);
   };
@@ -438,7 +453,12 @@ function CaptainThread({ bookingId, onBack }: { bookingId: string; onBack?: () =
             No messages yet — say hello and share what your guest should bring.
           </div>
         )}
-        {allMessages.map((m) => {
+        {hasMore && (
+          <div ref={sentinelRef}>
+            <LoadingOlder c={c} />
+          </div>
+        )}
+        {visibleMessages.map((m) => {
           const mine = m.sender_id === viewerId;
           const day = dayLabel(m.created_at);
           const showDay = day !== lastDay;
@@ -484,7 +504,9 @@ function CaptainThread({ bookingId, onBack }: { bookingId: string; onBack?: () =
         c={c}
         value={draft}
         onChange={setDraft}
-        onSubmit={submit}
+        onSubmit={() => submit()}
+        uploaderId={viewerId}
+        onAttachment={(a) => submit(a)}
         placeholder="Write a message…"
         replyPreview={
           replyTo
