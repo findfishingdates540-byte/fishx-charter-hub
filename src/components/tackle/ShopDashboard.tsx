@@ -132,6 +132,7 @@ export function ShopDashboard({
       icon: <CartIcon />,
       badge: data.kpis.toShip || undefined,
     },
+    { key: "bookings", label: "Bookings", icon: <CartIcon /> },
     { key: "wholesale", label: "Wholesale", icon: <TagIcon /> },
     { key: "messages", label: "Messages", icon: <CartIcon /> },
     { key: "payments", label: "Payments", icon: <TagIcon /> },
@@ -142,6 +143,10 @@ export function ShopDashboard({
     overview: { t: "Shop overview", s: "Revenue, orders and inventory health." },
     products: { t: `${copy.productLabel} catalog`, s: "Publish, edit, restock." },
     orders: { t: copy.ordersLabel, s: "Fulfillment queue and history." },
+    bookings: {
+      t: "Bookings",
+      s: "Trips booked on your storefront. Confirmed trips appear here automatically.",
+    },
     wholesale: {
       t: "Wholesale & variants",
       s: "Trade pricing, price breaks, buyer approvals and product options.",
@@ -166,6 +171,7 @@ export function ShopDashboard({
       {active === "overview" && <Overview data={data} />}
       {active === "products" && <Products data={data} />}
       {active === "orders" && <Orders businessId={businessId} data={data} />}
+      {active === "bookings" && <Bookings businessId={businessId} />}
       {active === "wholesale" && (
         <WholesalePanel businessId={businessId} products={data.products} />
       )}
