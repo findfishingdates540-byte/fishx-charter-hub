@@ -70,7 +70,7 @@ function NewProductPage() {
             const row = await upsertProduct({ data: { ...v, businessId } });
             await qc.invalidateQueries({ queryKey: ["shop-overview", businessId] });
             // Land on the new product's editor so the owner can preview it.
-            navigate({ to: "/shop/products/$productId/edit", params: { productId: row.id } });
+            navigate({ to: "/shop/products/$productId/edit", params: { productId: row.id }, search: { biz: businessId } });
           } catch (err: any) {
             setError(err?.message || "We couldn't save that product. Check the details and try again.");
           } finally {
