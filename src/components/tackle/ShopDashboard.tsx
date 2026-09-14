@@ -28,6 +28,7 @@ import {
 import { PaymentsDashboard } from "@/components/operator/PaymentsDashboard";
 import { BusinessSettings } from "@/components/business/BusinessSettings";
 import { BusinessInbox } from "@/components/messages/BusinessInbox";
+import { MessagesFullScreen } from "@/components/messages/MessagesFullScreen";
 import { ImageUpload } from "@/components/business/ImageUpload";
 import { useQuery } from "@tanstack/react-query";
 
@@ -188,7 +189,11 @@ export function ShopDashboard({
         <WholesalePanel businessId={businessId} products={data.products} />
       )}
       {active === "payments" && <PaymentsDashboard businessId={businessId} />}
-      {active === "messages" && <BusinessInbox theme="dark" businessId={businessId} />}
+      {active === "messages" && (
+        <MessagesFullScreen theme="dark" title="Messages" subtitle="Customer conversations" onBack={() => setActive("overview")}>
+          <BusinessInbox theme="dark" businessId={businessId} fullHeight />
+        </MessagesFullScreen>
+      )}
       {active === "settings" && <Settings businessId={businessId} />}
     </OperatorShell>
   );

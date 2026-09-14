@@ -30,6 +30,7 @@ import { ServicesManager } from "@/components/business/ServicesManager";
 import { OperatorBookings } from "@/components/operator/OperatorBookings";
 import { ReadinessGate } from "@/components/operator/ReadinessGate";
 import { BusinessInbox } from "@/components/messages/BusinessInbox";
+import { MessagesFullScreen } from "@/components/messages/MessagesFullScreen";
 
 type Slip = {
   id: string;
@@ -183,7 +184,11 @@ export function MarinaDashboard({
           <PaymentsDashboard businessId={businessId} />
         </div>
       )}
-      {active === "messages" && <BusinessInbox theme="dark" businessId={businessId} />}
+      {active === "messages" && (
+        <MessagesFullScreen theme="dark" title="Messages" subtitle="Customer conversations" onBack={() => setActive("overview")}>
+          <BusinessInbox theme="dark" businessId={businessId} fullHeight />
+        </MessagesFullScreen>
+      )}
       {active === "settings" && (
         <BusinessSettings businessId={businessId} initialSection={settingsSection} />
       )}
