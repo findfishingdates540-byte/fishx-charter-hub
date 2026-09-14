@@ -375,6 +375,7 @@ export function ProductForm({
     lowStockThreshold: number;
     isPublished: boolean;
     images: string[];
+    tags: string[];
   }) => void;
   onDelete?: () => void;
   saving: boolean;
@@ -389,6 +390,19 @@ export function ProductForm({
   // Seed from the saved product, otherwise editing silently wipes the copy.
   const [description, setDescription] = useState(initial?.description ?? "");
   const [images, setImages] = useState<string[]>(initial?.images ?? []);
+  const [tags, setTags] = useState<string[]>(initial?.tags ?? []);
+  const [tagDraft, setTagDraft] = useState("");
+
+  const addTag = (raw: string) => {
+    const next = raw.trim().replace(/,+$/, "");
+    if (!next) return;
+    setTags((prev) =>
+      prev.some((t) => t.toLowerCase() === next.toLowerCase()) || prev.length >= 20
+        ? prev
+        : [...prev, next.slice(0, 40)],
+    );
+    setTagDraft("");
+  };
 
   return (
     <Card title={initial ? "Edit product" : "Add product"}>
