@@ -11,11 +11,26 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import {
+  deleteBookingMessage,
   getThread,
   listMessageThreads,
   markThreadRead,
   sendMessage,
+  toggleBookingReaction,
 } from "@/lib/messages.functions";
+import {
+  ChatAvatar,
+  ChatComposer,
+  DaySeparator,
+  MessageBubble,
+  chatPalette,
+  dayLabel,
+  summariseReactions,
+  useOutbox,
+  useRealtimeTable,
+  useScrollToBottom,
+  type ChatMessage,
+} from "@/components/messages/chat-ui";
 
 const V = {
   serif: "'Outfit',Georgia,serif",
