@@ -640,6 +640,7 @@ export function ChatComposer({
   onAttachment?: (a: Attachment) => void;
 }) {
   const fileRef = useRef<HTMLInputElement | null>(null);
+  const [emojiOpen, setEmojiOpen] = useState(false);
   const [busy, setBusy] = useState<null | "upload" | "record">(null);
   const [error, setError] = useState<string | null>(null);
   const recorder = useRef<MediaRecorder | null>(null);
