@@ -251,7 +251,7 @@ export const getCaptainThread = createServerFn({ method: "GET" })
 
     const messagesRes = await supabase
       .from("booking_messages")
-      .select("id,body,sender_id,created_at,read_at,is_deleted,reply_to_id")
+      .select("id,body,sender_id,created_at,read_at,is_deleted,reply_to_id,attachment_url,attachment_type,attachment_duration_ms")
       .eq("booking_id", data.bookingId)
       .order("created_at", { ascending: true })
       .limit(500);

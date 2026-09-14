@@ -129,7 +129,7 @@ export const getThread = createServerFn({ method: "GET" })
         : Promise.resolve({ data: null, error: null }),
       supabase
         .from("booking_messages")
-        .select("id,body,sender_id,created_at,read_at,is_deleted,reply_to_id")
+        .select("id,body,sender_id,created_at,read_at,is_deleted,reply_to_id,attachment_url,attachment_type,attachment_duration_ms")
         .eq("booking_id", data.bookingId)
         .order("created_at", { ascending: true })
         .limit(500),
@@ -164,9 +164,13 @@ export const sendMessage = createServerFn({ method: "POST" })
     z
       .object({
         bookingId: z.string().uuid(),
-        body: z.string().min(1).max(2000),
+        body: z.string().max(2000).default(""),
         replyToId: z.string().uuid().nullish(),
+        attachmentUrl: z.string().max(600).nullish(),
+        attachmentType: z.enum(["image", "audio"]).nullish(),
+        attachmentDurationMs: z.number().int().positive().nullish(),
       })
+      .refine((v) => v.body.trim().length > 0 || !!v.attachmentUrl, "Message is empty")
       .parse(input),
   )
   .handler(async ({ data, context }) => {
@@ -176,6 +180,9 @@ export const sendMessage = createServerFn({ method: "POST" })
       sender_id: userId,
       body: data.body.trim(),
       reply_to_id: data.replyToId ?? null,
+      attachment_url: data.attachmentUrl ?? null,
+      attachment_type: data.attachmentUrl ? data.attachmentType ?? null : null,
+      attachment_duration_ms: data.attachmentDurationMs ?? null,
     });
     if (error) throw new Response(error.message, { status: 500 });
     return { ok: true as const };

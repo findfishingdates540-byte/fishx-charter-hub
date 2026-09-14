@@ -30,6 +30,9 @@ import {
   relativeTime,
   summariseReactions,
   useOutbox,
+  useGrowOnScroll,
+  LoadingOlder,
+  type Attachment,
   useRealtimeTable,
   useScrollToBottom,
   type ChatMessage,
@@ -104,7 +107,17 @@ export function BusinessInbox({
 
   const outbox = useOutbox(
     viewerId,
-    (body, replyToId) => sendFn({ data: { conversationId: activeId!, body, replyToId } }),
+    (body, replyToId, attachment) =>
+      sendFn({
+        data: {
+          conversationId: activeId!,
+          body,
+          replyToId,
+          attachmentUrl: attachment?.url ?? null,
+          attachmentType: attachment?.kind ?? null,
+          attachmentDurationMs: attachment?.durationMs ?? null,
+        },
+      }),
     refresh,
   );
 
@@ -121,14 +134,21 @@ export function BusinessInbox({
   const allMessages = [...serverMessages, ...outbox.items];
   const byId = new Map(serverMessages.map((m) => [m.id, m]));
   const endRef = useScrollToBottom(allMessages.length);
+  const { count, sentinelRef, hasMore } = useGrowOnScroll(allMessages.length, 30);
+  const {
+    count: listCount,
+    sentinelRef: listSentinel,
+    hasMore: moreThreads,
+  } = useGrowOnScroll(threads.length, 15);
+  const visibleMessages = allMessages.slice(Math.max(0, allMessages.length - count));
 
   const name = active ? counterpart(active) : "Conversation";
   const photo = active ? counterpartPhoto(active) : null;
 
-  const submit = () => {
+  const submit = (attachment?: Attachment | null) => {
     const body = draft.trim();
-    if (!body || !activeId) return;
-    outbox.push(body, replyTo?.id ?? null);
+    if ((!body && !attachment) || !activeId) return;
+    outbox.push(body, replyTo?.id ?? null, attachment ?? null);
     setDraft("");
     setReplyTo(null);
   };
@@ -171,7 +191,7 @@ export function BusinessInbox({
           overflowY: "auto",
         }}
       >
-        {threads.map((t) => {
+        {threads.slice(0, listCount).map((t) => {
           const on = t.id === activeId;
           const snippet = t.lastMessage?.is_deleted
             ? "Message deleted"
@@ -245,6 +265,11 @@ export function BusinessInbox({
             </button>
           );
         })}
+        {moreThreads && (
+          <div ref={listSentinel}>
+            <LoadingOlder c={c} label="Loading more conversations…" />
+          </div>
+        )}
       </div>
 
       <div
@@ -311,7 +336,12 @@ export function BusinessInbox({
           {!thread.isLoading && allMessages.length === 0 && (
             <div style={{ color: c.mut, fontSize: 13 }}>Say hello to start the conversation.</div>
           )}
-          {allMessages.map((m) => {
+          {hasMore && (
+            <div ref={sentinelRef}>
+              <LoadingOlder c={c} />
+            </div>
+          )}
+          {visibleMessages.map((m) => {
             const mine = m.sender_id === viewerId;
             const day = dayLabel(m.created_at);
             const showDay = day !== lastDay;
@@ -358,7 +388,9 @@ export function BusinessInbox({
           c={c}
           value={draft}
           onChange={setDraft}
-          onSubmit={submit}
+          onSubmit={() => submit()}
+          uploaderId={viewerId}
+          onAttachment={(a) => submit(a)}
           placeholder="Write a message…"
           replyPreview={
             replyTo
