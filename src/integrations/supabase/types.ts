@@ -342,6 +342,9 @@ export type Database = {
       }
       booking_messages: {
         Row: {
+          attachment_duration_ms: number | null
+          attachment_type: string | null
+          attachment_url: string | null
           body: string | null
           booking_id: string
           created_at: string
@@ -353,6 +356,9 @@ export type Database = {
           sender_id: string
         }
         Insert: {
+          attachment_duration_ms?: number | null
+          attachment_type?: string | null
+          attachment_url?: string | null
           body?: string | null
           booking_id: string
           created_at?: string
@@ -364,6 +370,9 @@ export type Database = {
           sender_id: string
         }
         Update: {
+          attachment_duration_ms?: number | null
+          attachment_type?: string | null
+          attachment_url?: string | null
           body?: string | null
           booking_id?: string
           created_at?: string
@@ -835,6 +844,9 @@ export type Database = {
       }
       business_messages: {
         Row: {
+          attachment_duration_ms: number | null
+          attachment_type: string | null
+          attachment_url: string | null
           body: string | null
           conversation_id: string
           created_at: string
@@ -847,6 +859,9 @@ export type Database = {
           sender_side: string
         }
         Insert: {
+          attachment_duration_ms?: number | null
+          attachment_type?: string | null
+          attachment_url?: string | null
           body?: string | null
           conversation_id: string
           created_at?: string
@@ -859,6 +874,9 @@ export type Database = {
           sender_side: string
         }
         Update: {
+          attachment_duration_ms?: number | null
+          attachment_type?: string | null
+          attachment_url?: string | null
           body?: string | null
           conversation_id?: string
           created_at?: string
