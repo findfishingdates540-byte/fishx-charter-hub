@@ -329,8 +329,8 @@ export function BusinessInbox({
         <div
           style={{
             flex: 1,
-            minHeight: 240,
-            maxHeight: isMobile ? "none" : 460,
+            minHeight: fullHeight ? 0 : 240,
+            maxHeight: isMobile || fullHeight ? "none" : 460,
             overflowY: "auto",
             padding: isMobile ? 14 : 18,
             display: "flex",
