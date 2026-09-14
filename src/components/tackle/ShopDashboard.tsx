@@ -277,7 +277,10 @@ function Products({ data, businessId }: { data: any; businessId: string }) {
       <Card
         title="Catalog"
         right={
-          <button onClick={() => navigate({ to: "/shop/products/new" })} style={btnPrimary}>
+          <button
+            onClick={() => navigate({ to: "/shop/products/new", search: { biz: businessId } })}
+            style={btnPrimary}
+          >
             + Add product
           </button>
         }
