@@ -74,7 +74,7 @@ export const Route = createFileRoute("/marketplace/$productId")({
   },
 
   head: ({ loaderData }) => {
-    if (!loaderData) return { meta: [{ title: "Product not found — FISH-X.COM Bookings & Marketplace" }, { name: "robots", content: "noindex" }] };
+    if (!loaderData || !loaderData.product) return { meta: [{ title: "Product — FISH-X.COM Bookings & Marketplace" }, { name: "robots", content: "noindex" }] };
     const { product } = loaderData;
     const title = `${product.name} — Fish-X Marketplace`;
     const description = product.description ?? `${product.name} from ${product.seller}. Escrow-protected on Fish-X.`;
