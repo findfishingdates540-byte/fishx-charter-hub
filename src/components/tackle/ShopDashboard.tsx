@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useNavigate } from "@tanstack/react-router";
 import { MediaImg } from "@/components/media/MediaImg";
 import { WholesalePanel } from "@/components/tackle/WholesalePanel";
 import {
@@ -109,15 +110,17 @@ export function ShopDashboard({
   workspaceName,
   operatorName,
   categoryKey,
+  initialTab,
 }: {
   businessId: string;
   workspaceName: string;
   operatorName: string;
   categoryKey: string;
+  initialTab?: string;
 }) {
   const copy = KIND_COPY[categoryKey] ?? KIND_COPY.tackle_shop;
   const { data } = useSuspenseQuery(overviewQO(businessId));
-  const [active, setActive] = useState("overview");
+  const [active, setActive] = useState(initialTab ?? "overview");
 
   const nav: OperatorNavItem[] = [
     { key: "overview", label: "Overview", icon: <BoxIcon /> },
