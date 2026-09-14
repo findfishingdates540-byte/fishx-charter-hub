@@ -318,18 +318,21 @@ function ProductDetail({
     <div style={{ minHeight: "100vh", background: V.paper, color: V.ink, fontFamily: V.sans }}>
       {preview && (
         <div
+          role="status"
           style={{
-            position: "sticky",
-            top: 0,
-            zIndex: 60,
+            position: "relative",
+            zIndex: 70,
             background: "#072057",
             color: "#2DE2F2",
             textAlign: "center",
-            fontSize: 12.5,
+            fontSize: "clamp(10.5px, 2.6vw, 12.5px)",
             fontWeight: 700,
             letterSpacing: 0.4,
-            padding: "8px 16px",
+            lineHeight: 1.45,
+            padding: "10px 14px",
             textTransform: "uppercase",
+            whiteSpace: "normal",
+            overflowWrap: "anywhere",
           }}
         >
           Preview mode — only you can see this. Publish the product to make it live.

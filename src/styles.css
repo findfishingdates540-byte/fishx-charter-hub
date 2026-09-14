@@ -1031,6 +1031,8 @@ body.dc-body { margin:0; background:#072057; }
 
 /* Messages thread — hide scrollbar while keeping scroll */
 .fx-msg-thread { scrollbar-width: none; -ms-overflow-style: none; }
+.fx-msg-fullscreen .fx-msg-grid > aside,
+.fx-msg-fullscreen .fx-msg-grid > section { min-height: 0; }
 .fx-msg-thread::-webkit-scrollbar { display: none; }
 
 /* Captain messages — mobile single scrollable screen */
@@ -1041,6 +1043,11 @@ body.dc-body { margin:0; background:#072057; }
     gap: 0 !important;
     min-height: unset !important;
     height: calc(100vh - 180px);
+  }
+  .fx-msg-fullscreen .fx-msg-grid {
+    height: auto;
+    flex: 1 1 auto;
+    padding-bottom: 0 !important;
   }
   .fx-msg-grid > aside,
   .fx-msg-grid > section {

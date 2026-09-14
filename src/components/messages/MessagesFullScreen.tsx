@@ -31,9 +31,11 @@ export function MessagesFullScreen({
 
   return (
     <div
+      className="fx-msg-fullscreen"
       style={{
         position: "fixed",
         inset: 0,
+        height: "100dvh",
         zIndex: 120,
         background: c.surface,
         color: c.text,
@@ -41,6 +43,7 @@ export function MessagesFullScreen({
         display: "flex",
         flexDirection: "column",
         overflow: "hidden",
+        paddingBottom: "env(safe-area-inset-bottom)",
       }}
     >
       <header
@@ -50,6 +53,7 @@ export function MessagesFullScreen({
           alignItems: "center",
           gap: 12,
           padding: "12px 16px",
+          paddingTop: "calc(12px + env(safe-area-inset-top))",
           borderBottom: `1px solid ${c.line}`,
           background: c.surface,
         }}
@@ -72,8 +76,19 @@ export function MessagesFullScreen({
         >
           ← Back
         </button>
-        <div style={{ minWidth: 0 }}>
-          <div style={{ fontSize: 19, fontWeight: 700, lineHeight: 1.15 }}>{title}</div>
+        <div style={{ minWidth: 0, flex: 1 }}>
+          <div
+            style={{
+              fontSize: "clamp(16px, 4.4vw, 19px)",
+              fontWeight: 700,
+              lineHeight: 1.15,
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {title}
+          </div>
           {subtitle && (
             <div
               style={{
