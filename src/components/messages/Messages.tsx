@@ -27,6 +27,9 @@ import {
   dayLabel,
   summariseReactions,
   useOutbox,
+  useGrowOnScroll,
+  LoadingOlder,
+  type Attachment,
   useRealtimeTable,
   useScrollToBottom,
   type ChatMessage,
@@ -413,14 +416,24 @@ function ThreadView({ bookingId, mobile = false }: { bookingId: string; mobile?:
 
   const outbox = useOutbox(
     data.viewerId,
-    (body, replyToId) => sendFn({ data: { bookingId, body, replyToId } }),
+    (body, replyToId, attachment) =>
+      sendFn({
+        data: {
+          bookingId,
+          body,
+          replyToId,
+          attachmentUrl: attachment?.url ?? null,
+          attachmentType: attachment?.kind ?? null,
+          attachmentDurationMs: attachment?.durationMs ?? null,
+        },
+      }),
     refresh,
   );
 
-  const submit = () => {
+  const submit = (attachment?: Attachment | null) => {
     const body = draft.trim();
-    if (!body) return;
-    outbox.push(body, replyTo?.id ?? null);
+    if (!body && !attachment) return;
+    outbox.push(body, replyTo?.id ?? null, attachment ?? null);
     setDraft("");
     setReplyTo(null);
   };
@@ -440,6 +453,9 @@ function ThreadView({ bookingId, mobile = false }: { bookingId: string; mobile?:
   const allMessages = [...serverMessages, ...outbox.items];
   const byId = new Map(serverMessages.map((m) => [m.id, m]));
   const endRef = useScrollToBottom(allMessages.length);
+  // Newest messages render first; earlier ones stream in as you scroll up.
+  const { count, sentinelRef, hasMore } = useGrowOnScroll(allMessages.length, 30);
+  const visibleMessages = allMessages.slice(Math.max(0, allMessages.length - count));
 
   let lastDay = "";
 
@@ -542,7 +558,12 @@ function ThreadView({ bookingId, mobile = false }: { bookingId: string; mobile?:
             No messages in this thread yet. Say hello to {capName}.
           </div>
         )}
-        {allMessages.map((m) => {
+        {hasMore && (
+          <div ref={sentinelRef}>
+            <LoadingOlder c={c} />
+          </div>
+        )}
+        {visibleMessages.map((m) => {
           const mine = m.sender_id === data.viewerId;
           const day = dayLabel(m.created_at);
           const showDay = day !== lastDay;
@@ -586,7 +607,9 @@ function ThreadView({ bookingId, mobile = false }: { bookingId: string; mobile?:
         c={c}
         value={draft}
         onChange={setDraft}
-        onSubmit={submit}
+        onSubmit={() => submit()}
+        uploaderId={data.viewerId}
+        onAttachment={(a) => submit(a)}
         replyPreview={
           replyTo
             ? {
