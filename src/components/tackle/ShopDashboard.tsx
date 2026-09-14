@@ -313,7 +313,11 @@ function Products({ data, businessId }: { data: any; businessId: string }) {
               <button
                 key={p.id}
                 onClick={() =>
-                  navigate({ to: "/shop/products/$productId/edit", params: { productId: p.id } })
+                  navigate({
+                    to: "/shop/products/$productId/edit",
+                    params: { productId: p.id },
+                    search: { biz: businessId },
+                  })
                 }
                 style={{
                   display: "grid",
