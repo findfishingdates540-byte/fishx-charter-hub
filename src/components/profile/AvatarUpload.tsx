@@ -65,7 +65,7 @@ export function AvatarUpload({
           borderRadius: "50%",
           overflow: "hidden",
           flex: "none",
-          background: value ? `center/cover no-repeat url(${value})` : "#E2F6FA",
+          background: preview ? `center/cover no-repeat url("${preview}")` : "#E2F6FA",
           border: "2px solid #E2F6FA",
           display: "grid",
           placeItems: "center",
@@ -75,7 +75,7 @@ export function AvatarUpload({
           fontWeight: 600,
         }}
       >
-        {!value && (busy ? "…" : fallback)}
+        {!preview && (busy ? "…" : fallback)}
       </div>
 
       <div style={{ display: "grid", gap: 8, minWidth: 200 }}>
