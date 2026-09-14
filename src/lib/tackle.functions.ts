@@ -152,6 +152,7 @@ export const upsertProduct = createServerFn({ method: "POST" })
       low_stock_threshold: data.lowStockThreshold ?? 5,
       is_published: data.isPublished,
       ...(data.images ? { images: data.images } : {}),
+      ...(metadata ? { metadata } : {}),
     };
     const q = data.id
       ? context.supabase
