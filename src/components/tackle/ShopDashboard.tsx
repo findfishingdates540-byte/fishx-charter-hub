@@ -269,7 +269,7 @@ function Overview({ data }: { data: any }) {
   );
 }
 
-function Products({ data }: { data: any }) {
+function Products({ data, businessId }: { data: any; businessId: string }) {
   const navigate = useNavigate();
 
   return (
