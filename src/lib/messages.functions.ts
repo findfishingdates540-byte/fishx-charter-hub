@@ -129,22 +129,33 @@ export const getThread = createServerFn({ method: "GET" })
         : Promise.resolve({ data: null, error: null }),
       supabase
         .from("booking_messages")
-        .select("id,body,sender_id,created_at,read_at")
+        .select("id,body,sender_id,created_at,read_at,is_deleted,reply_to_id")
         .eq("booking_id", data.bookingId)
         .order("created_at", { ascending: true })
         .limit(500),
     ]);
     if (messagesRes.error) throw new Response(messagesRes.error.message, { status: 500 });
 
+    const messages = messagesRes.data ?? [];
+    const ids = messages.map((m: any) => m.id);
+    const reactionsRes = ids.length
+      ? await supabase
+          .from("booking_message_reactions")
+          .select("message_id,emoji,user_id")
+          .in("message_id", ids)
+      : { data: [], error: null };
+
     return {
       booking,
       service: serviceRes.data,
       business: businessRes.data,
       captain: captainRes.data,
-      messages: messagesRes.data ?? [],
+      messages,
+      reactions: (reactionsRes as any).data ?? [],
       viewerId: userId,
     };
   });
+
 
 /** Post a message to a booking thread. */
 export const sendMessage = createServerFn({ method: "POST" })
