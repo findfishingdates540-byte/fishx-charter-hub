@@ -34,6 +34,7 @@ export function MessagesFullScreen({
       style={{
         position: "fixed",
         inset: 0,
+        height: "100dvh",
         zIndex: 120,
         background: c.surface,
         color: c.text,
@@ -41,6 +42,7 @@ export function MessagesFullScreen({
         display: "flex",
         flexDirection: "column",
         overflow: "hidden",
+        paddingBottom: "env(safe-area-inset-bottom)",
       }}
     >
       <header
@@ -50,6 +52,7 @@ export function MessagesFullScreen({
           alignItems: "center",
           gap: 12,
           padding: "12px 16px",
+          paddingTop: "calc(12px + env(safe-area-inset-top))",
           borderBottom: `1px solid ${c.line}`,
           background: c.surface,
         }}
