@@ -4,6 +4,7 @@
  * rentals, marina experiences).
  */
 import { useState } from "react";
+import { cachedMediaUrl } from "@/lib/media-url";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import {

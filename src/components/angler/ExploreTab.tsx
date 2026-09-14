@@ -4,6 +4,7 @@
  * dashboard: results render in-tab and every card books through /booking.
  */
 import { Link } from "@tanstack/react-router";
+import { cachedMediaUrl } from "@/lib/media-url";
 import { useState } from "react";
 import { useSuspenseQuery, useQuery, queryOptions } from "@tanstack/react-query";
 import { getCharterDirectory, searchCharters } from "@/lib/charters.functions";

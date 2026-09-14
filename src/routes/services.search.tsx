@@ -3,6 +3,7 @@
  * Uses the ranked feed and logs impressions with position + query.
  */
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { cachedMediaUrl } from "@/lib/media-url";
 import { useSuspenseQuery, queryOptions } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { searchServices, SERVICE_KINDS } from "@/lib/services-search.functions";

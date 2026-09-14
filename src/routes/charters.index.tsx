@@ -3,6 +3,7 @@
  * destinations by state/port, and a featured charter rail.
  */
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { cachedMediaUrl } from "@/lib/media-url";
 import { useState } from "react";
 import { useSuspenseQuery, queryOptions } from "@tanstack/react-query";
 import { getCharterDirectory } from "@/lib/charters.functions";
