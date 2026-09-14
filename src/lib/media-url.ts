@@ -7,16 +7,13 @@
  * host (the editor preview gates it), which shows up as broken images in
  * dashboards and editors.
  *
- * `business-media` is a PUBLIC bucket, so those paths resolve instantly to
- * permanent public URLs. `avatars` remains private, so its paths resolve to
- * short-lived signed URLs (authenticated users have read access to their own
- * avatar paths).
+ * Both `business-media` and `avatars` are PUBLIC buckets, so those paths
+ * resolve instantly to permanent public URLs — no signing, no round trips.
  */
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
-const TTL_SECONDS = 60 * 60 * 6;
-const PUBLIC_BUCKETS = new Set(["business-media"]);
+const PUBLIC_BUCKETS = new Set(["business-media", "avatars"]);
 const BUCKETS: Array<{ prefix: string; bucket: string }> = [
   { prefix: "/api/public/media/", bucket: "business-media" },
   { prefix: "/api/public/avatars/", bucket: "avatars" },
