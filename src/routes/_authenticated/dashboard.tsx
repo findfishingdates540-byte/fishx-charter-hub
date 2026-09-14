@@ -309,22 +309,3 @@ function Dashboard() {
 
 }
 
-/** Operator signed in without a business yet — point them at setup, not the angler view. */
-function OperatorSetupPrompt() {
-  return (
-    <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 px-6 text-center">
-      <h1 className="text-2xl font-bold">Set up your business</h1>
-      <p className="max-w-md text-sm opacity-70">
-        Your operator account doesn't have a business workspace yet. Create one
-        to list your services, take bookings and get paid.
-      </p>
-      <Link
-        to="/onboarding"
-        className="rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground"
-      >
-        Set up my business
-      </Link>
-    </div>
-  );
-}
-
