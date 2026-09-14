@@ -65,7 +65,7 @@ type Order = {
   items: { id: string; title: string; quantity: number; unit_price_cents: number }[];
 };
 
-const overviewQO = (businessId: string) =>
+export const overviewQO = (businessId: string) =>
   queryOptions({
     queryKey: ["shop-overview", businessId],
     queryFn: () => getShopOverview({ data: { businessId } }),
