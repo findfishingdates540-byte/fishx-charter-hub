@@ -15,6 +15,7 @@ import {
   getShippingSettings,
   saveShippingSettings,
   refundProductOrder,
+  getShopBookings,
 } from "@/lib/tackle.functions";
 import {
   OperatorShell,
