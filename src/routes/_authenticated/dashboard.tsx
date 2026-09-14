@@ -1,4 +1,4 @@
-import { createFileRoute, redirect, isRedirect } from "@tanstack/react-router";
+import { createFileRoute, redirect, isRedirect, Link } from "@tanstack/react-router";
 import { useSuspenseQuery, queryOptions } from "@tanstack/react-query";
 import { lazy, Suspense } from "react";
 
@@ -221,10 +221,10 @@ function Dashboard() {
   const profile = boot?.profile ?? null;
   const primaryRole = hasPrimaryRole(roles);
   const { as, tab } = Route.useSearch();
-  // Nobody is ever auto-pushed into operator setup. Setting up a business is
-  // an explicit action from the dashboard, so anglers land straight on their
-  // own dashboard.
-  const anglerMode = as === "angler" || roles.includes("angler");
+  // Browsing "as angler" is an explicit choice (?as=angler). Merely having an
+  // angler role alongside an operator role must not land an operator on the
+  // angler dashboard — their routing role is the vertical they signed up for.
+  const anglerMode = as === "angler";
 
   return (
     <Suspense fallback={<DashboardLoading />}>
@@ -235,10 +235,26 @@ function Dashboard() {
   function renderDashboard() {
     if (anglerMode && businesses.length === 0) return <AnglerDashboard />;
     if (primaryRole === "angler" && businesses.length === 0) return <AnglerDashboard />;
-    // Operator with no workspace yet: the loader redirects to setup, this is
-    // just the fallback while that navigation happens.
+    // Operator with no workspace yet: the loader redirects to setup. If that
+    // redirect hasn't run (client-side nav race), show a clear next step —
+    // never the angler dashboard, which leaves operators stranded.
     if (businesses.length === 0) {
-      if (isOperatorRole(primaryRole)) return <DashboardLoading />;
+      if (isOperatorRole(primaryRole))
+        return (
+          <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 px-6 text-center">
+            <h1 className="text-2xl font-bold">Set up your business</h1>
+            <p className="max-w-md text-sm opacity-70">
+              Your operator account doesn't have a business workspace yet.
+              Create one to list your services, take bookings and get paid.
+            </p>
+            <Link
+              to="/onboarding"
+              className="rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground"
+            >
+              Set up my business
+            </Link>
+          </div>
+        );
       return <AnglerDashboard />;
     }
 
