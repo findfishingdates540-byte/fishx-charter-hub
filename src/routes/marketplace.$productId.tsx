@@ -14,19 +14,45 @@ import {
 } from "@/components/marketplace/catalog";
 import {
   getStoreProduct,
+  previewStoreProduct,
   createProductCheckout,
   type ProductVariant,
+  type StoreProduct,
 } from "@/lib/product-checkout.functions";
 import { getTradePricing, applyForTradeAccount, tradeUnitPrice } from "@/lib/wholesale.functions";
 import { listMyWishlistIds, toggleWishlist } from "@/lib/shopping.functions";
 import { supabase } from "@/integrations/supabase/client";
+import { useQuery } from "@tanstack/react-query";
+
+const rowToProduct = (row: StoreProduct): Product => {
+  const cat = catFromCategory(row.category, row.sellerCategory);
+  return {
+    id: row.id,
+    name: row.title,
+    seller: row.sellerName,
+    sellerType: "Verified vendor",
+    price: row.priceCents / 100,
+    rating: "5.0",
+    reviews: 0,
+    cat,
+    icon: iconFromCategory(cat, row.title),
+    description: row.description ?? undefined,
+    live: true,
+    image: row.image,
+    stockQty: row.stockQty,
+  };
+};
 
 export const Route = createFileRoute("/marketplace/$productId")({
-  loader: async ({ params }) => {
+  validateSearch: (s: Record<string, unknown>) => ({
+    preview: s.preview === true || s.preview === "1",
+  }),
+  loaderDeps: ({ search }) => ({ preview: search.preview }),
+  loader: async ({ params, deps }) => {
     const demo = CATALOG.find((p) => p.id === params.productId);
     if (demo)
       return {
-        product: demo,
+        product: demo as Product | null,
         businessId: null as string | null,
         variants: [] as ProductVariant[],
       };
@@ -35,28 +61,14 @@ export const Route = createFileRoute("/marketplace/$productId")({
     if (isUuid) {
       const row = await getStoreProduct({ data: { productId: params.productId } });
       if (row) {
-        const cat = catFromCategory(row.category, row.sellerCategory);
-        const product: Product = {
-          id: row.id,
-          name: row.title,
-          seller: row.sellerName,
-          sellerType: "Verified vendor",
-          price: row.priceCents / 100,
-          rating: "5.0",
-          reviews: 0,
-          cat,
-          icon: iconFromCategory(cat, row.title),
-          description: row.description ?? undefined,
-          live: true,
-          image: row.image,
-          stockQty: row.stockQty,
-        };
         return {
-          product,
+          product: rowToProduct(row) as Product | null,
           businessId: row.businessId as string,
           variants: (row.variants ?? []) as ProductVariant[],
         };
       }
+      // Owner preview mode: product may be unpublished; load client-side.
+      if (deps.preview) return { product: null, businessId: null, variants: [] };
     }
     throw notFound();
   },
