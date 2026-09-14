@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { MediaImg } from "@/components/media/MediaImg";
 import { WholesalePanel } from "@/components/tackle/WholesalePanel";
 import {
   useSuspenseQuery,
@@ -331,9 +332,9 @@ function Products({ businessId, data }: { businessId: string; data: any }) {
                       overflow: "hidden",
                     }}
                   >
-                    {p.imageUrls?.[0] && (
-                      <img
-                        src={p.imageUrls[0]}
+                    {(p.imageUrls?.[0] || p.images?.[0]) && (
+                      <MediaImg
+                        src={p.imageUrls?.[0] || p.images?.[0]}
                         alt=""
                         style={{ width: "100%", height: "100%", objectFit: "cover" }}
                       />

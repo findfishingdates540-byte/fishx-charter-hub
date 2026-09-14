@@ -6,6 +6,7 @@
  * rows that live under a charter_id (time/duration/price variants).
  */
 import { useEffect, useState } from "react";
+import { MediaImg } from "@/components/media/MediaImg";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useNavigate } from "@tanstack/react-router";
@@ -364,7 +365,7 @@ export function CharterForm({
             >
               {draft.image_urls.map((url, i) => (
                 <div key={`${url}-${i}`} style={{ position: "relative" }}>
-                  <img
+                  <MediaImg
                     src={url}
                     alt={`Gallery photo ${i + 1}`}
                     style={{
@@ -675,7 +676,7 @@ function CharterRowItem({
       }}
     >
       <div className="fx-charter-row" style={{ display: "flex", alignItems: "center", gap: 14 }}>
-        <img
+        <MediaImg
           src={c.hero_url || c.image_urls?.[0] || DEFAULT_HERO}
           alt=""
           style={{ width: 56, height: 56, borderRadius: 12, objectFit: "cover", flex: "none" }}
