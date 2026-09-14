@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect, isRedirect } from "@tanstack/react-router";
 import { useSuspenseQuery, queryOptions } from "@tanstack/react-query";
 import { lazy, Suspense } from "react";
 
@@ -88,7 +88,7 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
     ...(search.as === "angler" ? { as: "angler" as const } : {}),
   }),
   head: () => ({ meta: [{ title: "Dashboard — FISH-X.COM Bookings & Marketplace" }] }),
-  loader: async ({ context }) => {
+  loader: async ({ context, location }) => {
     try {
       // One request returns roles, businesses and profile together, then the
       // persona data is warmed in the background so the shell paints straight
@@ -101,8 +101,16 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
       context.queryClient.setQueryData(myProfileQO.queryKey, boot?.profile ?? null);
       const primary = hasPrimaryRole(roles);
 
+      const wantsAngler =
+        new URLSearchParams(location.searchStr ?? "").get("as") === "angler";
 
       if (businesses.length === 0) {
+        // A brand-new operator account has no workspace yet: send them to
+        // business setup instead of the angler dashboard. Anglers (and anyone
+        // explicitly browsing as one) still land on the angler dashboard.
+        if (isOperatorRole(primary) && !wantsAngler) {
+          throw redirect({ to: "/onboarding" });
+        }
         void context.queryClient.prefetchQuery({
           queryKey: ["angler-dashboard"],
           queryFn: () => getAnglerDashboard(),
@@ -116,6 +124,7 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
         void import("@/components/angler/AnglerDashboard");
         return;
       }
+
 
       const biz = pickPrimaryBusiness(businesses, primary) as { id: string; category_key: string } | undefined;
       const key = biz?.category_key ?? roleCategoryKey(primary);
