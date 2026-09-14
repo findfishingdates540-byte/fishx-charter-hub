@@ -101,6 +101,9 @@ export type ChatMessage = {
   read_at?: string | null;
   is_deleted?: boolean | null;
   reply_to_id?: string | null;
+  attachment_url?: string | null;
+  attachment_type?: string | null;
+  attachment_duration_ms?: number | null;
   /** client-only: optimistic states */
   pending?: boolean;
   failed?: boolean;
@@ -334,6 +337,15 @@ export function MessageBubble({
               </div>
             </div>
           )}
+          {!deleted && message.attachment_url && (
+            <Attachment
+              c={c}
+              url={message.attachment_url}
+              kind={message.attachment_type === "audio" ? "audio" : "image"}
+              durationMs={message.attachment_duration_ms ?? null}
+              mine={mine}
+            />
+          )}
           {deleted ? "Message deleted" : message.body}
         </div>
 
@@ -472,6 +484,8 @@ export function ChatComposer({
   onCancelReply,
   disabled,
   placeholder = "Type a message…",
+  uploaderId,
+  onAttachment,
 }: {
   c: ChatPalette;
   value: string;
@@ -481,7 +495,77 @@ export function ChatComposer({
   onCancelReply?: () => void;
   disabled?: boolean;
   placeholder?: string;
+  /** signed-in user id — used as the storage folder for uploads */
+  uploaderId?: string;
+  /** called once an image or voice note has been uploaded */
+  onAttachment?: (a: Attachment) => void;
 }) {
+  const fileRef = useRef<HTMLInputElement | null>(null);
+  const [busy, setBusy] = useState<null | "upload" | "record">(null);
+  const [error, setError] = useState<string | null>(null);
+  const recorder = useRef<MediaRecorder | null>(null);
+  const chunks = useRef<BlobPart[]>([]);
+  const startedAt = useRef(0);
+  const [elapsed, setElapsed] = useState(0);
+
+  const canAttach = !!uploaderId && !!onAttachment;
+
+  const upload = async (blob: Blob, kind: "image" | "audio", ext: string, durationMs?: number) => {
+    if (!uploaderId || !onAttachment) return;
+    setError(null);
+    setBusy("upload");
+    try {
+      const path = `${uploaderId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+      const { error: upErr } = await supabase.storage
+        .from("message-media")
+        .upload(path, blob, { contentType: blob.type || undefined, upsert: false });
+      if (upErr) throw upErr;
+      const { data } = supabase.storage.from("message-media").getPublicUrl(path);
+      onAttachment({ url: data.publicUrl, kind, durationMs });
+    } catch (e: any) {
+      setError(e?.message ?? "Upload failed");
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const startRecording = async () => {
+    setError(null);
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mr = new MediaRecorder(stream);
+      chunks.current = [];
+      startedAt.current = Date.now();
+      setElapsed(0);
+      mr.ondataavailable = (e) => {
+        if (e.data.size) chunks.current.push(e.data);
+      };
+      mr.onstop = () => {
+        stream.getTracks().forEach((t) => t.stop());
+        const blob = new Blob(chunks.current, { type: mr.mimeType || "audio/webm" });
+        const ms = Date.now() - startedAt.current;
+        if (blob.size > 0 && ms > 600) void upload(blob, "audio", "webm", ms);
+      };
+      recorder.current = mr;
+      mr.start();
+      setBusy("record");
+    } catch {
+      setError("Microphone not available");
+    }
+  };
+
+  const stopRecording = () => {
+    recorder.current?.stop();
+    recorder.current = null;
+    setBusy(null);
+  };
+
+  useEffect(() => {
+    if (busy !== "record") return;
+    const id = window.setInterval(() => setElapsed(Math.round((Date.now() - startedAt.current) / 1000)), 500);
+    return () => window.clearInterval(id);
+  }, [busy]);
+
   const ref = useRef<HTMLTextAreaElement | null>(null);
   useLayoutEffect(() => {
     const el = ref.current;
@@ -545,6 +629,15 @@ export function ChatComposer({
           </button>
         </div>
       )}
+      {(busy || error) && (
+        <div style={{ padding: "8px 18px 0", fontSize: 12, color: error ? "#e5484d" : c.mut }}>
+          {error
+            ? error
+            : busy === "record"
+              ? `Recording… ${elapsed}s — tap ■ to send`
+              : "Uploading…"}
+        </div>
+      )}
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -552,6 +645,45 @@ export function ChatComposer({
         }}
         style={{ display: "flex", gap: 10, alignItems: "flex-end", padding: "14px 18px" }}
       >
+        {canAttach && (
+          <>
+            <input
+              ref={fileRef}
+              type="file"
+              accept="image/*"
+              hidden
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                e.target.value = "";
+                if (file) void upload(file, "image", (file.name.split(".").pop() || "jpg").toLowerCase());
+              }}
+            />
+            <button
+              type="button"
+              aria-label="Attach a photo"
+              title="Attach a photo"
+              disabled={!!busy}
+              onClick={() => fileRef.current?.click()}
+              style={iconBtn(c)}
+            >
+              📎
+            </button>
+            <button
+              type="button"
+              aria-label={busy === "record" ? "Stop recording" : "Record a voice note"}
+              title={busy === "record" ? "Stop recording" : "Record a voice note"}
+              onClick={() => (busy === "record" ? stopRecording() : void startRecording())}
+              disabled={busy === "upload"}
+              style={{
+                ...iconBtn(c),
+                background: busy === "record" ? "#e5484d" : iconBtn(c).background,
+                color: busy === "record" ? "#fff" : iconBtn(c).color,
+              }}
+            >
+              {busy === "record" ? "■" : "🎤"}
+            </button>
+          </>
+        )}
         <textarea
           ref={ref}
           value={value}
@@ -693,6 +825,8 @@ export function useScrollToBottom(dep: unknown) {
 
 /* --------------------------------------------------------------- outbox --- */
 
+export type Attachment = { url: string; kind: "image" | "audio"; durationMs?: number };
+
 type OutboxItem = ChatMessage & { _reply: string | null };
 
 /**
@@ -701,7 +835,7 @@ type OutboxItem = ChatMessage & { _reply: string | null };
  */
 export function useOutbox(
   viewerId: string,
-  send: (body: string, replyToId: string | null) => Promise<unknown>,
+  send: (body: string, replyToId: string | null, attachment?: Attachment | null) => Promise<unknown>,
   onSent: () => void,
 ) {
   const [items, setItems] = useState<OutboxItem[]>([]);
@@ -713,7 +847,17 @@ export function useOutbox(
   const run = (entry: OutboxItem) => {
     setItems((prev) => prev.map((i) => (i.id === entry.id ? { ...i, pending: true, failed: false } : i)));
     void sendRef
-      .current(entry.body ?? "", entry._reply)
+      .current(
+        entry.body ?? "",
+        entry._reply,
+        entry.attachment_url
+          ? {
+              url: entry.attachment_url,
+              kind: entry.attachment_type === "audio" ? "audio" : "image",
+              durationMs: entry.attachment_duration_ms ?? undefined,
+            }
+          : null,
+      )
       .then(() => {
         setItems((prev) => prev.filter((i) => i.id !== entry.id));
         sentRef.current();
@@ -725,7 +869,7 @@ export function useOutbox(
       });
   };
 
-  const push = (body: string, replyToId: string | null) => {
+  const push = (body: string, replyToId: string | null, attachment?: Attachment | null) => {
     const entry: OutboxItem = {
       id: `local-${Date.now()}-${Math.random().toString(36).slice(2)}`,
       body,
@@ -733,6 +877,9 @@ export function useOutbox(
       created_at: new Date().toISOString(),
       pending: true,
       _reply: replyToId,
+      attachment_url: attachment?.url ?? null,
+      attachment_type: attachment?.kind ?? null,
+      attachment_duration_ms: attachment?.durationMs ?? null,
     };
     setItems((prev) => [...prev, entry]);
     run(entry);
