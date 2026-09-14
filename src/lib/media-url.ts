@@ -19,9 +19,6 @@ const BUCKETS: Array<{ prefix: string; bucket: string }> = [
   { prefix: "/api/public/avatars/", bucket: "avatars" },
 ];
 
-const cache = new Map<string, { url: string; exp: number }>();
-const inflight = new Map<string, Promise<string>>();
-
 function match(value: string) {
   for (const b of BUCKETS) {
     if (value.startsWith(b.prefix)) return { bucket: b.bucket, path: value.slice(b.prefix.length) };
@@ -33,49 +30,17 @@ function publicUrl(bucket: string, path: string): string {
   return supabase.storage.from(bucket).getPublicUrl(path).data.publicUrl;
 }
 
-/** Returns a directly loadable URL, or "" when it still needs resolving. */
+/** Returns a directly loadable URL (public buckets resolve instantly). */
 export function cachedMediaUrl(value: string | null | undefined): string {
   if (typeof value !== "string" || !value.trim()) return "";
   const v = value.trim();
   const m = match(v);
   if (!m) return v; // already an absolute/blob/data URL
-  if (PUBLIC_BUCKETS.has(m.bucket)) return publicUrl(m.bucket, m.path);
-  const hit = cache.get(v);
-  return hit && hit.exp > Date.now() ? hit.url : "";
+  return publicUrl(m.bucket, m.path);
 }
 
 export async function resolveMediaUrl(value: string | null | undefined): Promise<string> {
-  if (typeof value !== "string" || !value.trim()) return "";
-  const v = value.trim();
-  const m = match(v);
-  if (!m) return v;
-
-  // Public buckets resolve instantly — no signing, no network round trip.
-  if (PUBLIC_BUCKETS.has(m.bucket)) return publicUrl(m.bucket, m.path);
-
-  const hit = cache.get(v);
-  if (hit && hit.exp > Date.now()) return hit.url;
-
-  const existing = inflight.get(v);
-  if (existing) return existing;
-
-  const p = (async () => {
-    try {
-      const { data, error } = await supabase.storage
-        .from(m.bucket)
-        .createSignedUrl(m.path, TTL_SECONDS);
-      if (error || !data?.signedUrl) return v;
-      cache.set(v, { url: data.signedUrl, exp: Date.now() + (TTL_SECONDS - 600) * 1000 });
-      return data.signedUrl;
-    } catch {
-      return v;
-    } finally {
-      inflight.delete(v);
-    }
-  })();
-
-  inflight.set(v, p);
-  return p;
+  return cachedMediaUrl(value);
 }
 
 /** Hook form: resolves on mount and whenever the stored value changes. */
