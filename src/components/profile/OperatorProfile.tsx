@@ -384,15 +384,15 @@ export function OperatorProfile({
                 )}
 
                 {isTripStorefront
-                  ? charterGroups.map((group) => {
-                      const open = (openCharterKey ?? charterGroups[0]?.key) === group.key;
+                  ? charterGroups.map((group, idx) => {
+                      const open = (openCharterKey || charterGroups[0]?.key) === group.key;
                       return (
                         <article key={group.key} style={{ background: "#14202B", border: `1px solid ${open ? "rgba(45,226,242,.5)" : "rgba(255,255,255,.07)"}`, borderRadius: 18, overflow: "hidden" }}>
                           <button
                             type="button"
                             aria-expanded={open}
                             onClick={() => {
-                              if (open) { setOpenCharterKey(null); return; }
+                              if (open) { setOpenCharterKey(""); return; }
                               setOpenCharterKey(group.key);
                               if (group.services[0]) setSelectedServiceId(group.services[0].id);
                             }}
