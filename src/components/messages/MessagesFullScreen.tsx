@@ -75,8 +75,19 @@ export function MessagesFullScreen({
         >
           ← Back
         </button>
-        <div style={{ minWidth: 0 }}>
-          <div style={{ fontSize: 19, fontWeight: 700, lineHeight: 1.15 }}>{title}</div>
+        <div style={{ minWidth: 0, flex: 1 }}>
+          <div
+            style={{
+              fontSize: "clamp(16px, 4.4vw, 19px)",
+              fontWeight: 700,
+              lineHeight: 1.15,
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {title}
+          </div>
           {subtitle && (
             <div
               style={{
