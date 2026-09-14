@@ -163,7 +163,7 @@ export function ShopDashboard({
       pageSub={titles[active].s}
     >
       {active === "overview" && <Overview data={data} />}
-      {active === "products" && <Products businessId={businessId} data={data} />}
+      {active === "products" && <Products data={data} />}
       {active === "orders" && <Orders businessId={businessId} data={data} />}
       {active === "wholesale" && (
         <WholesalePanel businessId={businessId} products={data.products} />
