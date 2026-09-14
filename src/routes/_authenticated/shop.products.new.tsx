@@ -8,6 +8,9 @@ import { CaptainPageShell } from "@/components/captain/CaptainPageShell";
 import { ProductForm } from "@/components/tackle/ShopDashboard";
 
 export const Route = createFileRoute("/_authenticated/shop/products/new")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    biz: typeof search.biz === "string" ? search.biz : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "Add product — Fish-X" },
@@ -28,7 +31,9 @@ function NewProductPage() {
     queryKey: ["my-bootstrap"],
     queryFn: () => bootstrap(),
   });
-  const businessId: string | null = (boot as any)?.businesses?.[0]?.business?.id ?? null;
+  const { biz } = Route.useSearch();
+  const businessId: string | null =
+    biz ?? (boot as any)?.businesses?.[0]?.business?.id ?? null;
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
@@ -65,7 +70,7 @@ function NewProductPage() {
             const row = await upsertProduct({ data: { ...v, businessId } });
             await qc.invalidateQueries({ queryKey: ["shop-overview", businessId] });
             // Land on the new product's editor so the owner can preview it.
-            navigate({ to: "/shop/products/$productId/edit", params: { productId: row.id } });
+            navigate({ to: "/shop/products/$productId/edit", params: { productId: row.id }, search: { biz: businessId } });
           } catch (err: any) {
             setError(err?.message || "We couldn't save that product. Check the details and try again.");
           } finally {

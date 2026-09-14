@@ -8,6 +8,9 @@ import { CaptainPageShell } from "@/components/captain/CaptainPageShell";
 import { overviewQO, ProductForm, type Product } from "@/components/tackle/ShopDashboard";
 
 export const Route = createFileRoute("/_authenticated/shop/products/$productId/edit")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    biz: typeof search.biz === "string" ? search.biz : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "Edit product — Fish-X" },
@@ -29,7 +32,9 @@ function EditProductPage() {
     queryKey: ["my-bootstrap"],
     queryFn: () => bootstrap(),
   });
-  const businessId: string | null = (boot as any)?.businesses?.[0]?.business?.id ?? null;
+  const { biz } = Route.useSearch();
+  const businessId: string | null =
+    biz ?? (boot as any)?.businesses?.[0]?.business?.id ?? null;
 
   const { data: overview, isLoading: overviewLoading } = useQuery({
     ...overviewQO(businessId ?? "none"),

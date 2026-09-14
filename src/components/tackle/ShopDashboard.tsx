@@ -121,7 +121,19 @@ export function ShopDashboard({
 }) {
   const copy = KIND_COPY[categoryKey] ?? KIND_COPY.tackle_shop;
   const { data } = useSuspenseQuery(overviewQO(businessId));
-  const [active, setActive] = useState(initialTab ?? "overview");
+  const SHOP_TABS = [
+    "overview",
+    "products",
+    "orders",
+    "bookings",
+    "wholesale",
+    "messages",
+    "payments",
+    "settings",
+  ];
+  const [active, setActive] = useState(
+    initialTab && SHOP_TABS.includes(initialTab) ? initialTab : "overview",
+  );
 
   const nav: OperatorNavItem[] = [
     { key: "overview", label: "Overview", icon: <BoxIcon /> },
@@ -165,11 +177,11 @@ export function ShopDashboard({
       nav={nav}
       active={active}
       onNav={setActive}
-      pageTitle={titles[active].t}
-      pageSub={titles[active].s}
+      pageTitle={(titles[active] ?? titles.overview).t}
+      pageSub={(titles[active] ?? titles.overview).s}
     >
       {active === "overview" && <Overview data={data} />}
-      {active === "products" && <Products data={data} />}
+      {active === "products" && <Products data={data} businessId={businessId} />}
       {active === "orders" && <Orders businessId={businessId} data={data} />}
       {active === "bookings" && <Bookings businessId={businessId} />}
       {active === "wholesale" && (
@@ -257,7 +269,7 @@ function Overview({ data }: { data: any }) {
   );
 }
 
-function Products({ data }: { data: any }) {
+function Products({ data, businessId }: { data: any; businessId: string }) {
   const navigate = useNavigate();
 
   return (
@@ -265,7 +277,10 @@ function Products({ data }: { data: any }) {
       <Card
         title="Catalog"
         right={
-          <button onClick={() => navigate({ to: "/shop/products/new" })} style={btnPrimary}>
+          <button
+            onClick={() => navigate({ to: "/shop/products/new", search: { biz: businessId } })}
+            style={btnPrimary}
+          >
             + Add product
           </button>
         }
@@ -298,7 +313,11 @@ function Products({ data }: { data: any }) {
               <button
                 key={p.id}
                 onClick={() =>
-                  navigate({ to: "/shop/products/$productId/edit", params: { productId: p.id } })
+                  navigate({
+                    to: "/shop/products/$productId/edit",
+                    params: { productId: p.id },
+                    search: { biz: businessId },
+                  })
                 }
                 style={{
                   display: "grid",
