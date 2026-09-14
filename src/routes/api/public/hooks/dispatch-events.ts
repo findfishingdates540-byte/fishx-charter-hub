@@ -103,6 +103,12 @@ export const Route = createFileRoute("/api/public/hooks/dispatch-events")({
         }
 
         return Response.json({ ok: true, dispatched, failed });
+        } catch (e) {
+          const message = e instanceof Error ? e.message : String(e);
+          console.error("[dispatch-events] failed:", message);
+          return Response.json({ ok: false, error: message }, { status: 500 });
+        }
+
       },
     },
   },
