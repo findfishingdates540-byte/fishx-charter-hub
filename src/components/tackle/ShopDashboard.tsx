@@ -338,6 +338,25 @@ function Products({ data }: { data: any }) {
                   <div style={{ minWidth: 0 }}>
                     <div style={{ fontSize: 14, fontWeight: 600, color: "#F0F2F5" }}>{p.title}</div>
                     <div style={{ fontSize: 12, color: "#92A0AB" }}>{p.category ?? "Uncategorised"}</div>
+                    {!!p.tags?.length && (
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginTop: 5 }}>
+                        {p.tags.slice(0, 4).map((t) => (
+                          <span
+                            key={t}
+                            style={{
+                              fontSize: 10.5,
+                              fontWeight: 700,
+                              color: "#2DE2F2",
+                              border: "1px solid rgba(45,226,242,.3)",
+                              borderRadius: 999,
+                              padding: "2px 8px",
+                            }}
+                          >
+                            {t}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
                 <span style={{ fontSize: 13, color: "#F0F2F5" }}>{p.sku ?? "—"}</span>
