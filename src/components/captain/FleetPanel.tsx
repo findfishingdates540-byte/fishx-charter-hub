@@ -4,6 +4,7 @@
  * dark `input`/`btn` atoms from BusinessSettings and ImageUpload for uploads.
  */
 import { useEffect, useState } from "react";
+import { MediaImg } from "@/components/media/MediaImg";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import {
@@ -42,7 +43,7 @@ function BoatImage({ sources, alt, style }: { sources: string[]; alt: string; st
   if (!usable[index]) return <span style={{ fontSize: 10, color: "var(--tmut)" }}>No img</span>;
 
   return (
-    <img
+    <MediaImg
       src={usable[index]}
       alt={alt}
       loading="lazy"
@@ -485,7 +486,7 @@ function BoatPreview({
                       border: i === active ? "2px solid #2DE2F2" : "1px solid var(--line)",
                     }}
                   >
-                    <img src={u} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                    <MediaImg src={u} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
                   </button>
                 ))}
               </div>

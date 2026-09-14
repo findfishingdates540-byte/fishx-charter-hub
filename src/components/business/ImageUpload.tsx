@@ -8,6 +8,7 @@
  */
 import { useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useMediaUrl } from "@/lib/media-url";
 
 const MAX_BYTES = 8 * 1024 * 1024;
 
@@ -68,7 +69,10 @@ export function ImageUpload({
     }
   }
 
-  const preview = localPreview || value;
+  // Stored values are private-bucket paths; resolve to a signed URL so the
+  // preview renders in the editor and on every host.
+  const resolvedValue = useMediaUrl(value);
+  const preview = localPreview || resolvedValue;
 
 
   return (

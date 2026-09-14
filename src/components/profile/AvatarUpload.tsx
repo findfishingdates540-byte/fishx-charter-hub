@@ -7,6 +7,7 @@
  */
 import { useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useMediaUrl } from "@/lib/media-url";
 
 const MAX_BYTES = 5 * 1024 * 1024;
 
@@ -28,6 +29,9 @@ export function AvatarUpload({
   const fileRef = useRef<HTMLInputElement | null>(null);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  // Stored value is a private-bucket path; resolve it to a signed URL so the
+  // preview shows up in the editor and on every host.
+  const preview = useMediaUrl(value);
 
   async function upload(file: File) {
     setErr(null);
@@ -61,7 +65,7 @@ export function AvatarUpload({
           borderRadius: "50%",
           overflow: "hidden",
           flex: "none",
-          background: value ? `center/cover no-repeat url(${value})` : "#E2F6FA",
+          background: preview ? `center/cover no-repeat url("${preview}")` : "#E2F6FA",
           border: "2px solid #E2F6FA",
           display: "grid",
           placeItems: "center",
@@ -71,7 +75,7 @@ export function AvatarUpload({
           fontWeight: 600,
         }}
       >
-        {!value && (busy ? "…" : fallback)}
+        {!preview && (busy ? "…" : fallback)}
       </div>
 
       <div style={{ display: "grid", gap: 8, minWidth: 200 }}>

@@ -6,6 +6,7 @@
  * team & roles, notification preferences, payouts.
  */
 import { useEffect, useState } from "react";
+import { MediaImg } from "@/components/media/MediaImg";
 import { Link } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -689,7 +690,7 @@ function TeamCard({
               }}
             >
               {m.profile?.avatar_url ? (
-                <img src={m.profile.avatar_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                <MediaImg src={m.profile.avatar_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
               ) : (
                 (m.profile?.display_name ?? m.profile?.full_name ?? "?").slice(0, 1).toUpperCase()
               )}
