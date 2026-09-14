@@ -11,8 +11,6 @@ import {
 import { useServerFn } from "@tanstack/react-start";
 import {
   getShopOverview,
-  upsertProduct,
-  deleteProduct,
   updateOrderStatus,
   getShippingSettings,
   saveShippingSettings,
