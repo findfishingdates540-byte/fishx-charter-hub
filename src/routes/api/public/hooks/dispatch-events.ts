@@ -20,6 +20,7 @@ export const Route = createFileRoute("/api/public/hooks/dispatch-events")({
         const denied = assertCronCaller(request);
         if (denied) return denied;
 
+        try {
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
         const { data: pending, error: fetchErr } = await supabaseAdmin
@@ -102,6 +103,12 @@ export const Route = createFileRoute("/api/public/hooks/dispatch-events")({
         }
 
         return Response.json({ ok: true, dispatched, failed });
+        } catch (e) {
+          const message = e instanceof Error ? e.message : String(e);
+          console.error("[dispatch-events] failed:", message);
+          return Response.json({ ok: false, error: message }, { status: 500 });
+        }
+
       },
     },
   },
