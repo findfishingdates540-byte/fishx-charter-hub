@@ -90,6 +90,12 @@ export function AnglerDashboard() {
     setTab(initialTab);
   }, [initialTab]);
   const navigate = useNavigate();
+  // Tab changes are written to the URL (?tab=…) so the browser back button and
+  // page refreshes restore the exact tab the angler was on.
+  const goTab = (t: Tab) => {
+    setTab(t);
+    navigate({ to: "/dashboard", search: (prev) => ({ ...prev, tab: t }) });
+  };
   const { data: home } = useSuspenseQuery(anglerHomeQO);
   const { data: recos } = useSuspenseQuery(recosQO);
 
