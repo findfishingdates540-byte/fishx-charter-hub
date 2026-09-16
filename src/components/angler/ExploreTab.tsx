@@ -35,7 +35,7 @@ const trackClick = (serviceId: string) => {
   void logListingEvent({ data: { serviceId, kind: "click" } }).catch(() => {});
 };
 
-export function ExploreTab() {
+export function ExploreTab({ onBack }: { onBack?: () => void } = {}) {
   const { data } = useSuspenseQuery(anglerExploreQO);
   const [filters, setFilters] = useState<Filters | null>(null);
   const [where, setWhere] = useState("");
@@ -77,8 +77,17 @@ export function ExploreTab() {
         }}
       >
         <div style={{ maxWidth: 980, margin: "0 auto" }}>
+          {onBack && (
+            <button
+              type="button"
+              onClick={onBack}
+              style={{ background: "none", border: "none", color: "var(--sand,#2DE2F2)", fontWeight: 700, fontSize: 13.5, cursor: "pointer", padding: 0, marginBottom: 14, font: "inherit", display: "block" }}
+            >
+              ← Back to explore
+            </button>
+          )}
           <span style={{ fontSize: 11, letterSpacing: ".24em", textTransform: "uppercase", color: "var(--sand,#2DE2F2)", fontWeight: 700 }}>
-            Explore
+            Charters
           </span>
           <h1 style={{ fontFamily: serif, fontSize: "clamp(34px,5vw,60px)", fontWeight: 600, letterSpacing: "-.02em", margin: "10px 0 12px", lineHeight: 1.05 }}>
             Book your next fishing charter.
