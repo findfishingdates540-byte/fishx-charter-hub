@@ -125,7 +125,7 @@ export function AnglerDashboard() {
             {(["home", "trips", "explore", "wallet", "orders"] as Tab[]).map((t) => (
               <button
                 key={t}
-                onClick={() => setTab(t)}
+                onClick={() => goTab(t)}
                 style={{
                   background: tab === t ? "rgba(255,255,255,.08)" : "transparent",
                   border: 0,
@@ -242,8 +242,8 @@ export function AnglerDashboard() {
               completedCount={home.completedCount}
               upcoming={home.upcoming}
               recos={recos}
-              onGoTrips={() => setTab("trips")}
-              onGoExplore={() => setTab("explore")}
+              onGoTrips={() => goTab("trips")}
+              onGoExplore={() => goTab("explore")}
             />
           )}
           {tab === "trips" && <TripsTab />}
