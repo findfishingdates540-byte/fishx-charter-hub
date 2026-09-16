@@ -15,7 +15,7 @@ import {
   getAnglerDashboard,
   listRecommendedCharters,
 } from "@/lib/angler-dashboard.functions";
-import { ExploreTab } from "./ExploreTab";
+import { ExploreHub } from "./ExploreHub";
 import { TripsTab } from "./TripsTab";
 import { DEFAULT_HERO } from "@/lib/platform-photos";
 
@@ -241,7 +241,7 @@ export function AnglerDashboard() {
             />
           )}
           {tab === "trips" && <TripsTab />}
-          {tab === "explore" && <ExploreTab />}
+          {tab === "explore" && <ExploreHub />}
           {tab === "wallet" && <WalletTab escrowCents={home.escrowCents} upcoming={home.upcoming} />}
           {tab === "orders" && <OrdersTab />}
         </Suspense>
