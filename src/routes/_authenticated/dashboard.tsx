@@ -83,9 +83,10 @@ function pickPrimaryBusiness(
 
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
-  validateSearch: (search: Record<string, unknown>): { tab?: string; as?: string } => ({
+  validateSearch: (search: Record<string, unknown>): { tab?: string; as?: string; vertical?: string } => ({
     ...(typeof search.tab === "string" ? { tab: search.tab } : {}),
     ...(search.as === "angler" ? { as: "angler" as const } : {}),
+    ...(typeof search.vertical === "string" ? { vertical: search.vertical } : {}),
   }),
   head: () => ({ meta: [{ title: "Dashboard — FISH-X.COM Bookings & Marketplace" }] }),
   loader: async ({ context, location }) => {

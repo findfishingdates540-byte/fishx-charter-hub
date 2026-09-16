@@ -90,6 +90,12 @@ export function AnglerDashboard() {
     setTab(initialTab);
   }, [initialTab]);
   const navigate = useNavigate();
+  // Tab changes are written to the URL (?tab=…) so the browser back button and
+  // page refreshes restore the exact tab the angler was on.
+  const goTab = (t: Tab) => {
+    setTab(t);
+    navigate({ to: "/dashboard", search: (prev) => ({ ...prev, tab: t }) });
+  };
   const { data: home } = useSuspenseQuery(anglerHomeQO);
   const { data: recos } = useSuspenseQuery(recosQO);
 
@@ -119,7 +125,7 @@ export function AnglerDashboard() {
             {(["home", "trips", "explore", "wallet", "orders"] as Tab[]).map((t) => (
               <button
                 key={t}
-                onClick={() => setTab(t)}
+                onClick={() => goTab(t)}
                 style={{
                   background: tab === t ? "rgba(255,255,255,.08)" : "transparent",
                   border: 0,
@@ -236,8 +242,8 @@ export function AnglerDashboard() {
               completedCount={home.completedCount}
               upcoming={home.upcoming}
               recos={recos}
-              onGoTrips={() => setTab("trips")}
-              onGoExplore={() => setTab("explore")}
+              onGoTrips={() => goTab("trips")}
+              onGoExplore={() => goTab("explore")}
             />
           )}
           {tab === "trips" && <TripsTab />}
