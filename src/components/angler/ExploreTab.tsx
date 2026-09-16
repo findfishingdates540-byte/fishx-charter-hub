@@ -262,7 +262,7 @@ function SearchResults({
               <option value="newest">Newest</option>
             </select>
             <button type="button" onClick={onClear} style={{ background: "none", border: "none", color: "#1F9FBE", fontWeight: 700, fontSize: 13.5, cursor: "pointer" }}>
-              ← Back to explore
+              ← Clear filters
             </button>
           </div>
         }

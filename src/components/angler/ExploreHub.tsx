@@ -4,8 +4,7 @@
  * diving into that marketplace. Charters open the existing charter explorer;
  * the other verticals open an in-tab operator directory.
  */
-import { useState } from "react";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate, useSearch } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { listPublicBusinesses } from "@/lib/businesses.functions";
 import { cachedMediaUrl } from "@/lib/media-url";
@@ -87,7 +86,21 @@ const VERTICALS: Vertical[] = [
 ];
 
 export function ExploreHub() {
-  const [open, setOpen] = useState<Vertical | null>(null);
+  // The open vertical lives in the URL (?tab=explore&vertical=marinas) so the
+  // browser back button — and the in-page back buttons — always restore the
+  // exact explore view the angler came from.
+  const search = useSearch({ strict: false }) as { vertical?: string };
+  const navigate = useNavigate();
+  const open = VERTICALS.find((v) => v.key === search.vertical) ?? null;
+  const setOpen = (v: Vertical | null) =>
+    navigate({
+      to: "/dashboard",
+      search: (prev) => {
+        const rest = { ...prev };
+        delete rest.vertical;
+        return v ? { ...rest, vertical: v.key } : rest;
+      },
+    });
 
   if (open?.kind === "charters") return <ExploreTab onBack={() => setOpen(null)} />;
   if (open) return <VerticalDirectory v={open} onBack={() => setOpen(null)} />;
