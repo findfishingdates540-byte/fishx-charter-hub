@@ -197,6 +197,8 @@ export function BookingFlow({
     holdExpiresAt: string | null;
   } | null>(null);
   const [holdLeft, setHoldLeft] = useState<number | null>(null);
+  const [holdError, setHoldError] = useState<string | null>(null);
+  const [checkoutStartedAt, setCheckoutStartedAt] = useState<number | null>(null);
   const [confirmedId, setConfirmedId] = useState<string | null>(null);
   const [released, setReleased] = useState(false);
   const [stars, setStars] = useState(0);
@@ -285,7 +287,7 @@ export function BookingFlow({
       }));
     },
 
-    onMutate: () => { setProcessing(true); setPayBlocked(null); },
+    onMutate: () => { setProcessing(true); setPayBlocked(null); setHoldError(null); },
     onSuccess: (res) => {
       // Seats are now locked to this angler until the hold lapses.
       setReservation({
@@ -294,6 +296,7 @@ export function BookingFlow({
         holdExpiresAt: res.holdExpiresAt ?? null,
       });
       setProcessing(false);
+      setHoldError(null);
     },
     onError: (e: unknown) => {
       setProcessing(false);
@@ -323,6 +326,7 @@ export function BookingFlow({
         window.scrollTo(0, 0);
         return;
       }
+      setHoldError(msg);
       showToast(msg);
     },
   });
@@ -354,29 +358,58 @@ export function BookingFlow({
     // is derived from the selection, so no new seed is needed here.
     setReservation(null);
     setHoldLeft(null);
+    setHoldError(null);
+    setCheckoutStartedAt(null);
   }, [slotId, party, selectedAddons, notes]);
+
+  // Track when checkout step is entered to start the countdown immediately
+  useEffect(() => {
+    if (step === "checkout") {
+      setCheckoutStartedAt((cur) => cur ?? Date.now());
+    } else {
+      setCheckoutStartedAt(null);
+      setHoldError(null);
+    }
+  }, [step]);
 
   // Opening the deposit page locks the departure for 15 minutes.
   useEffect(() => {
     if (step !== "checkout") return;
-    if (reservation || placeMut.isPending) return;
+    if (reservation || placeMut.isPending || holdError) return;
     if (!slot) return;
     placeMut.mutate();
-  }, [step, reservation, slot?.id]);
+  }, [step, reservation, slot?.id, holdError]);
 
-  // Live countdown on the hold. When it lapses the seats go back on sale.
+  // Live countdown on the hold. Synchronizes with server holdExpiresAt or counts down from entering checkout.
   useEffect(() => {
-    if (!reservation?.holdExpiresAt) { setHoldLeft(null); return; }
-    const end = new Date(reservation.holdExpiresAt).getTime();
-    const tick = () => setHoldLeft(Math.max(0, Math.round((end - Date.now()) / 1000)));
-    tick();
-    const t = setInterval(tick, 1000);
+    if (step !== "checkout") {
+      setHoldLeft(null);
+      return;
+    }
+
+    const calculateRemaining = () => {
+      if (reservation?.holdExpiresAt) {
+        const end = new Date(reservation.holdExpiresAt).getTime();
+        if (!isNaN(end)) {
+          return Math.max(0, Math.round((end - Date.now()) / 1000));
+        }
+      }
+      const startTime = checkoutStartedAt ?? Date.now();
+      const elapsed = Math.round((Date.now() - startTime) / 1000);
+      return Math.max(0, 15 * 60 - elapsed);
+    };
+
+    setHoldLeft(calculateRemaining());
+    const t = setInterval(() => {
+      setHoldLeft(calculateRemaining());
+    }, 1000);
+
     return () => clearInterval(t);
-  }, [reservation?.holdExpiresAt]);
+  }, [step, reservation?.holdExpiresAt, checkoutStartedAt]);
 
   const holdExpired = holdLeft === 0;
   const holdClock =
-    holdLeft == null ? "" : `${Math.floor(holdLeft / 60)}:${String(holdLeft % 60).padStart(2, "0")}`;
+    holdLeft == null ? "15:00" : `${Math.floor(holdLeft / 60)}:${String(holdLeft % 60).padStart(2, "0")}`;
 
 
 
@@ -1058,6 +1091,21 @@ export function BookingFlow({
               </div>
             )}
 
+            {holdError && (
+              <div style={{ background: "#fff4f2", border: "1px solid rgba(190,60,40,.3)", borderRadius: 14, padding: "14px 18px", marginBottom: 20, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+                <div>
+                  <div style={{ fontWeight: 700, fontSize: 14.5, marginBottom: 4, color: "#be3c28" }}>Unable to hold departure</div>
+                  <div style={{ fontSize: 13.5, color: V.tmut }}>{holdError}</div>
+                </div>
+                <button
+                  onClick={() => { setHoldError(null); placeMut.mutate(); }}
+                  style={{ background: V.navy, color: "#fff", border: 0, borderRadius: 10, padding: "10px 16px", fontSize: 13, fontWeight: 700, cursor: "pointer" }}
+                >
+                  Retry hold
+                </button>
+              </div>
+            )}
+
 
             {/* Hold countdown — the departure is off the market while it runs. */}
             {!holdExpired && (
@@ -1075,7 +1123,7 @@ export function BookingFlow({
                     : "This departure is held for you. No one else can book this boat for this window."}
                 </span>
                 <span style={{ fontFamily: MONO, fontSize: 20, fontWeight: 700, color: holdLeft != null && holdLeft < 120 ? "#c2603f" : V.goldtext, letterSpacing: ".04em" }}>
-                  {holdClock || "15:00"}
+                  {holdClock}
                 </span>
               </div>
             )}
@@ -1197,6 +1245,11 @@ export function BookingFlow({
 
                 <button
                   onClick={() => {
+                    if (holdError) {
+                      setHoldError(null);
+                      placeMut.mutate();
+                      return;
+                    }
                     if (!reservation) return;
                     if (reservation.checkoutUrl) {
                       window.location.href = reservation.checkoutUrl;
@@ -1207,14 +1260,16 @@ export function BookingFlow({
                     setStep("confirmed");
                     window.scrollTo(0, 0);
                   }}
-                  disabled={!reservation || placeMut.isPending || holdExpired}
-                  style={{ width: "100%", background: !reservation || holdExpired ? "#dfe6ec" : V.sand, color: !reservation || holdExpired ? V.tmut : "#04121B", border: 0, borderRadius: 12, padding: 15, fontFamily: V.sans, fontSize: 13.5, fontWeight: 700, letterSpacing: ".05em", cursor: !reservation || holdExpired ? "not-allowed" : "pointer", opacity: placeMut.isPending ? 0.7 : 1 }}
+                  disabled={Boolean((!reservation && !holdError) || placeMut.isPending || holdExpired)}
+                  style={{ width: "100%", background: (!reservation && !holdError) || holdExpired ? "#dfe6ec" : V.sand, color: (!reservation && !holdError) || holdExpired ? V.tmut : "#04121B", border: 0, borderRadius: 12, padding: 15, fontFamily: V.sans, fontSize: 13.5, fontWeight: 700, letterSpacing: ".05em", cursor: (!reservation && !holdError) || holdExpired ? "not-allowed" : "pointer", opacity: placeMut.isPending ? 0.7 : 1 }}
                 >
                   {holdExpired
                     ? "Hold expired"
-                    : placeMut.isPending || !reservation
-                      ? "Holding your seats…"
-                      : `Pay ${money(deposit)} deposit`}
+                    : holdError
+                      ? "Retry holding departure"
+                      : placeMut.isPending || !reservation
+                        ? "Holding your seats…"
+                        : `Pay ${money(deposit)} deposit`}
                 </button>
                 <div style={{ fontFamily: MONO, fontSize: 11.5, color: V.tmut, textAlign: "center", marginTop: 10, lineHeight: 1.5 }}>
                   {holdExpired
