@@ -16,18 +16,31 @@ function publicClient() {
 }
 
 export const listPublicBusinesses = createServerFn({ method: "GET" })
-  .inputValidator((input: { category?: string } | undefined) =>
-    z.object({ category: z.string().optional() }).parse(input ?? {}),
+  .inputValidator(
+    (input: { category?: string; categories?: string[] } | undefined) =>
+      z
+        .object({
+          category: z.string().optional(),
+          categories: z.array(z.string()).max(12).optional(),
+        })
+        .parse(input ?? {}),
   )
   .handler(async ({ data }) => {
     const sb = publicClient();
+    // Filter by category server-side: a global newest-first limit applied
+    // before vertical filtering would silently drop older operators.
+    const cats = data.categories?.length
+      ? data.categories
+      : data.category
+        ? [data.category]
+        : null;
     let q = sb
       .from("businesses")
       .select("id,slug,name,category_key,tagline,hero_url,logo_url,city,region,country,verified_at,premium_until")
       .eq("is_published", true)
       .order("created_at", { ascending: false })
-      .limit(60);
-    if (data.category) q = q.eq("category_key", data.category);
+      .limit(cats ? 500 : 60);
+    if (cats) q = q.in("category_key", cats);
     const { data: rows, error } = await q;
     if (error) throw new Response(error.message, { status: 500 });
     return rows ?? [];

@@ -15,10 +15,10 @@ type Search = { category?: string; city?: string };
 
 const serif = "'Outfit', Georgia, serif";
 
-const directoryQO = () =>
+const directoryQO = (categories: string[]) =>
   queryOptions({
-    queryKey: ["public-businesses", "all"],
-    queryFn: () => listPublicBusinesses({ data: {} }),
+    queryKey: ["public-businesses", ...categories],
+    queryFn: () => listPublicBusinesses({ data: { categories } }),
   });
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -40,8 +40,9 @@ export const Route = createFileRoute("/explore/$vertical")({
   beforeLoad: ({ params }) => {
     if (!verticalFor(params.vertical)) throw notFound();
   },
-  loader: ({ context }) => {
-    context.queryClient.ensureQueryData(directoryQO());
+  loader: ({ context, params }) => {
+    const v = verticalFor(params.vertical);
+    if (v) context.queryClient.ensureQueryData(directoryQO(v.categories));
   },
   head: ({ params }) => {
     const v = verticalFor(params.vertical);
@@ -69,9 +70,9 @@ function VerticalPage() {
   const search = Route.useSearch();
   const navigate = useNavigate();
   const v = verticalFor(vertical)!;
-  const { data } = useSuspenseQuery(directoryQO());
+  const { data } = useSuspenseQuery(directoryQO(v.categories));
 
-  const inVertical = (data ?? []).filter((b) => v.categories.includes(b.category_key));
+  const inVertical = data ?? [];
   const list = inVertical.filter(
     (b) =>
       (!search.category || b.category_key === search.category) &&
