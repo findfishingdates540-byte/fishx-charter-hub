@@ -247,9 +247,10 @@ export function AnglerDashboard() {
             />
           )}
           {tab === "trips" && <TripsTab />}
+          {tab === "history" && <AnglerBookingHistory />}
           {tab === "explore" && <ExploreHub />}
-          {tab === "wallet" && <WalletTab escrowCents={home.escrowCents} upcoming={home.upcoming} />}
-          {tab === "orders" && <OrdersTab />}
+          {tab === "wallet" && <AnglerPayments />}
+          {tab === "orders" && <AnglerPayments />}
         </Suspense>
       </main>
     </div>
