@@ -106,10 +106,10 @@ export const getOperatorReadiness = createServerFn({ method: "GET" })
       {
         key: "listings",
         label: "At least one published listing",
-        detail: published.length
-          ? `${published.length} listing${published.length === 1 ? "" : "s"} live.`
-          : "Publish a listing so anglers can find and book you.",
-        done: published.length > 0,
+        detail: published.length || liveProducts
+          ? `${published.length} listing${published.length === 1 ? "" : "s"} live${liveProducts ? ` · ${liveProducts} product${liveProducts === 1 ? "" : "s"} in stock` : ""}.`
+          : "Publish a listing or product so anglers can find and book you.",
+        done: sellable,
         blocking: true,
         navKey: "listings",
       },
@@ -118,8 +118,10 @@ export const getOperatorReadiness = createServerFn({ method: "GET" })
         label: "Future availability published",
         detail: futureSlots
           ? `${futureSlots} upcoming departure${futureSlots === 1 ? "" : "s"} bookable.`
-          : "Publish dates and seats so guests can pick a day.",
-        done: futureSlots > 0,
+          : liveProducts
+            ? "Products are in stock and orderable."
+            : "Publish dates and seats so guests can pick a day.",
+        done: bookable,
         blocking: true,
         navKey: "slots",
       },
@@ -146,6 +148,8 @@ export const getOperatorReadiness = createServerFn({ method: "GET" })
     ];
 
     const blockers = items.filter((i) => i.blocking && !i.done);
+    const ready = blockers.length === 0;
+    const grace = Boolean((biz as any).listing_grace) && !ready;
 
     return {
       businessId: biz.id as string,
@@ -154,9 +158,14 @@ export const getOperatorReadiness = createServerFn({ method: "GET" })
       requirementsDue,
       items,
       blockerCount: blockers.length,
-      ready: blockers.length === 0,
+      ready,
+      grace,
+      // Anglers only see this operator when it is published AND bookable
+      // (or still inside the grandfather window).
+      listingVisible: Boolean(biz.is_published) && (ready || grace),
     };
   });
+
 
 /** Flip the storefront live once every blocking readiness item is green. */
 export const setStorefrontLive = createServerFn({ method: "POST" })
