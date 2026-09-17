@@ -151,6 +151,39 @@ export const getOperatorReadiness = createServerFn({ method: "GET" })
     const ready = blockers.length === 0;
     const grace = Boolean((biz as any).listing_grace) && !ready;
 
+    // Grandfathered operators get one warning that their page will be hidden
+    // once they stop being bookable. Best-effort: never blocks the console.
+    if (grace && !(biz as any).listing_grace_notified_at) {
+      try {
+        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+        const { sendDirectNotification } = await import("./notifications.server");
+        const { data: team } = await supabaseAdmin
+          .from("business_members")
+          .select("user_id")
+          .eq("business_id", biz.id);
+        await supabaseAdmin
+          .from("businesses")
+          .update({ listing_grace_notified_at: new Date().toISOString() })
+          .eq("id", biz.id);
+        await Promise.all(
+          (team ?? []).map((m: { user_id: string }) =>
+            sendDirectNotification(supabaseAdmin, {
+              userId: m.user_id,
+              category: "verification",
+              title: "Finish setup to stay visible to anglers",
+              body: `${biz.name} is still showing on FISH-X.COM, but listings now only appear once payouts are connected and you have upcoming dates or in-stock products. Finish the remaining steps to stay listed.`,
+              link: "/dashboard?tab=payouts",
+              severity: "warning",
+              meta: { businessId: biz.id, blockers: blockers.map((b) => b.key) },
+            }),
+          ),
+        );
+      } catch (e) {
+        console.error("[readiness] grace notice failed", e);
+      }
+    }
+
+
     return {
       businessId: biz.id as string,
       businessName: biz.name as string,
