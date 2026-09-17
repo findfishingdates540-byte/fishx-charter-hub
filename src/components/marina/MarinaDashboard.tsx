@@ -12,6 +12,8 @@ import {
   deleteSlip,
   upsertReservation,
   publishSlipForBooking,
+  bulkCreateSlips,
+  bulkUpdateSlips,
 } from "@/lib/marina.functions";
 import { MarinaServices } from "@/components/marina/MarinaServices";
 import { ReservationCalendar } from "@/components/marina/ReservationCalendar";
@@ -886,5 +888,197 @@ function MGearIcon() {
       <circle cx="12" cy="12" r="3" />
       <path d="M4 12h2m12 0h2M12 4v2m0 12v2M6.5 6.5 8 8m8 8 1.5 1.5M17.5 6.5 16 8M8 16l-1.5 1.5" />
     </svg>
+  );
+}
+
+/**
+ * Dock-level tools: create a whole run of berths at once ("A1..A20") and apply
+ * status / publish / rate changes to many slips in one action.
+ */
+function DockBuilder({ businessId, slips }: { businessId: string; slips: Slip[] }) {
+  const qc = useQueryClient();
+  const createFn = useServerFn(bulkCreateSlips);
+  const updateFn = useServerFn(bulkUpdateSlips);
+  const [prefix, setPrefix] = useState("A");
+  const [from, setFrom] = useState("1");
+  const [to, setTo] = useState("20");
+  const [nightly, setNightly] = useState("");
+  const [lengthFt, setLengthFt] = useState("");
+  const [selected, setSelected] = useState<string[]>([]);
+  const [note, setNote] = useState("");
+
+  const invalidate = () => qc.invalidateQueries({ queryKey: ["marina-overview", businessId] });
+
+  const createM = useMutation({
+    mutationFn: createFn,
+    onSuccess: (r: any) => {
+      invalidate();
+      setNote(
+        `${r.created} berth${r.created === 1 ? "" : "s"} added${r.skipped ? ` · ${r.skipped} already existed` : ""}.`,
+      );
+    },
+    onError: (e: any) => setNote(e?.message ?? "Couldn't add those berths."),
+  });
+
+  const updateM = useMutation({
+    mutationFn: updateFn,
+    onSuccess: (r: any) => {
+      invalidate();
+      setSelected([]);
+      setNote(`${r.updated} slip${r.updated === 1 ? "" : "s"} updated.`);
+    },
+    onError: (e: any) => setNote(e?.message ?? "Couldn't update those slips."),
+  });
+
+  const toggle = (id: string) =>
+    setSelected((s) => (s.includes(id) ? s.filter((x) => x !== id) : [...s, id]));
+
+  const apply = (patch: Record<string, unknown>) =>
+    updateM.mutate({ data: { businessId, slipIds: selected, ...patch } as any });
+
+  return (
+    <>
+      <Card eyebrow="Dock setup" title="Add a run of berths">
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit,minmax(130px,1fr))",
+            gap: 14,
+          }}
+        >
+          <Field label="Prefix">
+            <input value={prefix} onChange={(e) => setPrefix(e.target.value)} style={inputStyle} />
+          </Field>
+          <Field label="From #">
+            <input
+              type="number"
+              min={0}
+              value={from}
+              onChange={(e) => setFrom(e.target.value)}
+              style={inputStyle}
+            />
+          </Field>
+          <Field label="To #">
+            <input
+              type="number"
+              min={0}
+              value={to}
+              onChange={(e) => setTo(e.target.value)}
+              style={inputStyle}
+            />
+          </Field>
+          <Field label="Length (ft)">
+            <input
+              type="number"
+              value={lengthFt}
+              onChange={(e) => setLengthFt(e.target.value)}
+              style={inputStyle}
+            />
+          </Field>
+          <Field label="Nightly $">
+            <input
+              type="number"
+              value={nightly}
+              onChange={(e) => setNightly(e.target.value)}
+              style={inputStyle}
+            />
+          </Field>
+        </div>
+        <div style={{ display: "flex", gap: 10, alignItems: "center", marginTop: 14, flexWrap: "wrap" }}>
+          <button
+            style={btnPrimary}
+            disabled={createM.isPending}
+            onClick={() =>
+              createM.mutate({
+                data: {
+                  businessId,
+                  prefix,
+                  from: Number(from) || 0,
+                  to: Number(to) || 0,
+                  lengthFt: lengthFt ? Number(lengthFt) : null,
+                  nightlyRateCents: nightly ? Math.round(Number(nightly) * 100) : null,
+                },
+              })
+            }
+          >
+            {createM.isPending ? "Adding…" : `Add ${prefix}${from}–${prefix}${to}`}
+          </button>
+          {note && <span style={{ color: "#92A0AB", fontSize: 13 }}>{note}</span>}
+        </div>
+      </Card>
+
+      <Card eyebrow="Bulk actions" title="Update several slips at once">
+        {slips.length === 0 ? (
+          <Empty label="Add berths first." />
+        ) : (
+          <>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 14 }}>
+              {slips.map((s) => {
+                const on = selected.includes(s.id);
+                return (
+                  <button
+                    key={s.id}
+                    type="button"
+                    onClick={() => toggle(s.id)}
+                    style={{
+                      padding: "6px 12px",
+                      borderRadius: 30,
+                      cursor: "pointer",
+                      fontFamily: "'Outfit', system-ui, sans-serif",
+                      fontSize: 12.5,
+                      fontWeight: 700,
+                      border: `1px solid ${on ? "#2DE2F2" : "#273744"}`,
+                      background: on ? "#2DE2F2" : "transparent",
+                      color: on ? "#06131C" : "#92A0AB",
+                    }}
+                  >
+                    {s.slip_number}
+                  </button>
+                );
+              })}
+            </div>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+              <button
+                style={btnGhost}
+                onClick={() => setSelected(slips.map((s) => s.id))}
+                type="button"
+              >
+                Select all
+              </button>
+              <button style={btnGhost} onClick={() => setSelected([])} type="button">
+                Clear
+              </button>
+              <span style={{ color: "#92A0AB", fontSize: 13 }}>{selected.length} selected</span>
+            </div>
+            <div
+              style={{
+                display: "flex",
+                gap: 8,
+                flexWrap: "wrap",
+                marginTop: 14,
+                opacity: selected.length ? 1 : 0.45,
+                pointerEvents: selected.length ? "auto" : "none",
+              }}
+            >
+              <button style={btnGhost} onClick={() => apply({ status: "available" })}>
+                Mark available
+              </button>
+              <button style={btnGhost} onClick={() => apply({ status: "maintenance" })}>
+                Close for maintenance
+              </button>
+              <button style={btnGhost} onClick={() => apply({ status: "occupied" })}>
+                Mark occupied
+              </button>
+              <button style={btnPrimary} onClick={() => apply({ isBookable: true })}>
+                Publish for booking
+              </button>
+              <button style={btnGhost} onClick={() => apply({ isBookable: false })}>
+                Unpublish
+              </button>
+            </div>
+          </>
+        )}
+      </Card>
+    </>
   );
 }
