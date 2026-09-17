@@ -114,6 +114,24 @@ function Pill({ tone, children }: { tone: "good" | "warn" | "mut"; children: Rea
   );
 }
 
+/**
+ * The single status an operator shows at a glance: approved + published means
+ * their storefront is live and taking bookings.
+ */
+function operatorStatus(o: any): { label: string; tone: "good" | "warn" | "mut"; hint: string } {
+  if (o.verified_at && o.is_published)
+    return { label: "Live", tone: "good", hint: "Approved · storefront published" };
+  if (o.verified_at)
+    return { label: "Approved", tone: "good", hint: "Approved · not published yet" };
+  if (o.docStatus === "rejected")
+    return { label: "Rejected", tone: "warn", hint: "Documents declined" };
+  if (o.docStatus === "pending")
+    return { label: "Under review", tone: "warn", hint: "Documents awaiting your decision" };
+  if (o.onboarding_completed_at)
+    return { label: "Unverified", tone: "mut", hint: "Setup done · no documents" };
+  return { label: "Setting up", tone: "mut", hint: "Onboarding in progress" };
+}
+
 const DOC_LABEL: Record<string, string> = {
   not_submitted: "No documents yet",
   pending: "Awaiting review",
