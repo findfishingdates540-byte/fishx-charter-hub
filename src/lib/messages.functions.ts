@@ -175,16 +175,48 @@ export const sendMessage = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
+    const body = data.body.trim();
     const { error } = await supabase.from("booking_messages").insert({
       booking_id: data.bookingId,
       sender_id: userId,
-      body: data.body.trim(),
+      body,
       reply_to_id: data.replyToId ?? null,
       attachment_url: data.attachmentUrl ?? null,
       attachment_type: data.attachmentUrl ? data.attachmentType ?? null : null,
       attachment_duration_ms: data.attachmentDurationMs ?? null,
     });
     if (error) throw new Response(error.message, { status: 500 });
+
+    // Notify the other side right away (the outbox dispatcher fans this out to
+    // the notification centre). Never let this break sending the message.
+    try {
+      const { data: sender } = await supabase
+        .from("profiles")
+        .select("display_name,full_name")
+        .eq("id", userId)
+        .maybeSingle();
+      const preview = body
+        ? body.slice(0, 140)
+        : data.attachmentType === "audio"
+          ? "🎤 Voice note"
+          : "📷 Photo";
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      await supabaseAdmin.from("domain_events").insert({
+        topic: "message.sent",
+        aggregate_type: "booking",
+        aggregate_id: data.bookingId,
+        payload: {
+          booking_id: data.bookingId,
+          sender_id: userId,
+          sender_name:
+            (sender as any)?.display_name || (sender as any)?.full_name || "New message",
+          preview,
+        },
+      });
+    } catch {
+      /* notification fan-out is best-effort */
+    }
+
     return { ok: true as const };
   });
 
