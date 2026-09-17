@@ -186,6 +186,39 @@ export const quoteShipping = createServerFn({ method: "POST" })
     };
   });
 
+const discountQuoteInput = z.object({
+  code: z.string().trim().min(2).max(40),
+  items: z.array(z.object({ productId: z.string().uuid(), quantity: z.number().int().min(1).max(50) })).min(1).max(30),
+});
+
+export const quoteProductDiscount = createServerFn({ method: "POST" })
+  .inputValidator((input: unknown) => discountQuoteInput.parse(input))
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: products } = await supabaseAdmin.from("inventory_products").select("id,business_id,price_cents,is_published").in("id", data.items.map((item) => item.productId));
+    const productById = new Map((products ?? []).map((product) => [product.id, product]));
+    const subtotals = new Map<string, number>();
+    for (const item of data.items) {
+      const product = productById.get(item.productId);
+      if (!product?.is_published) continue;
+      subtotals.set(product.business_id, (subtotals.get(product.business_id) ?? 0) + (product.price_cents ?? 0) * item.quantity);
+    }
+    const now = new Date().toISOString();
+    const { data: discounts } = await supabaseAdmin.from("product_discounts").select("business_id,code,discount_type,value,minimum_order_cents,starts_at,expires_at,max_redemptions,redemption_count,is_active").in("business_id", [...subtotals.keys()]).ilike("code", data.code.trim());
+    let discountCents = 0;
+    const appliedTo: string[] = [];
+    for (const discount of discounts ?? []) {
+      const subtotal = subtotals.get(discount.business_id) ?? 0;
+      const valid = discount.is_active && subtotal >= (discount.minimum_order_cents ?? 0) && (!discount.starts_at || discount.starts_at <= now) && (!discount.expires_at || discount.expires_at > now) && (!discount.max_redemptions || discount.redemption_count < discount.max_redemptions);
+      if (!valid) continue;
+      const amount = discount.discount_type === "percentage" ? Math.floor(subtotal * Math.min(discount.value, 100) / 100) : Math.min(subtotal, discount.value);
+      discountCents += amount;
+      appliedTo.push(discount.business_id);
+    }
+    if (!discountCents) throw new Error("This discount code is invalid or unavailable for these items.");
+    return { code: data.code.trim().toUpperCase(), discountCents, appliedTo };
+  });
+
 const CheckoutInput = z.object({
   items: z
     .array(
@@ -198,6 +231,8 @@ const CheckoutInput = z.object({
     .min(1)
     .max(30),
   origin: z.string().url().optional(),
+  discountCode: z.string().trim().max(40).optional(),
+  marketingConsent: z.boolean().optional(),
 });
 
 export const createProductCheckout = createServerFn({ method: "POST" })
@@ -322,7 +357,22 @@ export const createProductCheckout = createServerFn({ method: "POST" })
     await assertVendorsPayable(supabaseAdmin as never, [...groups.keys()]);
 
     const shippingSettings = await loadShippingSettings(supabaseAdmin as never, [...groups.keys()]);
+    const now = new Date().toISOString();
+    const discountByBusiness = new Map<string, { id: string; code: string; cents: number }>();
+    if (data.discountCode) {
+      const { data: discounts } = await supabaseAdmin.from("product_discounts").select("id,business_id,code,discount_type,value,minimum_order_cents,starts_at,expires_at,max_redemptions,redemption_count,is_active").in("business_id", [...groups.keys()]).ilike("code", data.discountCode.trim());
+      for (const discount of discounts ?? []) {
+        const lines = groups.get(discount.business_id) ?? [];
+        const subtotal = lines.reduce((sum, line) => sum + line.unit * line.qty, 0);
+        const valid = discount.is_active && subtotal >= (discount.minimum_order_cents ?? 0) && (!discount.starts_at || discount.starts_at <= now) && (!discount.expires_at || discount.expires_at > now) && (!discount.max_redemptions || discount.redemption_count < discount.max_redemptions);
+        if (!valid) continue;
+        const cents = discount.discount_type === "percentage" ? Math.floor(subtotal * Math.min(discount.value, 100) / 100) : Math.min(subtotal, discount.value);
+        if (cents > 0) discountByBusiness.set(discount.business_id, { id: discount.id, code: discount.code, cents });
+      }
+      if (!discountByBusiness.size) throw new Error("This discount code is invalid or unavailable for these items.");
+    }
     let shippingTotal = 0;
+    let discountTotal = 0;
 
     const orderIds: string[] = [];
     const lineItems: Array<Record<string, unknown>> = [];
@@ -338,7 +388,10 @@ export const createProductCheckout = createServerFn({ method: "POST" })
         units,
       );
       shippingTotal += shipping;
-      const total = subtotal + shipping;
+      const discount = discountByBusiness.get(businessId);
+      const discountCents = discount?.cents ?? 0;
+      discountTotal += discountCents;
+      const total = subtotal + shipping - discountCents;
       const { platformFeeCents, vendorCents } = splitAmount(total, PRODUCT_FEE_RATE);
 
       const { data: order, error: ordErr } = await supabaseAdmin
@@ -349,6 +402,10 @@ export const createProductCheckout = createServerFn({ method: "POST" })
           buyer_name: buyerName,
           subtotal_cents: subtotal,
           shipping_cents: shipping,
+           discount_code: discount?.code ?? null,
+           discount_cents: discountCents,
+           buyer_marketing_consent: data.marketingConsent ?? false,
+           marketing_consent_at: data.marketingConsent ? now : null,
           tax_cents: 0,
           total_cents: total,
           status: "pending_payment",
@@ -413,10 +470,14 @@ export const createProductCheckout = createServerFn({ method: "POST" })
       order_ids: orderIds.join(","),
       buyer_id: userId,
     };
+    const coupon = discountTotal > 0
+      ? await stripe.coupons.create({ amount_off: discountTotal, currency: "usd", duration: "once", name: data.discountCode?.trim().toUpperCase() })
+      : null;
     const session = await stripe.checkout.sessions.create(
       {
         mode: "payment",
         line_items: lineItems as never,
+         ...(coupon ? { discounts: [{ coupon: coupon.id }] } : {}),
         metadata,
         payment_intent_data: { metadata },
         // Vendors need somewhere to ship to.
