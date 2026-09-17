@@ -152,6 +152,70 @@ export async function draftsForEvent(
 ): Promise<NotificationDraft[]> {
   const topic = evt.topic;
 
+  /* New chat message — notify everyone on the thread except the sender. */
+  if (topic === "message.sent") {
+    const bookingId = (evt.payload["booking_id"] as string) ?? evt.aggregate_id;
+    const senderId = evt.payload["sender_id"] as string | undefined;
+    if (!bookingId) return [];
+    const ctx = await bookingAudience(admin, bookingId);
+    if (!ctx) return [];
+    const preview = String(evt.payload["preview"] ?? "").trim();
+    const senderName = (evt.payload["sender_name"] as string) || "New message";
+    const recipients = [ctx.anglerId, ...ctx.operatorIds].filter(
+      (u): u is string => !!u && u !== senderId,
+    );
+    return recipients.map((userId) => ({
+      userId,
+      category: "message",
+      title: `${senderName} · ${ctx.tripLabel}`,
+      body: preview || "Sent you a message.",
+      link: userId === ctx.anglerId ? `/trips/detail?id=${bookingId}` : `/bookings/detail?id=${bookingId}`,
+      email: false,
+    }));
+  }
+
+  /* Merchandise orders — payouts and delivery go to the selling shop. */
+  if (evt.aggregate_type === "product_order" || topic.startsWith("order.")) {
+    const orderId = (evt.payload["order_id"] as string) ?? evt.aggregate_id;
+    if (!orderId) return [];
+    const { data: order } = await admin
+      .from("product_orders")
+      .select("id,business_id,buyer_id,total_cents")
+      .eq("id", orderId)
+      .maybeSingle();
+    if (!order) return [];
+    const staff = new Set<string>();
+    if (order.business_id) {
+      const { data: members } = await admin
+        .from("business_members")
+        .select("user_id")
+        .eq("business_id", order.business_id);
+      for (const m of members ?? []) staff.add(m.user_id as string);
+    }
+    const ref = String(order.id).slice(0, 8).toUpperCase();
+    if (topic === "payout.released") {
+      return [...staff].map((userId) => ({
+        userId,
+        category: "payout",
+        title: "Order payout released",
+        body: `${money((evt.payload["amount_cents"] as number) ?? 0)} for order ${ref} is on its way to your bank.`,
+        link: "/payouts-status",
+        severity: "success" as const,
+      }));
+    }
+    if (topic === "order.cancelled_by_buyer") {
+      return [...staff].map((userId) => ({
+        userId,
+        category: "order",
+        title: `Order ${ref} cancelled`,
+        body: "The buyer cancelled this order before it shipped.",
+        link: "/dashboard?tab=orders",
+        severity: "warning" as const,
+      }));
+    }
+    return [];
+  }
+
   if (topic.startsWith("booking.") || topic.startsWith("payout.")) {
     const id = (evt.payload["booking_id"] as string) ?? evt.aggregate_id;
     if (!id) return [];
