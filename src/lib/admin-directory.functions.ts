@@ -331,7 +331,7 @@ export const getBookingLedger = createServerFn({ method: "GET" })
       supabaseAdmin
         .from("bookings")
         .select(
-          "id,business_id,angler_id,status,total_cents,deposit_cents,currency,starts_at,created_at",
+          "id,business_id,angler_id,status,total_cents,deposit_cents,refunded_cents,trip_date,start_time,created_at",
         )
         .order("created_at", { ascending: false })
         .limit(300),
