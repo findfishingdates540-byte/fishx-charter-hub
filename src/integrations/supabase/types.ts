@@ -3398,6 +3398,7 @@ export type Database = {
         Args: { _s: Database["public"]["Enums"]["booking_status"] }
         Returns: boolean
       }
+      can_view_profile: { Args: { _profile_id: string }; Returns: boolean }
       create_business_with_owner: {
         Args: {
           _category_key: string
