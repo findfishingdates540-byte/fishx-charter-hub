@@ -107,6 +107,7 @@ type Tab =
   | "members"
   | "listings"
   | "bookings"
+  | "payments"
   | "calendar"
   | "payouts"
   | "reconciliation"
