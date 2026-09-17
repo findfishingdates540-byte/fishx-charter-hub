@@ -219,7 +219,7 @@ export function AdminOperators() {
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13.5, minWidth: 900 }}>
           <thead>
             <tr style={{ color: T.mut }}>
-              {["Operator", "Owner", "Signed up", "Documents", "Setup", "Listings", "Bookings", "Gross"].map((h) => (
+              {["Operator", "Status", "Owner", "Signed up", "Documents", "Setup", "Listings", "Bookings", "Gross"].map((h) => (
                 <th key={h} style={th}>
                   {h}
                 </th>
