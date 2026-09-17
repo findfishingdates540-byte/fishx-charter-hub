@@ -86,6 +86,8 @@ export function CaptainDashboard({ initialTab }: { initialTab?: string } = {}) {
   const pageTitle: Record<Tab, string> = {
     overview: `Welcome back, Captain`,
     bookings: "Bookings",
+    calendar: "Trip Calendar",
+
     services: "Charter Trips",
     blockouts: "Blockout Dates",
     fleet: "Fleet",
