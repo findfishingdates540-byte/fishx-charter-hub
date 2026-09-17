@@ -244,6 +244,17 @@ export function AdminOperators() {
                     {o.verified_at ? " · verified" : ""}
                   </div>
                 </td>
+                <td style={td}>
+                  {(() => {
+                    const s = operatorStatus(o);
+                    return (
+                      <>
+                        <Pill tone={s.tone}>{s.label}</Pill>
+                        <div style={{ color: T.mut, fontSize: 12, marginTop: 4 }}>{s.hint}</div>
+                      </>
+                    );
+                  })()}
+                </td>
                 <td style={{ ...td, color: T.mut }}>
                   {o.owner?.display_name ?? o.owner?.full_name ?? "—"}
                   <div style={{ fontSize: 12 }}>{o.teamSize} on team</div>
