@@ -120,6 +120,7 @@ const TABS: Array<[Tab, string]> = [
   ["members", "Members"],
   ["listings", "Listings"],
   ["bookings", "Bookings"],
+  ["payments", "Payments"],
   ["calendar", "Calendar"],
   ["payouts", "Payouts"],
   ["reconciliation", "Reconciliation"],
