@@ -33,6 +33,11 @@ import { OperatorBookings } from "@/components/operator/OperatorBookings";
 import { ReadinessGate } from "@/components/operator/ReadinessGate";
 import { BusinessInbox } from "@/components/messages/BusinessInbox";
 import { MessagesFullScreen } from "@/components/messages/MessagesFullScreen";
+import {
+  BookingCalendar,
+  TripPayouts,
+  GuestList,
+} from "@/components/operator/ConsolePanels";
 
 type Slip = {
   id: string;
@@ -65,6 +70,8 @@ const NAV: OperatorNavItem[] = [
   { key: "overview", label: "Overview", icon: <BoxIcon /> },
   { key: "slips", label: "Slips", icon: <BoatIcon /> },
   { key: "bookings", label: "Bookings", icon: <CalIcon /> },
+  { key: "calendar", label: "Calendar", icon: <CalIcon /> },
+  { key: "guests", label: "Guests", icon: <BoxIcon /> },
   { key: "reservations", label: "Reservations", icon: <CalIcon /> },
   { key: "services", label: "Services", icon: <WrenchIcon /> },
   { key: "listings", label: "Listings", icon: <MTagIcon /> },
