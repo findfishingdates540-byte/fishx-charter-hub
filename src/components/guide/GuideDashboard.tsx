@@ -149,7 +149,7 @@ export function GuideDashboard({
           <Slots businessId={businessId} data={data} />
         </div>
       )}
-      {active === "guests" && <GuideGuests trips={data.trips} />
+      {active === "guests" && <GuideGuests trips={data.trips} />}
       {active === "requests" && (
         <div style={{ display: "grid", gap: 18 }}>
           <Card eyebrow="Request to book" title="Waiting on your decision">
@@ -175,6 +175,7 @@ export function GuideDashboard({
           <Card eyebrow="Payouts" title="Bank & payouts">
             <PayoutsConnect businessId={businessId} />
           </Card>
+          <GuideTripPayouts trips={data.trips} />
           <PaymentsDashboard businessId={businessId} />
         </div>
       )}
