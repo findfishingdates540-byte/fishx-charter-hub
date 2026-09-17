@@ -27,6 +27,7 @@ import { RequestInbox } from "@/components/operator/RequestInbox";
 import { FleetPanel } from "@/components/captain/FleetPanel";
 import { ChartersPanel } from "@/components/captain/ChartersPanel";
 import { BlockoutDatesPanel } from "@/components/captain/BlockoutDatesPanel";
+import { CaptainTripCalendar } from "@/components/captain/CaptainTripCalendar";
 
 
 export const captainDashboardQO = queryOptions({
@@ -34,7 +35,7 @@ export const captainDashboardQO = queryOptions({
   queryFn: () => getCaptainDashboard(),
 });
 
-type Tab = "overview" | "bookings" | "services" | "blockouts" | "fleet" | "messages" | "earnings" | "settings";
+type Tab = "overview" | "bookings" | "calendar" | "services" | "blockouts" | "fleet" | "messages" | "earnings" | "settings";
 
 const money = (cents: number) =>
   `$${(Math.max(0, cents) / 100).toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
@@ -62,7 +63,7 @@ const shell: React.CSSProperties = {
   fontFamily: "var(--sans)",
 };
 
-const TABS: Tab[] = ["overview", "bookings", "services", "blockouts", "fleet", "messages", "earnings", "settings"];
+const TABS: Tab[] = ["overview", "bookings", "calendar", "services", "blockouts", "fleet", "messages", "earnings", "settings"];
 
 export function CaptainDashboard({ initialTab }: { initialTab?: string } = {}) {
   const { data } = useSuspenseQuery(captainDashboardQO);
@@ -198,6 +199,7 @@ export function CaptainDashboard({ initialTab }: { initialTab?: string } = {}) {
             />
           )}
           {tab === "bookings" && <BookingsPanel />}
+          {tab === "calendar" && <CaptainTripCalendar />}
           {tab === "services" && <ChartersPanel data={data} />}
           {tab === "blockouts" && <BlockoutDatesPanel />}
           {tab === "fleet" && <FleetPanel businessId={data.business?.id ?? null} />}
