@@ -260,14 +260,24 @@ function AuthPage() {
     setStatus("submitting");
     setDoneKind(role ? "angler" : "login");
     try {
-      const { error: e2 } = await supabase.auth.signInWithOAuth({
+      // Google/Apple refuse to render inside an iframe (the editor preview),
+      // so there we hand the sign-in page to a new tab instead of redirecting.
+      const inFrame = typeof window !== "undefined" && window.top !== window.self;
+      const { data: oauthData, error: e2 } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
-          redirectTo: `${window.location.origin}/dashboard`,
+          // Must be a public page; /auth sends signed-in users on to /dashboard.
+          redirectTo: `${window.location.origin}/auth`,
+          skipBrowserRedirect: inFrame,
+          queryParams: provider === "google" ? { prompt: "select_account" } : undefined,
           ...(role ? { data: { intended_role: role } } : {}),
         },
       });
       if (e2) throw e2;
+      if (inFrame && oauthData?.url) {
+        window.open(oauthData.url, "_blank", "noopener,noreferrer");
+        setStatus("idle");
+      }
     } catch (err) {
       setStatus("idle");
       setError(err instanceof Error ? err.message : "OAuth sign-in failed. Try again.");
