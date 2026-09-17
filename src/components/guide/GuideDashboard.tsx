@@ -12,6 +12,7 @@ import {
   assignGuideToBooking,
   upsertGuideSlot,
   deleteGuideSlot,
+  bulkCreateGuideSlots,
 } from "@/lib/guide.functions";
 import {
   OperatorShell,
