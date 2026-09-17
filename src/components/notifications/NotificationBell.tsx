@@ -94,6 +94,22 @@ export function NotificationBell() {
                 );
               })}
             </div>
+
+            <Link
+              to="/notifications"
+              className="notif-all"
+              onClick={() => setOpen(false)}
+              style={{
+                display: "block",
+                padding: "11px 14px",
+                textAlign: "center",
+                fontWeight: 700,
+                fontSize: 13,
+                borderTop: "1px solid rgba(13,34,54,.10)",
+              }}
+            >
+              View all notifications
+            </Link>
           </div>
         </>
       )}
