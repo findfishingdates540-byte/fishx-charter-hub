@@ -119,10 +119,15 @@ function Pill({ tone, children }: { tone: "good" | "warn" | "mut"; children: Rea
  * their storefront is live and taking bookings.
  */
 function operatorStatus(o: any): { label: string; tone: "good" | "warn" | "mut"; hint: string } {
+  if (o.is_published && !o.listing_ready && !o.listing_grace)
+    return { label: "Hidden", tone: "warn", hint: "Published but setup incomplete — not shown to anglers" };
+  if (o.is_published && !o.listing_ready && o.listing_grace)
+    return { label: "Grace period", tone: "warn", hint: "Still visible — warned to finish payouts/dates" };
   if (o.verified_at && o.is_published)
     return { label: "Live", tone: "good", hint: "Approved · storefront published" };
   if (o.verified_at)
     return { label: "Approved", tone: "good", hint: "Approved · not published yet" };
+
   if (o.docStatus === "rejected")
     return { label: "Rejected", tone: "warn", hint: "Documents declined" };
   if (o.docStatus === "pending")
