@@ -123,7 +123,7 @@ export const getOperatorDirectory = createServerFn({ method: "GET" })
         awaitingDocs: operators.filter((o) => o.docStatus === "not_submitted").length,
         pendingReview: operators.filter((o) => o.docStatus === "pending").length,
         verified: operators.filter((o) => Boolean(o.verified_at)).length,
-        live: operators.filter((o) => o.is_published).length,
+        live: operators.filter((o) => o.is_published && (o.listing_ready || o.listing_grace)).length,
         onboardingIncomplete: operators.filter((o) => !o.onboarding_completed_at).length,
       },
     };
