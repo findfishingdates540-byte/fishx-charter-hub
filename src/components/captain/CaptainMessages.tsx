@@ -29,6 +29,7 @@ import {
   useRealtimeTable,
   useScrollToBottom,
   type ChatMessage,
+  threadPreview,
 } from "@/components/messages/chat-ui";
 
 const C = {

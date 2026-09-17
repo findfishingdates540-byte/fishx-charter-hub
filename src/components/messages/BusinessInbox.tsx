@@ -37,6 +37,7 @@ import {
   useScrollToBottom,
   type ChatMessage,
   type ChatTheme,
+  threadPreview,
 } from "@/components/messages/chat-ui";
 
 export function BusinessInbox({
