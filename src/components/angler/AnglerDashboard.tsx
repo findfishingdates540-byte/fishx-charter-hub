@@ -511,35 +511,3 @@ function RecoCard({ c }: { c: Reco }) {
   );
 }
 
-/* ------------------------------ OTHER TABS ------------------------------ */
-
-function WalletTab({ escrowCents, upcoming }: { escrowCents: number; upcoming: UpcomingBooking[] }) {
-  return (
-    <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 20, padding: 28 }}>
-      <div style={{ fontFamily: "var(--serif)", fontSize: 26, fontWeight: 600 }}>Wallet</div>
-      <div style={{ fontSize: 13.5, color: "var(--tmut)", marginBottom: 20 }}>Balances and escrow across your trips.</div>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 16, marginBottom: 24 }}>
-        <Stat value={money(escrowCents)} label="Held in escrow" gold />
-        <Stat value={"$0"} label="Refunded (lifetime)" />
-      </div>
-      <div style={{ fontFamily: "var(--serif)", fontSize: 18, fontWeight: 600, marginBottom: 10 }}>Escrow breakdown</div>
-      {upcoming.length === 0 ? (
-        <div style={{ color: "var(--tmut)", fontSize: 13 }}>Nothing in escrow.</div>
-      ) : upcoming.map((b) => (
-        <div key={b.id} style={{ display: "flex", justifyContent: "space-between", padding: "10px 0", borderTop: "1px solid var(--line)", fontSize: 13.5 }}>
-          <span style={{ color: "var(--tmut)" }}>{b.service?.title ?? "Charter"} · {new Date(b.trip_date).toLocaleDateString()}</span>
-          <span style={{ fontWeight: 600 }}>{money(b.total_cents ?? 0)}</span>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function OrdersTab() {
-  return (
-    <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 20, padding: 28, textAlign: "center", color: "var(--tmut)" }}>
-      <div style={{ fontFamily: "var(--serif)", fontSize: 22, fontWeight: 600, color: "var(--ink)" }}>No gear orders yet</div>
-      <div style={{ fontSize: 13.5, marginTop: 8 }}>Orders from tackle shops & gear brands will show up here.</div>
-    </div>
-  );
-}
