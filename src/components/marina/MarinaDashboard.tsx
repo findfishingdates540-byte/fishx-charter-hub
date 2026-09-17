@@ -378,6 +378,8 @@ function Slips({ businessId, data }: { businessId: string; data: any }) {
         )}
       </Card>
 
+      <DockBuilder businessId={businessId} slips={data.slips as Slip[]} />
+
       {showForm && (
         <SlipForm
           initial={editing ?? undefined}
