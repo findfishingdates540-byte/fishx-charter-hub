@@ -16,6 +16,8 @@ import {
   type ReactNode,
 } from "react";
 import { MediaImg } from "@/components/media/MediaImg";
+import { useMediaUrl } from "@/lib/media-url";
+
 import { supabase } from "@/integrations/supabase/client";
 
 export type ChatTheme = "light" | "dark";
