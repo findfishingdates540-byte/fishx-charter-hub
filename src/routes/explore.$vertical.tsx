@@ -15,10 +15,10 @@ type Search = { category?: string; city?: string };
 
 const serif = "'Outfit', Georgia, serif";
 
-const directoryQO = () =>
+const directoryQO = (categories: string[]) =>
   queryOptions({
-    queryKey: ["public-businesses", "all"],
-    queryFn: () => listPublicBusinesses({ data: {} }),
+    queryKey: ["public-businesses", ...categories],
+    queryFn: () => listPublicBusinesses({ data: { categories } }),
   });
 
 const CATEGORY_LABELS: Record<string, string> = {
