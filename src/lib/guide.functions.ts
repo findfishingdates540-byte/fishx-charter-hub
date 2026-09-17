@@ -68,7 +68,7 @@ export const getGuideOverview = createServerFn({ method: "GET" })
     if (userIds.size) {
       const { data: profiles } = await supabase
         .from("profiles")
-        .select("id, full_name, display_name, avatar_url")
+        .select("id, full_name, display_name, avatar_url, bio, home_port, favorite_species, phone")
         .in("id", Array.from(userIds));
       (profiles ?? []).forEach((p: any) => profileMap.set(p.id, p));
     }

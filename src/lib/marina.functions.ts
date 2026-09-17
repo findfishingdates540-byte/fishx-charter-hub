@@ -27,7 +27,7 @@ export const getMarinaOverview = createServerFn({ method: "GET" })
     await assertMember(context, data.businessId);
     const { supabase } = context;
 
-    const [{ data: slips }, { data: reservations }] = await Promise.all([
+    const [{ data: slips }, { data: reservations }, { data: bookingRows }] = await Promise.all([
       supabase
         .from("marina_slips")
         .select("id, slip_number, status, monthly_rate_cents, nightly_rate_cents, is_bookable, service_id, length_ft, beam_ft, amperage")
@@ -40,7 +40,33 @@ export const getMarinaOverview = createServerFn({ method: "GET" })
         .eq("business_id", data.businessId)
         .order("arrive_date", { ascending: false })
         .limit(50),
+      supabase
+        .from("bookings")
+        .select(
+          "id, trip_date, start_time, party_size, status, total_cents, escrow_state, notes, angler_id, created_at, service:bookable_services(id,title,kind)",
+        )
+        .eq("business_id", data.businessId)
+        .order("trip_date", { ascending: false })
+        .limit(200),
     ]);
+
+    // Guest profiles for the booking calendar / guest list (operators may read
+    // the profile of anyone who booked with them — see can_view_profile).
+    const anglerIds = [
+      ...new Set((bookingRows ?? []).map((b: any) => b.angler_id).filter(Boolean)),
+    ] as string[];
+    const profileMap = new Map<string, any>();
+    if (anglerIds.length) {
+      const { data: profiles } = await supabase
+        .from("profiles")
+        .select("id, full_name, display_name, avatar_url, bio, home_port, favorite_species, phone")
+        .in("id", anglerIds);
+      (profiles ?? []).forEach((p: any) => profileMap.set(p.id, p));
+    }
+    const bookings = (bookingRows ?? []).map((b: any) => ({
+      ...b,
+      angler: b.angler_id ? profileMap.get(b.angler_id) ?? null : null,
+    }));
 
     const total = slips?.length ?? 0;
     const occupied = slips?.filter((s: any) => s.status === "occupied").length ?? 0;
@@ -62,6 +88,7 @@ export const getMarinaOverview = createServerFn({ method: "GET" })
       monthGrossCents: monthGross,
       slips: slips ?? [],
       reservations: reservations ?? [],
+      bookings,
     };
   });
 

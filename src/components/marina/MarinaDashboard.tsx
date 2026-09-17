@@ -33,6 +33,11 @@ import { OperatorBookings } from "@/components/operator/OperatorBookings";
 import { ReadinessGate } from "@/components/operator/ReadinessGate";
 import { BusinessInbox } from "@/components/messages/BusinessInbox";
 import { MessagesFullScreen } from "@/components/messages/MessagesFullScreen";
+import {
+  BookingCalendar,
+  TripPayouts,
+  GuestList,
+} from "@/components/operator/ConsolePanels";
 
 type Slip = {
   id: string;
@@ -65,6 +70,8 @@ const NAV: OperatorNavItem[] = [
   { key: "overview", label: "Overview", icon: <BoxIcon /> },
   { key: "slips", label: "Slips", icon: <BoatIcon /> },
   { key: "bookings", label: "Bookings", icon: <CalIcon /> },
+  { key: "calendar", label: "Calendar", icon: <CalIcon /> },
+  { key: "guests", label: "Guests", icon: <BoxIcon /> },
   { key: "reservations", label: "Reservations", icon: <CalIcon /> },
   { key: "services", label: "Services", icon: <WrenchIcon /> },
   { key: "listings", label: "Listings", icon: <MTagIcon /> },
@@ -95,6 +102,8 @@ export function MarinaDashboard({
     overview: { t: "Harbor overview", s: "Occupancy, reservations, dock health." },
     slips: { t: "Slip inventory", s: "Manage berths, rates, and status." },
     bookings: { t: "Bookings", s: "Guest bookings and requests from Fish-X." },
+    calendar: { t: "Booking calendar", s: "Every online booking, month by month." },
+    guests: { t: "Guests", s: "Who has stayed with you, and their details." },
     reservations: { t: "Reservations", s: "Vessels arriving and staying." },
     services: { t: "Marina services", s: "Amenities and operating settings." },
     listings: { t: "Bookable listings", s: "Transient slips, lodging and experiences." },
@@ -164,6 +173,10 @@ export function MarinaDashboard({
           requestsEmptyText="No slip or lodging requests waiting on you right now."
         />
       )}
+      {active === "calendar" && (
+        <BookingCalendar trips={data.bookings ?? []} eyebrow="Harbor" title="Booking calendar" />
+      )}
+      {active === "guests" && <GuestList trips={data.bookings ?? []} />}
       {active === "slips" && <Slips businessId={businessId} data={data} />}
       {active === "reservations" && (
         <Reservations businessId={businessId} data={data} />
@@ -183,6 +196,7 @@ export function MarinaDashboard({
           <Card eyebrow="Payouts" title="Bank & payouts">
             <PayoutsConnect businessId={businessId} />
           </Card>
+          <TripPayouts trips={data.bookings ?? []} />
           <PaymentsDashboard businessId={businessId} />
         </div>
       )}

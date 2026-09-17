@@ -18,6 +18,7 @@ import {
 import { ExploreHub } from "./ExploreHub";
 import { TripsTab } from "./TripsTab";
 import { DEFAULT_HERO } from "@/lib/platform-photos";
+import { AnglerBookingHistory, AnglerPayments } from "./AnglerConsole";
 
 const anglerHomeQO = queryOptions({
   queryKey: ["angler-dashboard"],
@@ -28,7 +29,7 @@ const recosQO = queryOptions({
   queryFn: () => listRecommendedCharters(),
 });
 
-type Tab = "home" | "trips" | "explore" | "wallet" | "orders";
+type Tab = "home" | "trips" | "history" | "explore" | "wallet" | "orders";
 
 const money = (cents: number) =>
   `$${(Math.max(0, cents) / 100).toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
@@ -82,7 +83,7 @@ function useCountdown(target: Date | null) {
 export function AnglerDashboard() {
   const search = useSearch({ strict: false }) as { tab?: string };
   const initialTab: Tab =
-    search.tab && ["home", "trips", "explore", "wallet", "orders"].includes(search.tab)
+    search.tab && ["home", "trips", "history", "explore", "wallet", "orders"].includes(search.tab)
       ? (search.tab as Tab)
       : "home";
   const [tab, setTab] = useState<Tab>(initialTab);
@@ -122,7 +123,7 @@ export function AnglerDashboard() {
             <BrandLogo size="md" accent="var(--sand)" color="var(--ond)" />
           </div>
           <nav className="ang-topnav" style={{ display: "flex", alignItems: "center", gap: 6, minWidth: 0, flex: "1 1 auto", overflowX: "auto", overflowY: "hidden" }}>
-            {(["home", "trips", "explore", "wallet", "orders"] as Tab[]).map((t) => (
+            {(["home", "trips", "history", "explore", "wallet", "orders"] as Tab[]).map((t) => (
               <button
                 key={t}
                 onClick={() => goTab(t)}
@@ -247,9 +248,10 @@ export function AnglerDashboard() {
             />
           )}
           {tab === "trips" && <TripsTab />}
+          {tab === "history" && <AnglerBookingHistory />}
           {tab === "explore" && <ExploreHub />}
-          {tab === "wallet" && <WalletTab escrowCents={home.escrowCents} upcoming={home.upcoming} />}
-          {tab === "orders" && <OrdersTab />}
+          {tab === "wallet" && <AnglerPayments />}
+          {tab === "orders" && <AnglerPayments />}
         </Suspense>
       </main>
     </div>
@@ -509,35 +511,3 @@ function RecoCard({ c }: { c: Reco }) {
   );
 }
 
-/* ------------------------------ OTHER TABS ------------------------------ */
-
-function WalletTab({ escrowCents, upcoming }: { escrowCents: number; upcoming: UpcomingBooking[] }) {
-  return (
-    <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 20, padding: 28 }}>
-      <div style={{ fontFamily: "var(--serif)", fontSize: 26, fontWeight: 600 }}>Wallet</div>
-      <div style={{ fontSize: 13.5, color: "var(--tmut)", marginBottom: 20 }}>Balances and escrow across your trips.</div>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 16, marginBottom: 24 }}>
-        <Stat value={money(escrowCents)} label="Held in escrow" gold />
-        <Stat value={"$0"} label="Refunded (lifetime)" />
-      </div>
-      <div style={{ fontFamily: "var(--serif)", fontSize: 18, fontWeight: 600, marginBottom: 10 }}>Escrow breakdown</div>
-      {upcoming.length === 0 ? (
-        <div style={{ color: "var(--tmut)", fontSize: 13 }}>Nothing in escrow.</div>
-      ) : upcoming.map((b) => (
-        <div key={b.id} style={{ display: "flex", justifyContent: "space-between", padding: "10px 0", borderTop: "1px solid var(--line)", fontSize: 13.5 }}>
-          <span style={{ color: "var(--tmut)" }}>{b.service?.title ?? "Charter"} · {new Date(b.trip_date).toLocaleDateString()}</span>
-          <span style={{ fontWeight: 600 }}>{money(b.total_cents ?? 0)}</span>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function OrdersTab() {
-  return (
-    <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 20, padding: 28, textAlign: "center", color: "var(--tmut)" }}>
-      <div style={{ fontFamily: "var(--serif)", fontSize: 22, fontWeight: 600, color: "var(--ink)" }}>No gear orders yet</div>
-      <div style={{ fontSize: 13.5, marginTop: 8 }}>Orders from tackle shops & gear brands will show up here.</div>
-    </div>
-  );
-}
