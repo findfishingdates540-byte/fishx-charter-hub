@@ -73,7 +73,20 @@ export const getOperatorReadiness = createServerFn({ method: "GET" })
       futureSlots = count ?? 0;
     }
 
+    // Shops satisfy the "something to sell" bar with live, in-stock products.
+    const { data: productRows } = await supabase
+      .from("inventory_products")
+      .select("id,is_published,stock_qty")
+      .eq("business_id", biz.id);
+    const liveProducts = (productRows ?? []).filter(
+      (p: any) => p.is_published && (p.stock_qty ?? 0) > 0,
+    ).length;
+
+    const sellable = published.length > 0 || liveProducts > 0;
+    const bookable = futureSlots > 0 || liveProducts > 0;
+
     const profileOk = Boolean(biz.hero_url && biz.description && biz.city && (biz.phone || biz.email));
+
 
     const items: ReadinessItem[] = [
       {
