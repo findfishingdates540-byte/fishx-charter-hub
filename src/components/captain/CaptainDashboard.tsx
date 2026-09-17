@@ -27,6 +27,7 @@ import { RequestInbox } from "@/components/operator/RequestInbox";
 import { FleetPanel } from "@/components/captain/FleetPanel";
 import { ChartersPanel } from "@/components/captain/ChartersPanel";
 import { BlockoutDatesPanel } from "@/components/captain/BlockoutDatesPanel";
+import { CaptainTripCalendar } from "@/components/captain/CaptainTripCalendar";
 
 
 export const captainDashboardQO = queryOptions({
@@ -34,7 +35,7 @@ export const captainDashboardQO = queryOptions({
   queryFn: () => getCaptainDashboard(),
 });
 
-type Tab = "overview" | "bookings" | "services" | "blockouts" | "fleet" | "messages" | "earnings" | "settings";
+type Tab = "overview" | "bookings" | "calendar" | "services" | "blockouts" | "fleet" | "messages" | "earnings" | "settings";
 
 const money = (cents: number) =>
   `$${(Math.max(0, cents) / 100).toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
@@ -62,7 +63,7 @@ const shell: React.CSSProperties = {
   fontFamily: "var(--sans)",
 };
 
-const TABS: Tab[] = ["overview", "bookings", "services", "blockouts", "fleet", "messages", "earnings", "settings"];
+const TABS: Tab[] = ["overview", "bookings", "calendar", "services", "blockouts", "fleet", "messages", "earnings", "settings"];
 
 export function CaptainDashboard({ initialTab }: { initialTab?: string } = {}) {
   const { data } = useSuspenseQuery(captainDashboardQO);
@@ -85,6 +86,8 @@ export function CaptainDashboard({ initialTab }: { initialTab?: string } = {}) {
   const pageTitle: Record<Tab, string> = {
     overview: `Welcome back, Captain`,
     bookings: "Bookings",
+    calendar: "Trip Calendar",
+
     services: "Charter Trips",
     blockouts: "Blockout Dates",
     fleet: "Fleet",
@@ -95,6 +98,8 @@ export function CaptainDashboard({ initialTab }: { initialTab?: string } = {}) {
   const pageSub: Record<Tab, string> = {
     overview: biz ? `${biz.name} · ${[biz.city, biz.region].filter(Boolean).join(", ")}` : "Set up your business to see bookings.",
     bookings: `${data.stats.upcomingCount} upcoming · ${data.stats.completedCount} completed`,
+    calendar: "Every booked trip by date, with price and payout status",
+
     services: "Create the charter trips anglers can book",
     blockouts: "Close date ranges across all your charters",
     fleet: "Boats, specs, and photo galleries — each charter picks one",
@@ -198,6 +203,7 @@ export function CaptainDashboard({ initialTab }: { initialTab?: string } = {}) {
             />
           )}
           {tab === "bookings" && <BookingsPanel />}
+          {tab === "calendar" && <CaptainTripCalendar />}
           {tab === "services" && <ChartersPanel data={data} />}
           {tab === "blockouts" && <BlockoutDatesPanel />}
           {tab === "fleet" && <FleetPanel businessId={data.business?.id ?? null} />}

@@ -376,7 +376,28 @@ export function CaptainBookingDetail({ bookingId }: { bookingId: string }) {
                   </div>
                 ))}
               </div>
+              {(angler?.bio || angler?.home_port || angler?.favorite_species) && (
+                <div style={{ marginTop: 14, border: `1px solid ${V.line}`, borderRadius: 13, padding: "13px 15px", display: "grid", gap: 6 }}>
+                  <div style={{ fontSize: 11.5, letterSpacing: ".1em", textTransform: "uppercase", color: V.tmut }}>
+                    About your guest
+                  </div>
+                  {angler?.bio && (
+                    <div style={{ fontSize: 13.5, color: V.ink, lineHeight: 1.55 }}>{angler.bio}</div>
+                  )}
+                  {(angler?.home_port || angler?.favorite_species) && (
+                    <div style={{ fontSize: 12.5, color: V.tmut }}>
+                      {[
+                        angler?.home_port ? `Home port: ${angler.home_port}` : null,
+                        angler?.favorite_species ? `Targets: ${angler.favorite_species}` : null,
+                      ]
+                        .filter(Boolean)
+                        .join(" · ")}
+                    </div>
+                  )}
+                </div>
+              )}
             </section>
+
 
             {/* ESCROW TIMELINE */}
             <section style={{ background: V.card, border: `1px solid ${V.line}`, borderRadius: 20, padding: 24 }}>

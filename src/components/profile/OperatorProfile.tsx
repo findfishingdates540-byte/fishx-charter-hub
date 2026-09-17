@@ -807,7 +807,32 @@ export function OperatorProfile({
                 {b.address && <div>📍 {[b.address, b.city].filter(Boolean).join(", ")}</div>}
                 {b.website && <a href={b.website} target="_blank" rel="noreferrer" style={{ color: "#2DE2F2", textDecoration: "none" }}>Website ↗</a>}
               </div>
+              {(b.address || location) && (
+                <div style={{ marginTop: 14 }}>
+                  <iframe
+                    title={`Map of ${b.name}`}
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                    src={`https://maps.google.com/maps?q=${encodeURIComponent(
+                      [b.name, b.address, b.city, b.region, b.country].filter(Boolean).join(", "),
+                    )}&z=13&output=embed`}
+                    style={{ width: "100%", height: 180, border: 0, borderRadius: 12 }}
+                  />
+
+                  <a
+                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                      [b.name, b.address, b.city, b.region, b.country].filter(Boolean).join(", "),
+                    )}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    style={{ display: "inline-block", marginTop: 8, color: "#2DE2F2", fontSize: 12.5, textDecoration: "none" }}
+                  >
+                    Open in maps ↗
+                  </a>
+                </div>
+              )}
             </div>
+
 
             {hours.length > 0 && (
               <div style={{ ...CARD, padding: 22 }}>

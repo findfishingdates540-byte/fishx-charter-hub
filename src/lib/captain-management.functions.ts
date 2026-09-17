@@ -270,7 +270,7 @@ export const getCaptainThread = createServerFn({ method: "GET" })
     if (booking.angler_id) {
       const res = await supabase
         .from("profiles")
-        .select("id,full_name,display_name,avatar_url")
+        .select("id,full_name,display_name,avatar_url,bio,home_port,favorite_species")
         .eq("id", booking.angler_id)
         .maybeSingle();
       angler = res.data ?? null;
@@ -285,3 +285,95 @@ export const getCaptainThread = createServerFn({ method: "GET" })
       viewerId: userId,
     };
   });
+
+/* ---------------- TRIP CALENDAR ---------------- */
+
+/**
+ * Month calendar of this operator's own booked trips: date, time, guests,
+ * price and payout status. Scoped to the caller's business via RLS.
+ */
+export const getCaptainTripCalendar = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i) => z.object({ month: z.string().regex(/^\d{4}-\d{2}$/) }).parse(i))
+  .handler(async ({ data, context }) => {
+    const empty = {
+      month: data.month,
+      trips: [] as any[],
+      totals: { trips: 0, grossCents: 0, paidOutCents: 0, awaitingPayoutCents: 0 },
+    };
+    const businessId = await pickBusinessId(context.supabase, context.userId);
+    if (!businessId) return empty;
+
+    const [y, m] = data.month.split("-").map(Number) as [number, number];
+    const iso = (d: Date) => d.toISOString().slice(0, 10);
+    const start = iso(new Date(Date.UTC(y, m - 1, 1)));
+    const end = iso(new Date(Date.UTC(y, m, 1)));
+
+    const { data: rows, error } = await context.supabase
+      .from("bookings")
+      .select(
+        "id,trip_date,start_time,status,total_cents,payout_cents,party_size,escrow_state,payout_released_at,customer:customers(full_name),service:bookable_services(title)",
+      )
+      .eq("business_id", businessId)
+      .gte("trip_date", start)
+      .lt("trip_date", end)
+      .order("trip_date", { ascending: true })
+      .limit(500);
+    if (error) throw new Response(error.message, { status: 500 });
+
+    const list = rows ?? [];
+    if (!list.length) return empty;
+
+    const ids = list.map((r: any) => r.id);
+    const { data: payRows } = await context.supabase
+      .from("payouts")
+      .select("booking_id,amount_cents,status,paid_at,arrival_date,failure_message")
+      .in("booking_id", ids);
+    const payByBooking = new Map((payRows ?? []).map((p: any) => [p.booking_id, p]));
+
+    const trips = list.map((r: any) => {
+      const payout = payByBooking.get(r.id) ?? null;
+      const payoutStatus =
+        payout?.status === "paid"
+          ? "paid"
+          : payout?.status === "in_transit"
+            ? "to bank"
+            : payout
+              ? "scheduled"
+              : r.payout_released_at
+                ? "paid"
+                : r.escrow_state === "held"
+                  ? "in escrow"
+                  : "pending";
+      return {
+        id: r.id,
+        tripDate: r.trip_date,
+        startTime: r.start_time,
+        status: r.status,
+        title: r.service?.title ?? "Trip",
+        guest: r.customer?.full_name ?? "Guest",
+        partySize: r.party_size,
+        totalCents: r.total_cents ?? 0,
+        payoutCents: payout?.amount_cents ?? r.payout_cents ?? 0,
+        payoutStatus,
+        arrivalDate: payout?.arrival_date ?? null,
+        payoutError: payout?.failure_message ?? null,
+        paidAt: payout?.paid_at ?? r.payout_released_at ?? null,
+      };
+    });
+
+    const settled = trips.filter((t) => t.payoutStatus === "paid");
+    return {
+      month: data.month,
+      trips,
+      totals: {
+        trips: trips.length,
+        grossCents: trips.reduce((s, t) => s + t.totalCents, 0),
+        paidOutCents: settled.reduce((s, t) => s + t.payoutCents, 0),
+        awaitingPayoutCents: trips
+          .filter((t) => t.payoutStatus !== "paid")
+          .reduce((s, t) => s + t.payoutCents, 0),
+      },
+    };
+  });
+

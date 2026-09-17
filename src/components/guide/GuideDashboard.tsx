@@ -26,6 +26,7 @@ import { PaymentsDashboard } from "@/components/operator/PaymentsDashboard";
 import { BusinessSettings } from "@/components/business/BusinessSettings";
 import { ServicesManager } from "@/components/business/ServicesManager";
 import { RequestInbox } from "@/components/operator/RequestInbox";
+import { CaptainTripCalendar } from "@/components/captain/CaptainTripCalendar";
 import { ReadinessGate } from "@/components/operator/ReadinessGate";
 import { BusinessInbox } from "@/components/messages/BusinessInbox";
 import { MessagesFullScreen } from "@/components/messages/MessagesFullScreen";
@@ -70,6 +71,7 @@ export function GuideDashboard({
       icon: <CalIcon />,
       badge: data.kpis.unassignedCount || undefined,
     },
+    { key: "calendar", label: "Calendar", icon: <CalIcon /> },
     { key: "guides", label: "Guides", icon: <TeamIcon /> },
     { key: "slots", label: "Availability", icon: <ClockIcon /> },
     {
@@ -90,6 +92,7 @@ export function GuideDashboard({
       s: `Morning, ${operatorName} — ${data.kpis.rosterCount} guides on your roster.`,
     },
     trips: { t: "Trips", s: "Assignment board — escrow-funded bookings." },
+    calendar: { t: "Trip Calendar", s: "Every booked trip by date, with price and payout status." },
     guides: { t: "Guides", s: "Your roster & performance." },
     slots: { t: "Availability", s: "Bookable slots across your services." },
     requests: { t: "Requests", s: "New bookings waiting on you." },
@@ -108,8 +111,8 @@ export function GuideDashboard({
       nav={nav}
       active={active}
       onNav={setActive}
-      pageTitle={titles[active].t}
-      pageSub={titles[active].s}
+      pageTitle={(titles[active] ?? titles.overview).t}
+      pageSub={(titles[active] ?? titles.overview).s}
     >
       {active === "overview" && (
         <>
@@ -130,6 +133,7 @@ export function GuideDashboard({
         </>
       )}
       {active === "trips" && <Trips businessId={businessId} data={data} />}
+      {active === "calendar" && <CaptainTripCalendar />}
       {active === "guides" && <Roster data={data} />}
       {active === "slots" && <Slots businessId={businessId} data={data} />}
       {active === "requests" && (

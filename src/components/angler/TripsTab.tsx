@@ -312,6 +312,24 @@ function TripCard({ trip, bucket }: { trip: Trip; bucket: Bucket }) {
             </div>
           </div>
           <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+            {(trip.status === "completed" || trip.status === "reviewed") && (
+              <Link
+                to="/review"
+                search={{ booking: trip.id }}
+                style={{
+                  ...eyebrow,
+                  fontSize: 11,
+                  padding: "13px 20px",
+                  borderRadius: 10,
+                  background: "var(--sand)",
+                  color: "#072057",
+                  textDecoration: "none",
+                }}
+              >
+                {trip.status === "reviewed" ? "View your review" : "Leave a review"}
+              </Link>
+            )}
+
             <Link
               to="/messages"
               search={{ booking: trip.id }}

@@ -211,8 +211,35 @@ export const addTeamMemberByEmail = createServerFn({ method: "POST" })
         { onConflict: "business_id,user_id" },
       );
     if (error) throw new Response(error.message, { status: 400 });
-    return { ok: true as const };
+
+    // Let the new teammate know — in-app notification plus an email.
+    let notified = false;
+    try {
+      const { sendDirectNotification } = await import("./notifications.server");
+      const { data: biz } = await supabaseAdmin
+        .from("businesses")
+        .select("name")
+        .eq("id", data.businessId)
+        .maybeSingle();
+      const bizName = (biz as any)?.name ?? "a business";
+      const res = await sendDirectNotification(supabaseAdmin as never, {
+        userId: match.id,
+        to: match.email ?? email,
+        category: "account",
+        title: `You've been added to ${bizName}`,
+        body: `You can now manage ${bizName} on FISH-X.COM as ${data.role}. Sign in to open the dashboard.`,
+        link: "/dashboard",
+        severity: "info",
+        meta: { business_id: data.businessId, role: data.role },
+      });
+      notified = Boolean((res as any)?.sent);
+    } catch {
+      notified = false;
+    }
+
+    return { ok: true as const, notified };
   });
+
 
 /** Change a teammate's role. Owners only. */
 export const updateTeamMemberRole = createServerFn({ method: "POST" })

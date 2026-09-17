@@ -2,7 +2,7 @@
  * Angler booking flow, pixel-ported from public/dashboards/booking.html.
  * Real DB write: `Place booking` calls createBookingFromService which inserts a
  * booking row (status=confirmed, escrow_state=held) tied to the signed-in
- * angler. Stripe wiring is TODO — for now escrow is simulated in the DB.
+ * angler. Payment runs through Stripe; escrow state is tracked on the booking.
  */
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { MediaImg } from "@/components/media/MediaImg";
