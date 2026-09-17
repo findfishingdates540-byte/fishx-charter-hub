@@ -1017,6 +1017,7 @@ export type Database = {
           is_published: boolean
           lat: number | null
           listing_grace: boolean
+          listing_grace_notified_at: string | null
           listing_ready: boolean
           lng: number | null
           logo_url: string | null
@@ -1062,6 +1063,7 @@ export type Database = {
           is_published?: boolean
           lat?: number | null
           listing_grace?: boolean
+          listing_grace_notified_at?: string | null
           listing_ready?: boolean
           lng?: number | null
           logo_url?: string | null
@@ -1107,6 +1109,7 @@ export type Database = {
           is_published?: boolean
           lat?: number | null
           listing_grace?: boolean
+          listing_grace_notified_at?: string | null
           listing_ready?: boolean
           lng?: number | null
           logo_url?: string | null
@@ -3442,6 +3445,7 @@ export type Database = {
           is_published: boolean
           lat: number | null
           listing_grace: boolean
+          listing_grace_notified_at: string | null
           listing_ready: boolean
           lng: number | null
           logo_url: string | null
