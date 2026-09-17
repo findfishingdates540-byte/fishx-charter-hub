@@ -344,13 +344,15 @@ export function AttachmentView({
   durationMs?: number | null;
   mine: boolean;
 }) {
+  const href = useMediaUrl(url);
   if (kind === "audio") {
     return <VoiceMessagePlayer c={c} url={url} durationMs={durationMs} mine={mine} />;
   }
   return (
-    <a href={url} target="_blank" rel="noreferrer" style={{ display: "block", marginBottom: 4 }}>
+    <a href={href || undefined} target="_blank" rel="noreferrer" style={{ display: "block", marginBottom: 4 }}>
       <MediaImg
         src={url}
+
         alt="Shared photo"
         style={{
           display: "block",
