@@ -114,6 +114,24 @@ function Pill({ tone, children }: { tone: "good" | "warn" | "mut"; children: Rea
   );
 }
 
+/**
+ * The single status an operator shows at a glance: approved + published means
+ * their storefront is live and taking bookings.
+ */
+function operatorStatus(o: any): { label: string; tone: "good" | "warn" | "mut"; hint: string } {
+  if (o.verified_at && o.is_published)
+    return { label: "Live", tone: "good", hint: "Approved · storefront published" };
+  if (o.verified_at)
+    return { label: "Approved", tone: "good", hint: "Approved · not published yet" };
+  if (o.docStatus === "rejected")
+    return { label: "Rejected", tone: "warn", hint: "Documents declined" };
+  if (o.docStatus === "pending")
+    return { label: "Under review", tone: "warn", hint: "Documents awaiting your decision" };
+  if (o.onboarding_completed_at)
+    return { label: "Unverified", tone: "mut", hint: "Setup done · no documents" };
+  return { label: "Setting up", tone: "mut", hint: "Onboarding in progress" };
+}
+
 const DOC_LABEL: Record<string, string> = {
   not_submitted: "No documents yet",
   pending: "Awaiting review",
@@ -201,7 +219,7 @@ export function AdminOperators() {
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13.5, minWidth: 900 }}>
           <thead>
             <tr style={{ color: T.mut }}>
-              {["Operator", "Owner", "Signed up", "Documents", "Setup", "Listings", "Bookings", "Gross"].map((h) => (
+              {["Operator", "Status", "Owner", "Signed up", "Documents", "Setup", "Listings", "Bookings", "Gross"].map((h) => (
                 <th key={h} style={th}>
                   {h}
                 </th>
@@ -211,7 +229,7 @@ export function AdminOperators() {
           <tbody>
             {rows.length === 0 && (
               <tr>
-                <td colSpan={8} style={{ ...td, color: T.mut }}>
+                <td colSpan={9} style={{ ...td, color: T.mut }}>
                   No operators match that view.
                 </td>
               </tr>
@@ -225,6 +243,17 @@ export function AdminOperators() {
                     {o.city ? ` · ${o.city}` : ""}
                     {o.verified_at ? " · verified" : ""}
                   </div>
+                </td>
+                <td style={td}>
+                  {(() => {
+                    const s = operatorStatus(o);
+                    return (
+                      <>
+                        <Pill tone={s.tone}>{s.label}</Pill>
+                        <div style={{ color: T.mut, fontSize: 12, marginTop: 4 }}>{s.hint}</div>
+                      </>
+                    );
+                  })()}
                 </td>
                 <td style={{ ...td, color: T.mut }}>
                   {o.owner?.display_name ?? o.owner?.full_name ?? "—"}

@@ -22,6 +22,7 @@ import {
   AdminBookings,
   AdminAudit,
 } from "@/components/admin/AdminManagement";
+import { AdminPayments } from "@/components/admin/AdminPayments";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({
@@ -107,6 +108,7 @@ type Tab =
   | "members"
   | "listings"
   | "bookings"
+  | "payments"
   | "calendar"
   | "payouts"
   | "reconciliation"
@@ -119,6 +121,7 @@ const TABS: Array<[Tab, string]> = [
   ["members", "Members"],
   ["listings", "Listings"],
   ["bookings", "Bookings"],
+  ["payments", "Payments"],
   ["calendar", "Calendar"],
   ["payouts", "Payouts"],
   ["reconciliation", "Reconciliation"],
@@ -230,6 +233,7 @@ function AdminConsole() {
       {tab === "members" && <AdminMembers />}
       {tab === "listings" && <AdminListings />}
       {tab === "bookings" && <AdminBookings />}
+      {tab === "payments" && <AdminPayments />}
       {tab === "activity" && <AdminAudit />}
 
 

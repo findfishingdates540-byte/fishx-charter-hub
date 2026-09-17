@@ -193,12 +193,13 @@ export const submitVerification = createServerFn({ method: "POST" })
     try {
       const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
       const { sendDirectNotification } = await import("./notifications.server");
-      const [{ data: biz }, { data: admins }] = await Promise.all([
+      const [{ data: biz }, { data: admins }, { data: team }] = await Promise.all([
         supabaseAdmin.from("businesses").select("name").eq("id", businessId).maybeSingle(),
         supabaseAdmin.from("user_roles").select("user_id").eq("role", "admin"),
+        supabaseAdmin.from("business_members").select("user_id").eq("business_id", businessId),
       ]);
-      await Promise.all(
-        (admins ?? []).map((a: { user_id: string }) =>
+      await Promise.all([
+        ...(admins ?? []).map((a: { user_id: string }) =>
           sendDirectNotification(supabaseAdmin, {
             userId: a.user_id,
             category: "verification",
@@ -209,7 +210,20 @@ export const submitVerification = createServerFn({ method: "POST" })
             meta: { businessId, requestId: row.id },
           }),
         ),
-      );
+        // Confirm receipt to the operator so they know review is under way and
+        // that they can carry on with the rest of their setup meanwhile.
+        ...(team ?? []).map((m: { user_id: string }) =>
+          sendDirectNotification(supabaseAdmin, {
+            userId: m.user_id,
+            category: "verification",
+            title: "We received your documents",
+            body: `Thanks — ${data.docPaths.length} document(s) for ${biz?.name ?? "your business"} are with our team. You can keep setting up and taking payments while we review.`,
+            link: "/onboarding",
+            severity: "info",
+            meta: { businessId, requestId: row.id },
+          }),
+        ),
+      ]);
     } catch (e) {
       console.error("verification admin notification failed", e);
     }
