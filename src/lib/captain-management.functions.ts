@@ -270,7 +270,7 @@ export const getCaptainThread = createServerFn({ method: "GET" })
     if (booking.angler_id) {
       const res = await supabase
         .from("profiles")
-        .select("id,full_name,display_name,avatar_url")
+        .select("id,full_name,display_name,avatar_url,bio,home_port,favorite_species")
         .eq("id", booking.angler_id)
         .maybeSingle();
       angler = res.data ?? null;
