@@ -22,6 +22,7 @@ import {
   AdminBookings,
   AdminAudit,
 } from "@/components/admin/AdminManagement";
+import { AdminPayments } from "@/components/admin/AdminPayments";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({
