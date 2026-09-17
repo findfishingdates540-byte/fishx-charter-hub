@@ -484,6 +484,7 @@ function Slots({ businessId, data }: { businessId: string; data: any }) {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+      <BulkSlotGenerator businessId={businessId} />
       <Card
         title="Bookable slots"
         right={
