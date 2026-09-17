@@ -36,7 +36,7 @@ export const Route = createFileRoute("/admin")({
       { name: "twitter:card", content: "summary" },
     ],
   }),
-  component: AdminConsole,
+  component: AdminGate,
   errorComponent: () => (
     <Shell>
       <div style={{ ...card, textAlign: "center" }}>
