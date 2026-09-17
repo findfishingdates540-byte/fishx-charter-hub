@@ -211,7 +211,7 @@ function AdminConsole() {
       </div>
 
       <div style={{ display: "flex", gap: 8, marginBottom: 16, flexWrap: "wrap" }}>
-        {(["verifications", "calendar", "payouts", "reconciliation", "disputes"] as Tab[]).map((k) => (
+        {TABS.map(([k, label]) => (
           <button
             key={k}
             onClick={() => setTab(k)}
@@ -219,13 +219,19 @@ function AdminConsole() {
               ...ghost,
               background: tab === k ? T.accent : "transparent",
               color: tab === k ? "#04121B" : T.ink,
-              textTransform: "capitalize",
             }}
           >
-            {k}
+            {label}
           </button>
         ))}
       </div>
+
+      {tab === "operators" && <AdminOperators />}
+      {tab === "members" && <AdminMembers />}
+      {tab === "listings" && <AdminListings />}
+      {tab === "bookings" && <AdminBookings />}
+      {tab === "activity" && <AdminAudit />}
+
 
       {tab === "verifications" && (
         <div style={{ display: "grid", gap: 12 }}>
