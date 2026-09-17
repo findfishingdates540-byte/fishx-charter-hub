@@ -20,12 +20,24 @@ export const getBusinessPayments = createServerFn({ method: "GET" })
     const { supabase } = context;
     const businessId = data.businessId;
 
+    // The public "published businesses" policy is row-level only, so an RLS
+    // read alone would hand a business's commission/payout terms to any
+    // signed-in user. Require staff membership before touching the data.
+    const { data: isMember, error: memberErr } = await supabase.rpc("is_business_member", {
+      _business_id: businessId,
+      _user_id: context.userId,
+      _min_role: "staff",
+    });
+    if (memberErr) throw new Error(memberErr.message);
+    if (!isMember) throw new Error("You don't have access to this business's payments.");
+
     const [bizRes, bookingRes, payoutRes, orderRes, refundLess] = await Promise.all([
       supabase
         .from("businesses")
-        .select("id,name,commission_rate,product_commission_rate,deposit_rate,charges_enabled,payouts_enabled,payout_delay_days,stripe_account_id")
+        .select("id,name,commission_rate,product_commission_rate,deposit_rate,charges_enabled,payouts_enabled,payout_delay_days")
         .eq("id", businessId)
         .maybeSingle(),
+
       supabase
         .from("bookings")
         .select(
