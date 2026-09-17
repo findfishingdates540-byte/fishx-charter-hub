@@ -124,6 +124,45 @@ export const decideVerification = createServerFn({ method: "POST" })
       .update({ verified_at: data.approve ? new Date().toISOString() : null })
       .eq("id", req.business_id);
 
+    // Tell the operator's team the outcome, and log the decision for staff.
+    try {
+      const { sendDirectNotification } = await import("./notifications.server");
+      const [{ data: biz }, { data: team }] = await Promise.all([
+        supabaseAdmin
+          .from("businesses")
+          .select("name,slug")
+          .eq("id", req.business_id)
+          .maybeSingle(),
+        supabaseAdmin.from("business_members").select("user_id").eq("business_id", req.business_id),
+      ]);
+      await Promise.all(
+        (team ?? []).map((m: { user_id: string }) =>
+          sendDirectNotification(supabaseAdmin, {
+            userId: m.user_id,
+            category: "verification",
+            title: data.approve
+              ? `${biz?.name ?? "Your business"} is approved`
+              : `We could not approve ${biz?.name ?? "your business"} yet`,
+            body: data.approve
+              ? "Your documents checked out. Your verified badge is live and your storefront can take bookings."
+              : `Our team could not approve your documents. ${data.note ?? "Please upload clearer or up-to-date paperwork and resubmit."}`,
+            link: data.approve && biz?.slug ? `/b/${biz.slug}` : "/onboarding",
+            severity: data.approve ? "success" : "warning",
+            meta: { businessId: req.business_id, requestId: data.requestId },
+          }),
+        ),
+      );
+      await supabaseAdmin.from("audit_logs").insert({
+        actor_id: context.userId,
+        action: data.approve ? "verification.approved" : "verification.rejected",
+        target_type: "business",
+        target_id: req.business_id,
+        meta_json: { requestId: data.requestId, note: data.note ?? null },
+      });
+    } catch (e) {
+      console.error("verification decision notification failed", e);
+    }
+
     return { ok: true, status };
   });
 
