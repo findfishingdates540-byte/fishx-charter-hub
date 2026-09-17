@@ -142,7 +142,7 @@ export function OperatorShell({
           </div>
         </div>
 
-        <nav style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+        <nav style={{ display: "flex", flexDirection: "column", gap: 3, overflowY: "auto", minHeight: 0, paddingRight: 2 }}>
           {nav.map((n) => {
             const isActive = n.key === active;
             return (

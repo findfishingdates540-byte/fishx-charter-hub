@@ -109,6 +109,14 @@ const profileInput = z.object({
       payment_methods: z.string().max(300).optional().nullable(),
       languages: z.string().max(200).optional().nullable(),
       rules: z.string().max(2000).optional().nullable(),
+      shipping: z.string().max(2000).optional().nullable(),
+      returns: z.string().max(2000).optional().nullable(),
+      privacy: z.string().max(4000).optional().nullable(),
+      privacy_url: z.string().max(500).optional().nullable(),
+      terms: z.string().max(4000).optional().nullable(),
+      terms_url: z.string().max(500).optional().nullable(),
+      cookie_notice: z.boolean().optional(),
+      marketing_consent: z.boolean().optional(),
     })
     .optional(),
   faq: z

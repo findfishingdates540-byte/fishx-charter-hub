@@ -706,6 +706,22 @@ export function OperatorProfile({
               </section>
             )}
 
+            {isShop && (policies.shipping || policies.returns || policies.privacy || policies.terms || policies.privacy_url || policies.terms_url) && (
+              <section style={CARD}>
+                <h2 style={sectionTitle}>Store policies</h2>
+                <div style={{ display: "grid", gap: 15 }}>
+                  {policies.shipping && <div><strong>Shipping</strong><p style={{ color: "#92A0AB", whiteSpace: "pre-wrap", margin: "5px 0 0" }}>{policies.shipping}</p></div>}
+                  {policies.returns && <div><strong>Returns & refunds</strong><p style={{ color: "#92A0AB", whiteSpace: "pre-wrap", margin: "5px 0 0" }}>{policies.returns}</p></div>}
+                  {policies.privacy && <div><strong>Privacy</strong><p style={{ color: "#92A0AB", whiteSpace: "pre-wrap", margin: "5px 0 0" }}>{policies.privacy}</p></div>}
+                  {policies.terms && <div><strong>Terms of sale</strong><p style={{ color: "#92A0AB", whiteSpace: "pre-wrap", margin: "5px 0 0" }}>{policies.terms}</p></div>}
+                  <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
+                    {policies.privacy_url && <a href={policies.privacy_url} target="_blank" rel="noreferrer" style={{ color: "#2DE2F2" }}>Privacy policy ↗</a>}
+                    {policies.terms_url && <a href={policies.terms_url} target="_blank" rel="noreferrer" style={{ color: "#2DE2F2" }}>Terms ↗</a>}
+                  </div>
+                </div>
+              </section>
+            )}
+
             {/* Reviews */}
             <section style={{ background: "#14202B", border: "1px solid rgba(255,255,255,.07)", borderRadius: 20, padding: 26 }}>
               <div style={{ display: "flex", gap: 34, alignItems: "flex-start", flexWrap: "wrap", marginBottom: 24 }}>

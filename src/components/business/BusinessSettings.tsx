@@ -309,6 +309,14 @@ function ProfileCard({ business, canEdit }: { business: any; canEdit: boolean })
       payment_methods: p0.payment_methods ?? "",
       languages: p0.languages ?? "",
       rules: p0.rules ?? "",
+      shipping: p0.shipping ?? "",
+      returns: p0.returns ?? "",
+      privacy: p0.privacy ?? "",
+      privacy_url: p0.privacy_url ?? "",
+      terms: p0.terms ?? "",
+      terms_url: p0.terms_url ?? "",
+      cookie_notice: p0.cookie_notice !== false,
+      marketing_consent: p0.marketing_consent !== false,
     };
   });
   const [faq, setFaq] = useState<Array<{ q: string; a: string }>>(() =>
@@ -552,6 +560,29 @@ function ProfileCard({ business, canEdit }: { business: any; canEdit: boolean })
             disabled={!canEdit}
           />
         </Field>
+
+        <Grid2>
+          <Field label="Shipping policy">
+            <textarea style={{ ...input, minHeight: 100, resize: "vertical" }} value={policies.shipping ?? ""} onChange={(e) => setPolicies((p) => ({ ...p, shipping: e.target.value }))} disabled={!canEdit} placeholder="Processing times, delivery areas and shipping expectations." />
+          </Field>
+          <Field label="Returns & refunds policy">
+            <textarea style={{ ...input, minHeight: 100, resize: "vertical" }} value={policies.returns ?? ""} onChange={(e) => setPolicies((p) => ({ ...p, returns: e.target.value }))} disabled={!canEdit} placeholder="Return window, item condition and refund timing." />
+          </Field>
+          <Field label="Privacy policy">
+            <textarea style={{ ...input, minHeight: 100, resize: "vertical" }} value={policies.privacy ?? ""} onChange={(e) => setPolicies((p) => ({ ...p, privacy: e.target.value }))} disabled={!canEdit} placeholder="How your shop handles customer information." />
+          </Field>
+          <Field label="Terms of sale">
+            <textarea style={{ ...input, minHeight: 100, resize: "vertical" }} value={policies.terms ?? ""} onChange={(e) => setPolicies((p) => ({ ...p, terms: e.target.value }))} disabled={!canEdit} placeholder="Terms that apply to purchases from your shop." />
+          </Field>
+          <Field label="Privacy policy link">
+            <input style={input} value={policies.privacy_url ?? ""} onChange={(e) => setPolicies((p) => ({ ...p, privacy_url: e.target.value }))} disabled={!canEdit} placeholder="https://…" />
+          </Field>
+          <Field label="Terms link">
+            <input style={input} value={policies.terms_url ?? ""} onChange={(e) => setPolicies((p) => ({ ...p, terms_url: e.target.value }))} disabled={!canEdit} placeholder="https://…" />
+          </Field>
+        </Grid2>
+        <Toggle label="Show the Fish-X cookie notice" hint="Uses the shared Fish-X notice on your storefront." checked={policies.cookie_notice !== false} onChange={(value) => setPolicies((p) => ({ ...p, cookie_notice: value }))} />
+        <Toggle label="Offer email marketing consent" hint="Adds an optional consent choice during product checkout." checked={policies.marketing_consent !== false} onChange={(value) => setPolicies((p) => ({ ...p, marketing_consent: value }))} />
 
         <Field label="Frequently asked questions">
           <div style={{ display: "grid", gap: 10 }}>
