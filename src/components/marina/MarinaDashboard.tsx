@@ -102,6 +102,8 @@ export function MarinaDashboard({
     overview: { t: "Harbor overview", s: "Occupancy, reservations, dock health." },
     slips: { t: "Slip inventory", s: "Manage berths, rates, and status." },
     bookings: { t: "Bookings", s: "Guest bookings and requests from Fish-X." },
+    calendar: { t: "Booking calendar", s: "Every online booking, month by month." },
+    guests: { t: "Guests", s: "Who has stayed with you, and their details." },
     reservations: { t: "Reservations", s: "Vessels arriving and staying." },
     services: { t: "Marina services", s: "Amenities and operating settings." },
     listings: { t: "Bookable listings", s: "Transient slips, lodging and experiences." },
