@@ -262,12 +262,15 @@ export function VoiceMessagePlayer({
   const [len, setLen] = useState((durationMs ?? 0) / 1000);
   const fg = mine ? c.bubbleOutText : c.text;
 
+  const src = useMediaUrl(url);
+
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 190, padding: "2px 0" }}>
       <audio
         ref={audio}
-        src={url}
+        src={src}
         preload="metadata"
+
         onLoadedMetadata={(e) => {
           const d = (e.target as HTMLAudioElement).duration;
           if (Number.isFinite(d) && d > 0) setLen(d);
