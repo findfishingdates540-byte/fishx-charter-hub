@@ -16,6 +16,8 @@ import {
   type ReactNode,
 } from "react";
 import { MediaImg } from "@/components/media/MediaImg";
+import { useMediaUrl } from "@/lib/media-url";
+
 import { supabase } from "@/integrations/supabase/client";
 
 export type ChatTheme = "light" | "dark";
@@ -262,12 +264,15 @@ export function VoiceMessagePlayer({
   const [len, setLen] = useState((durationMs ?? 0) / 1000);
   const fg = mine ? c.bubbleOutText : c.text;
 
+  const src = useMediaUrl(url);
+
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 190, padding: "2px 0" }}>
       <audio
         ref={audio}
-        src={url}
+        src={src}
         preload="metadata"
+
         onLoadedMetadata={(e) => {
           const d = (e.target as HTMLAudioElement).duration;
           if (Number.isFinite(d) && d > 0) setLen(d);
@@ -339,13 +344,15 @@ export function AttachmentView({
   durationMs?: number | null;
   mine: boolean;
 }) {
+  const href = useMediaUrl(url);
   if (kind === "audio") {
     return <VoiceMessagePlayer c={c} url={url} durationMs={durationMs} mine={mine} />;
   }
   return (
-    <a href={url} target="_blank" rel="noreferrer" style={{ display: "block", marginBottom: 4 }}>
+    <a href={href || undefined} target="_blank" rel="noreferrer" style={{ display: "block", marginBottom: 4 }}>
       <MediaImg
         src={url}
+
         alt="Shared photo"
         style={{
           display: "block",
@@ -668,8 +675,10 @@ export function ChatComposer({
         .from("message-media")
         .upload(path, blob, { contentType: blob.type || undefined, upsert: false });
       if (upErr) throw upErr;
-      const { data } = supabase.storage.from("message-media").getPublicUrl(path);
-      onAttachment({ url: data.publicUrl, kind, durationMs });
+      // Private bucket: store the path, not a URL. Viewers get a short-lived
+      // signed link only if they are part of the conversation.
+      onAttachment({ url: `message-media/${path}`, kind, durationMs });
+
     } catch (e: any) {
       setError(e?.message ?? "Upload failed");
     } finally {
