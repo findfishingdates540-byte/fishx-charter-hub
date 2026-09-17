@@ -229,7 +229,7 @@ export function AdminOperators() {
           <tbody>
             {rows.length === 0 && (
               <tr>
-                <td colSpan={8} style={{ ...td, color: T.mut }}>
+                <td colSpan={9} style={{ ...td, color: T.mut }}>
                   No operators match that view.
                 </td>
               </tr>
