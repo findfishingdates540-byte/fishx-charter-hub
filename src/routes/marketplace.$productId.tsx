@@ -611,6 +611,18 @@ function ProductDetail({
                 Only {product.stockQty} left in stock
               </div>
             )}
+            {product.live && (
+              <div style={{ display: "grid", gap: 10, marginBottom: 16, padding: 14, border: `1px solid ${V.line}`, borderRadius: 12 }}>
+                <label style={{ display: "grid", gap: 6, fontSize: 12.5, color: V.tmut }}>
+                  Discount code
+                  <input value={discountCode} onChange={(event) => setDiscountCode(event.target.value.toUpperCase())} placeholder="Enter at checkout" style={{ border: `1px solid ${V.line}`, borderRadius: 9, padding: "10px 12px", color: V.ink, background: V.paper, fontFamily: V.sans }} />
+                </label>
+                <label style={{ display: "flex", alignItems: "flex-start", gap: 9, fontSize: 12.5, color: V.tmut, lineHeight: 1.4 }}>
+                  <input type="checkbox" checked={marketingConsent} onChange={(event) => setMarketingConsent(event.target.checked)} style={{ marginTop: 2 }} />
+                  Email me product updates and offers from this shop. Optional.
+                </label>
+              </div>
+            )}
             {err && <div style={{ color: "#b3261e", fontSize: 13, marginBottom: 18 }}>{err}</div>}
             <div style={{ marginBottom: 16 }} />
 

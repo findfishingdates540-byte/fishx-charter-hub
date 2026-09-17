@@ -119,12 +119,14 @@ export function ShopDashboard({
   operatorName,
   categoryKey,
   initialTab,
+  workspaces = [],
 }: {
   businessId: string;
   workspaceName: string;
   operatorName: string;
   categoryKey: string;
   initialTab?: string;
+  workspaces?: Array<{ id: string; name: string; category_key: string }>;
 }) {
   const copy = KIND_COPY[categoryKey] ?? KIND_COPY.tackle_shop;
   const { data } = useSuspenseQuery(overviewQO(businessId));
@@ -145,6 +147,7 @@ export function ShopDashboard({
   const [active, setActive] = useState(
     initialTab && SHOP_TABS.includes(initialTab) ? initialTab : "overview",
   );
+  const navigate = useNavigate();
 
   const nav: OperatorNavItem[] = [
     { key: "overview", label: "Home", icon: <BoxIcon /> },
@@ -198,6 +201,16 @@ export function ShopDashboard({
       onNav={setActive}
       pageTitle={(titles[active] ?? titles.overview).t}
       pageSub={(titles[active] ?? titles.overview).s}
+      headerRight={workspaces.length > 1 ? (
+        <select
+          aria-label="Current store"
+          value={businessId}
+          onChange={(event) => navigate({ to: "/dashboard", search: { tab: active, biz: event.target.value } })}
+          style={{ maxWidth: 220, border: "1px solid rgba(255,255,255,.12)", borderRadius: 8, padding: "8px 10px", background: "#14202B", color: "#F0F2F5", fontFamily: "inherit" }}
+        >
+          {workspaces.map((workspace) => <option key={workspace.id} value={workspace.id}>{workspace.name}</option>)}
+        </select>
+      ) : undefined}
     >
       {active === "overview" && <Overview data={data} />}
       {active === "products" && <Products data={data} businessId={businessId} />}
