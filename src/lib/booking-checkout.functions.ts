@@ -365,7 +365,7 @@ export const createBookingFromService = createServerFn({ method: "POST" })
                   (balanceCents > 0
                     ? ` · Trip total ${money(row.total_cents)}, balance of ${money(balanceCents)} paid to the captain on the day`
                     : ""),
-                ...(svc?.hero_url ? { images: [svc.hero_url] } : {}),
+                ...(heroUrl ? { images: [heroUrl] } : {}),
               },
             },
           },
