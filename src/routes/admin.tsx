@@ -5,7 +5,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   getAdminOverview,
   decideVerification,
@@ -23,6 +23,7 @@ import {
   AdminAudit,
 } from "@/components/admin/AdminManagement";
 import { AdminPayments } from "@/components/admin/AdminPayments";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/admin")({
   ssr: false,
