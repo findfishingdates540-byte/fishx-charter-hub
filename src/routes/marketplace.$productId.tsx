@@ -188,6 +188,8 @@ function ProductDetail({
   const [qty, setQty] = useState(1);
   const [added, setAdded] = useState(false);
   const [cartCount, setCartCount] = useState(0);
+  const [discountCode, setDiscountCode] = useState("");
+  const [marketingConsent, setMarketingConsent] = useState(false);
 
   const readCartCount = () => {
     try {
@@ -301,6 +303,8 @@ function ProductDetail({
             },
           ],
           origin: window.location.origin,
+           ...(discountCode.trim() ? { discountCode: discountCode.trim() } : {}),
+           marketingConsent,
         },
       });
       if (res.checkoutUrl) {

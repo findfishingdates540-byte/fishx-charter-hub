@@ -332,7 +332,8 @@ export const createProductCheckout = createServerFn({ method: "POST" })
       Array<{ product: NonNullable<ReturnType<typeof byId.get>>; qty: number; variant: any | null; unit: number }>
     >();
     for (const item of data.items) {
-      const p = byId.get(item.productId)!;
+      const p = byId.get(item.productId);
+      if (!p) throw new Response("Product is no longer available", { status: 404 });
       const variant = item.variantId ? variantById.get(item.variantId) : null;
       const list = groups.get(p.business_id) ?? [];
       list.push({
@@ -436,6 +437,7 @@ export const createProductCheckout = createServerFn({ method: "POST" })
 
       for (const l of lines) {
         const image = firstImage(l.product.images);
+        const imageUrl = image && /^https:\/\//i.test(image) ? image : null;
         lineItems.push({
           quantity: l.qty,
           price_data: {
@@ -445,7 +447,7 @@ export const createProductCheckout = createServerFn({ method: "POST" })
               name: l.variant
                 ? `${l.product.title} (${l.variant.option_value})`
                 : l.product.title,
-              ...(image ? { images: [image] } : {}),
+              ...(imageUrl ? { images: [imageUrl] } : {}),
             },
           },
         });

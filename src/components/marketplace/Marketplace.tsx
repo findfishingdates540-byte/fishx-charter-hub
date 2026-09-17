@@ -21,7 +21,7 @@ import {
   type Cat,
   type Product,
 } from "./catalog";
-import { listStoreProducts, createProductCheckout, quoteShipping } from "@/lib/product-checkout.functions";
+import { listStoreProducts, createProductCheckout, quoteShipping, quoteProductDiscount } from "@/lib/product-checkout.functions";
 import { listCategories } from "@/lib/businesses.functions";
 import { PublicHeader } from "@/components/public/PublicHeader";
 import { listMyWishlistIds, toggleWishlist } from "@/lib/shopping.functions";
@@ -113,6 +113,9 @@ export function Marketplace() {
   const [paidTotal, setPaidTotal] = useState<number | null>(null);
   const [toast, setToast] = useState("");
   const [paying, setPaying] = useState(false);
+  const [discountCode, setDiscountCode] = useState("");
+  const [discount, setDiscount] = useState<{ code: string; discountCents: number } | null>(null);
+  const [marketingConsent, setMarketingConsent] = useState(false);
 
   const showToast = (m: string) => {
     setToast(m);
@@ -273,7 +276,13 @@ export function Marketplace() {
       : 8
     : (shipQuote.data?.shippingCents ?? 0) / 100;
   const freeShip = ship === 0;
-  const total = subtotal + ship;
+  const total = Math.max(0, subtotal + ship - (discount?.discountCents ?? 0) / 100);
+  const quoteDiscount = useServerFn(quoteProductDiscount);
+  const discountMutation = useMutation({
+    mutationFn: () => quoteDiscount({ data: { code: discountCode, items: liveItems } }),
+    onSuccess: (result) => { setDiscount(result); showToast(`${result.code} applied`); },
+    onError: (error) => { setDiscount(null); showToast(error instanceof Error ? error.message : "Discount code unavailable"); },
+  });
 
   const placeOrder = async () => {
     // Demo-catalog-only carts keep the simulated confirmation.
@@ -290,6 +299,8 @@ export function Marketplace() {
         data: {
           items: liveLines.map((l) => ({ productId: l.p.id, quantity: l.qty })),
           origin: window.location.origin,
+           ...(discount?.code ? { discountCode: discount.code } : {}),
+           marketingConsent,
         },
       });
       if (res.checkoutUrl) {
@@ -790,6 +801,11 @@ export function Marketplace() {
                     <div style={{ fontSize: 11.5, color: V.tmut, paddingBottom: 6 }}>
                       Set by each shop{shipQuote.data && shipQuote.data.byVendor.length > 1 ? ` · ${shipQuote.data.byVendor.length} shops shipping separately` : ""}. You'll enter your delivery address on the next screen.
                     </div>
+                    <div style={{ display: "flex", gap: 8, padding: "10px 0" }}>
+                      <input aria-label="Discount code" value={discountCode} onChange={(e) => { setDiscountCode(e.target.value.toUpperCase()); setDiscount(null); }} placeholder="Discount code" style={{ flex: 1, minWidth: 0, border: `1px solid ${V.line}`, borderRadius: 8, padding: "10px 12px", color: V.ink, background: V.paper }} />
+                      <button disabled={!discountCode.trim() || discountMutation.isPending || hasDemoOnly} onClick={() => discountMutation.mutate()} style={{ border: 0, borderRadius: 8, padding: "10px 14px", background: V.navy, color: "#fff", fontWeight: 700, cursor: "pointer" }}>Apply</button>
+                    </div>
+                    {discount && <div style={{ display: "flex", justifyContent: "space-between", color: V.green, fontSize: 13, paddingBottom: 8 }}><span>{discount.code}</span><strong>−{money(discount.discountCents / 100)}</strong></div>}
                     <div style={{ display: "flex", justifyContent: "space-between", padding: "10px 0 12px", borderTop: `1px solid ${V.line}`, marginTop: 6 }}>
                       <span style={{ fontSize: 13.5, fontWeight: 700, color: V.ink }}>Total · into escrow</span>
                       <span style={{ fontFamily: V.serif, fontSize: 19, fontWeight: 600, color: V.ink }}>{money(total)}</span>
@@ -808,6 +824,10 @@ export function Marketplace() {
                   </div>
                 </div>
                 <div style={{ padding: "18px 24px", borderTop: `1px solid ${V.line}` }}>
+                   <label style={{ display: "flex", gap: 9, alignItems: "flex-start", marginBottom: 13, color: V.tmut, fontSize: 12.5, lineHeight: 1.4 }}>
+                     <input type="checkbox" checked={marketingConsent} onChange={(e) => setMarketingConsent(e.target.checked)} style={{ marginTop: 2 }} />
+                     Email me product updates and offers from the shops in this order. Optional.
+                   </label>
                   <button
                     onClick={() => void placeOrder()}
                     disabled={paying}
