@@ -215,5 +215,5 @@ export const setStorefrontLive = createServerFn({ method: "POST" })
       .eq("id", biz.id);
     if (error) throw new Response(error.message, { status: 400 });
 
-    return { ok: true, isPublished: data.live };
+    return { ok: true as const, isPublished: data.live, missing: [] as string[] };
   });
