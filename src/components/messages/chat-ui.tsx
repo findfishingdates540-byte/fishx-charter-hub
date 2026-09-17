@@ -675,8 +675,10 @@ export function ChatComposer({
         .from("message-media")
         .upload(path, blob, { contentType: blob.type || undefined, upsert: false });
       if (upErr) throw upErr;
-      const { data } = supabase.storage.from("message-media").getPublicUrl(path);
-      onAttachment({ url: data.publicUrl, kind, durationMs });
+      // Private bucket: store the path, not a URL. Viewers get a short-lived
+      // signed link only if they are part of the conversation.
+      onAttachment({ url: `message-media/${path}`, kind, durationMs });
+
     } catch (e: any) {
       setError(e?.message ?? "Upload failed");
     } finally {
