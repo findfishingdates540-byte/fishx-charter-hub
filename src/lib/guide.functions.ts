@@ -244,3 +244,79 @@ export const deleteGuideSlot = createServerFn({ method: "POST" })
     if (error) throw new Response(error.message, { status: 400 });
     return { ok: true };
   });
+
+/**
+ * Bulk availability generator — repeat a time window across a date range on
+ * chosen weekdays. Skips dates that already have a slot at the same start time
+ * for the same service so re-running never duplicates rows.
+ */
+export const bulkCreateGuideSlots = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i) =>
+    z
+      .object({
+        businessId: z.string().uuid(),
+        serviceId: z.string().uuid().nullable().optional(),
+        fromDate: z.string(),
+        toDate: z.string(),
+        weekdays: z.array(z.number().int().min(0).max(6)).min(1),
+        startTime: z.string(),
+        endTime: z.string(),
+        capacity: z.number().int().min(1),
+        priceCents: z.number().int().min(0),
+        notes: z.string().max(500).optional(),
+      })
+      .parse(i),
+  )
+  .handler(async ({ data, context }) => {
+    await assertMember(context, data.businessId);
+
+    const start = new Date(`${data.fromDate}T00:00:00Z`);
+    const end = new Date(`${data.toDate}T00:00:00Z`);
+    if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime()) || end < start) {
+      throw new Response("Pick a valid date range", { status: 400 });
+    }
+    const spanDays = Math.round((end.getTime() - start.getTime()) / 86_400_000);
+    if (spanDays > 365) throw new Response("Keep the range under a year", { status: 400 });
+
+    const dates: string[] = [];
+    for (let i = 0; i <= spanDays; i++) {
+      const d = new Date(start.getTime() + i * 86_400_000);
+      if (data.weekdays.includes(d.getUTCDay())) dates.push(d.toISOString().slice(0, 10));
+    }
+    if (dates.length === 0) return { created: 0, skipped: 0 };
+
+    const { data: existing } = await context.supabase
+      .from("guide_availability")
+      .select("slot_date,start_time,service_id")
+      .eq("business_id", data.businessId)
+      .in("slot_date", dates);
+
+    const taken = new Set(
+      (existing ?? []).map(
+        (r: any) => `${r.slot_date}|${String(r.start_time).slice(0, 5)}|${r.service_id ?? ""}`,
+      ),
+    );
+    const key = (d: string) =>
+      `${d}|${data.startTime.slice(0, 5)}|${data.serviceId ?? ""}`;
+
+    const rows = dates
+      .filter((d) => !taken.has(key(d)))
+      .map((d) => ({
+        business_id: data.businessId,
+        service_id: data.serviceId ?? null,
+        slot_date: d,
+        start_time: data.startTime,
+        end_time: data.endTime,
+        capacity: data.capacity,
+        price_cents: data.priceCents,
+        status: "open",
+        notes: data.notes ?? null,
+      }));
+
+    if (rows.length > 0) {
+      const { error } = await context.supabase.from("guide_availability").insert(rows);
+      if (error) throw new Response(error.message, { status: 400 });
+    }
+    return { created: rows.length, skipped: dates.length - rows.length };
+  });

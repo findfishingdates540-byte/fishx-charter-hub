@@ -472,3 +472,93 @@ export const submitServiceRequest = createServerFn({ method: "POST" })
     if (error) throw new Response(error.message, { status: 400 });
     return { ok: true };
   });
+
+/**
+ * Bulk berth creation — "A1..A20" style numbering in one go. Existing slip
+ * numbers are skipped so a re-run tops up the dock instead of erroring.
+ */
+export const bulkCreateSlips = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i) =>
+    z
+      .object({
+        businessId: z.string().uuid(),
+        prefix: z.string().max(6).default(""),
+        from: z.number().int().min(0),
+        to: z.number().int().min(0),
+        lengthFt: z.number().nullable().optional(),
+        beamFt: z.number().nullable().optional(),
+        amperage: z.string().optional(),
+        monthlyRateCents: z.number().int().nullable().optional(),
+        nightlyRateCents: z.number().int().nullable().optional(),
+      })
+      .parse(i),
+  )
+  .handler(async ({ data, context }) => {
+    await assertMember(context, data.businessId);
+    if (data.to < data.from) throw new Response("End number must be higher", { status: 400 });
+    if (data.to - data.from > 199) throw new Response("Add at most 200 slips at once", { status: 400 });
+
+    const numbers: string[] = [];
+    for (let n = data.from; n <= data.to; n++) numbers.push(`${data.prefix}${n}`);
+
+    const { data: existing } = await context.supabase
+      .from("marina_slips")
+      .select("slip_number")
+      .eq("business_id", data.businessId)
+      .in("slip_number", numbers);
+    const taken = new Set((existing ?? []).map((r: any) => r.slip_number));
+
+    const rows = numbers
+      .filter((s) => !taken.has(s))
+      .map((slip_number) => ({
+        business_id: data.businessId,
+        slip_number,
+        length_ft: data.lengthFt ?? null,
+        beam_ft: data.beamFt ?? null,
+        amperage: data.amperage ?? null,
+        monthly_rate_cents: data.monthlyRateCents ?? null,
+        nightly_rate_cents: data.nightlyRateCents ?? null,
+        status: "available",
+      }));
+
+    if (rows.length > 0) {
+      const { error } = await context.supabase.from("marina_slips").insert(rows);
+      if (error) throw new Response(error.message, { status: 400 });
+    }
+    return { created: rows.length, skipped: numbers.length - rows.length };
+  });
+
+/**
+ * Set status (or publish state) on many slips at once — e.g. close a whole
+ * dock for maintenance, or publish every berth that already has a rate.
+ */
+export const bulkUpdateSlips = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i) =>
+    z
+      .object({
+        businessId: z.string().uuid(),
+        slipIds: z.array(z.string().uuid()).min(1).max(300),
+        status: z.enum(["available", "occupied", "reserved", "maintenance"]).optional(),
+        isBookable: z.boolean().optional(),
+        nightlyRateCents: z.number().int().min(0).optional(),
+      })
+      .parse(i),
+  )
+  .handler(async ({ data, context }) => {
+    await assertMember(context, data.businessId);
+    const patch: Record<string, unknown> = {};
+    if (data.status) patch.status = data.status;
+    if (typeof data.isBookable === "boolean") patch.is_bookable = data.isBookable;
+    if (typeof data.nightlyRateCents === "number") patch.nightly_rate_cents = data.nightlyRateCents;
+    if (Object.keys(patch).length === 0) return { updated: 0 };
+
+    const { error, count } = await context.supabase
+      .from("marina_slips")
+      .update(patch, { count: "exact" })
+      .eq("business_id", data.businessId)
+      .in("id", data.slipIds);
+    if (error) throw new Response(error.message, { status: 400 });
+    return { updated: count ?? data.slipIds.length };
+  });
