@@ -424,3 +424,112 @@ function DisputeRow({
     </div>
   );
 }
+
+/**
+ * Staff-only entry point: /admin has its own sign-in screen instead of the
+ * public angler/operator auth page. Signing in here never touches the rest of
+ * the app's routing.
+ */
+function AdminGate() {
+  const [ready, setReady] = useState(false);
+  const [signedIn, setSignedIn] = useState(false);
+
+  useEffect(() => {
+    let alive = true;
+    supabase.auth.getSession().then(({ data }) => {
+      if (!alive) return;
+      setSignedIn(Boolean(data.session?.user));
+      setReady(true);
+    });
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
+      setSignedIn(Boolean(session?.user));
+    });
+    return () => {
+      alive = false;
+      sub.subscription.unsubscribe();
+    };
+  }, []);
+
+  if (!ready) {
+    return <Shell><div style={{ ...card, color: T.mut }}>Checking your access…</div></Shell>;
+  }
+  if (!signedIn) return <AdminLogin />;
+  return <AdminConsole />;
+}
+
+function AdminLogin() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setBusy(true);
+    setErr(null);
+    const { error } = await supabase.auth.signInWithPassword({
+      email: email.trim(),
+      password,
+    });
+    setBusy(false);
+    if (error) setErr(error.message);
+  };
+
+  const field: React.CSSProperties = {
+    width: "100%",
+    background: "#0D161F",
+    border: `1px solid ${T.line}`,
+    borderRadius: 10,
+    padding: "11px 12px",
+    color: T.ink,
+    fontSize: 14,
+    fontFamily: "inherit",
+    marginTop: 6,
+  };
+
+  return (
+    <Shell>
+      <div style={{ maxWidth: 400, margin: "8vh auto 0" }}>
+        <div style={card}>
+          <p style={{ margin: 0, color: T.accent, fontSize: 12, letterSpacing: "0.14em", textTransform: "uppercase" }}>
+            Fish-X staff
+          </p>
+          <h1 style={{ margin: "8px 0 4px", fontSize: 24 }}>Admin sign in</h1>
+          <p style={{ margin: "0 0 18px", color: T.mut, fontSize: 14 }}>
+            This console is limited to Fish-X platform staff.
+          </p>
+          <form onSubmit={submit}>
+            <label style={{ display: "block", fontSize: 13, color: T.mut }}>
+              Staff email
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                style={field}
+                autoComplete="email"
+              />
+            </label>
+            <label style={{ display: "block", fontSize: 13, color: T.mut, marginTop: 14 }}>
+              Password
+              <input
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                style={field}
+                autoComplete="current-password"
+              />
+            </label>
+            {err && (
+              <p style={{ color: "#FF8A8A", fontSize: 13, margin: "12px 0 0" }}>{err}</p>
+            )}
+            <button type="submit" disabled={busy} style={{ ...btn, width: "100%", marginTop: 18, padding: "12px 14px", opacity: busy ? 0.6 : 1 }}>
+              {busy ? "Signing in…" : "Sign in"}
+            </button>
+          </form>
+        </div>
+      </div>
+    </Shell>
+  );
+}
