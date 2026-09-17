@@ -233,6 +233,7 @@ function AdminConsole() {
       {tab === "members" && <AdminMembers />}
       {tab === "listings" && <AdminListings />}
       {tab === "bookings" && <AdminBookings />}
+      {tab === "payments" && <AdminPayments />}
       {tab === "activity" && <AdminAudit />}
 
 
