@@ -199,9 +199,8 @@ export function BusinessInbox({
       >
         {threads.slice(0, listCount).map((t) => {
           const on = t.id === activeId;
-          const snippet = t.lastMessage?.is_deleted
-            ? "Message deleted"
-            : t.lastMessage?.body?.trim() || "No messages yet";
+          const snippet = threadPreview(t.lastMessage);
+
           return (
             <button
               key={t.id}

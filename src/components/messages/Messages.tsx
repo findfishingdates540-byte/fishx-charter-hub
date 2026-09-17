@@ -255,7 +255,7 @@ function ThreadList({ activeId }: { activeId: string | null }) {
           {data.threads.slice(0, listCount).map((t) => {
             const active = t.booking.id === activeId;
             const name = counterpartName(t.business, t.captain);
-            const snippet = t.lastMessage?.body?.trim() || "No messages yet";
+            const snippet = threadPreview(t.lastMessage);
             return (
               <Link
                 key={t.booking.id}
