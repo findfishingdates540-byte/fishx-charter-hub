@@ -25,6 +25,7 @@ import {
 import { AdminPayments } from "@/components/admin/AdminPayments";
 
 export const Route = createFileRoute("/admin")({
+  ssr: false,
   head: () => ({
     meta: [
       { title: "Admin console | Fish-X Charters" },
