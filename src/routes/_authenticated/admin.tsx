@@ -101,7 +101,30 @@ const money = (c: number) =>
 
 const day = (s?: string | null) => (s ? new Date(s).toLocaleDateString() : "—");
 
-type Tab = "verifications" | "calendar" | "payouts" | "reconciliation" | "disputes";
+type Tab =
+  | "operators"
+  | "verifications"
+  | "members"
+  | "listings"
+  | "bookings"
+  | "calendar"
+  | "payouts"
+  | "reconciliation"
+  | "disputes"
+  | "activity";
+
+const TABS: Array<[Tab, string]> = [
+  ["operators", "Operators"],
+  ["verifications", "Documents"],
+  ["members", "Members"],
+  ["listings", "Listings"],
+  ["bookings", "Bookings"],
+  ["calendar", "Calendar"],
+  ["payouts", "Payouts"],
+  ["reconciliation", "Reconciliation"],
+  ["disputes", "Disputes"],
+  ["activity", "Activity log"],
+];
 
 function AdminConsole() {
   const fetchOverview = useServerFn(getAdminOverview);
