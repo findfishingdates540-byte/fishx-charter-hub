@@ -548,7 +548,11 @@ export const bulkUpdateSlips = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     await assertMember(context, data.businessId);
-    const patch: Record<string, unknown> = {};
+    const patch: {
+      status?: string;
+      is_bookable?: boolean;
+      nightly_rate_cents?: number;
+    } = {};
     if (data.status) patch.status = data.status;
     if (typeof data.isBookable === "boolean") patch.is_bookable = data.isBookable;
     if (typeof data.nightlyRateCents === "number") patch.nightly_rate_cents = data.nightlyRateCents;
