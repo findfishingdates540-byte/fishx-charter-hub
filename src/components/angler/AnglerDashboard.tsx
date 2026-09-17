@@ -18,6 +18,7 @@ import {
 import { ExploreHub } from "./ExploreHub";
 import { TripsTab } from "./TripsTab";
 import { DEFAULT_HERO } from "@/lib/platform-photos";
+import { AnglerBookingHistory, AnglerPayments } from "./AnglerConsole";
 
 const anglerHomeQO = queryOptions({
   queryKey: ["angler-dashboard"],
