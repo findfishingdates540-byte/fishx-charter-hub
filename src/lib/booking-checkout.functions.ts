@@ -334,7 +334,11 @@ export const createBookingFromService = createServerFn({ method: "POST" })
       return { ...result, checkoutUrl: null as string | null };
     }
 
-    const origin = data.origin ?? "https://booking.fish-x.com";
+    const rawOrigin = data.origin ?? "https://booking.fish-x.com";
+    const origin = /^https?:\/\/[^\s/]+/.test(rawOrigin)
+      ? rawOrigin.replace(/\/+$/, "")
+      : "https://booking.fish-x.com";
+    const heroUrl = svc?.hero_url && /^https:\/\/[^\s/]+\//.test(svc.hero_url) ? svc.hero_url : null;
     const metadata = {
       booking_id: row.id,
       slot_id: data.slotId,
