@@ -173,6 +173,10 @@ export function MarinaDashboard({
           requestsEmptyText="No slip or lodging requests waiting on you right now."
         />
       )}
+      {active === "calendar" && (
+        <BookingCalendar trips={data.bookings ?? []} eyebrow="Harbor" title="Booking calendar" />
+      )}
+      {active === "guests" && <GuestList trips={data.bookings ?? []} />}
       {active === "slips" && <Slips businessId={businessId} data={data} />}
       {active === "reservations" && (
         <Reservations businessId={businessId} data={data} />
