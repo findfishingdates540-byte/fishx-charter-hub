@@ -28,7 +28,7 @@ const recosQO = queryOptions({
   queryFn: () => listRecommendedCharters(),
 });
 
-type Tab = "home" | "trips" | "explore" | "wallet" | "orders";
+type Tab = "home" | "trips" | "history" | "explore" | "wallet" | "orders";
 
 const money = (cents: number) =>
   `$${(Math.max(0, cents) / 100).toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
@@ -82,7 +82,7 @@ function useCountdown(target: Date | null) {
 export function AnglerDashboard() {
   const search = useSearch({ strict: false }) as { tab?: string };
   const initialTab: Tab =
-    search.tab && ["home", "trips", "explore", "wallet", "orders"].includes(search.tab)
+    search.tab && ["home", "trips", "history", "explore", "wallet", "orders"].includes(search.tab)
       ? (search.tab as Tab)
       : "home";
   const [tab, setTab] = useState<Tab>(initialTab);
@@ -122,7 +122,7 @@ export function AnglerDashboard() {
             <BrandLogo size="md" accent="var(--sand)" color="var(--ond)" />
           </div>
           <nav className="ang-topnav" style={{ display: "flex", alignItems: "center", gap: 6, minWidth: 0, flex: "1 1 auto", overflowX: "auto", overflowY: "hidden" }}>
-            {(["home", "trips", "explore", "wallet", "orders"] as Tab[]).map((t) => (
+            {(["home", "trips", "history", "explore", "wallet", "orders"] as Tab[]).map((t) => (
               <button
                 key={t}
                 onClick={() => goTab(t)}
