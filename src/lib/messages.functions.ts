@@ -27,7 +27,7 @@ export const listMessageThreads = createServerFn({ method: "GET" })
 
     const messagesRes = await supabase
       .from("booking_messages")
-      .select("id,booking_id,body,sender_id,created_at,read_at,is_deleted")
+      .select("id,booking_id,body,sender_id,created_at,read_at,is_deleted,attachment_type")
       .in("booking_id", bookingIds)
       .order("created_at", { ascending: true })
       .limit(2000);

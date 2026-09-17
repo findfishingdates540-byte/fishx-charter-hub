@@ -29,6 +29,7 @@ import {
   useRealtimeTable,
   useScrollToBottom,
   type ChatMessage,
+  threadPreview,
 } from "@/components/messages/chat-ui";
 
 const C = {
@@ -257,7 +258,7 @@ function BookingThreads({ fullHeight = false }: { fullHeight?: boolean }) {
                         whiteSpace: "nowrap",
                       }}
                     >
-                      {c.last_message?.body?.trim() || "No messages yet"}
+                      {threadPreview(c.last_message)}
                     </span>
                     <span style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8 }}>
                       <span

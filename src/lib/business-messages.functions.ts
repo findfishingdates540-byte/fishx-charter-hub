@@ -71,7 +71,7 @@ export const listBusinessThreads = createServerFn({ method: "GET" })
     const ids = convos.map((c: any) => c.id);
     const { data: msgs, error: mErr } = await supabase
       .from("business_messages")
-      .select("conversation_id,body,created_at,read_at,sender_id,sender_side,is_deleted")
+      .select("conversation_id,body,created_at,read_at,sender_id,sender_side,is_deleted,attachment_type")
       .in("conversation_id", ids)
       .order("created_at", { ascending: false });
     if (mErr) throw new Response(mErr.message, { status: 500 });

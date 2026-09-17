@@ -202,7 +202,7 @@ export const listCaptainConversations = createServerFn({ method: "GET" })
     const ids = bookings.map((b: any) => b.id);
     const { data: msgs, error: mErr } = await context.supabase
       .from("booking_messages")
-      .select("booking_id,body,created_at,sender_id,read_at")
+      .select("booking_id,body,created_at,sender_id,read_at,is_deleted,attachment_type")
       .in("booking_id", ids)
       .order("created_at", { ascending: false });
     if (mErr) throw new Response(mErr.message, { status: 500 });

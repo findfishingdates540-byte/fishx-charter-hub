@@ -88,6 +88,25 @@ export const relativeTime = (iso?: string | null) => {
   return new Date(then).toLocaleDateString("en-US", { month: "short", day: "numeric" });
 };
 
+/**
+ * One-line preview for a conversation list. Photos and voice notes arrive with
+ * an empty body, so they get their own label instead of "No messages yet".
+ */
+export const threadPreview = (
+  m?: { body?: string | null; is_deleted?: boolean | null; attachment_type?: string | null } | null,
+  empty = "No messages yet",
+) => {
+  if (!m) return empty;
+  if (m.is_deleted) return "Message deleted";
+  const body = m.body?.trim();
+  if (body && body !== "Message deleted") return body;
+  if (m.attachment_type === "image") return "📷 Photo";
+  if (m.attachment_type === "audio") return "🎤 Voice note";
+  if (body) return body;
+  return empty;
+};
+
+
 export const timeLabel = (iso: string) =>
   new Date(iso).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
 
