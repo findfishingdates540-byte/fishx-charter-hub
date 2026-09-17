@@ -175,10 +175,45 @@ export const setStorefrontLive = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     const biz = await getOwnedBusiness(context.supabase, context.userId, data.businessId);
+
+    // Going live is only allowed when the operator can actually be booked —
+    // payouts connected plus an upcoming date or an in-stock product.
+    if (data.live) {
+      const missing: string[] = [];
+      if (!(biz.charges_enabled && biz.payouts_enabled)) missing.push("payouts");
+      const { data: svc } = await context.supabase
+        .from("bookable_services")
+        .select("id")
+        .eq("business_id", biz.id)
+        .eq("is_published", true);
+      const ids = (svc ?? []).map((s: any) => s.id);
+      let slots = 0;
+      if (ids.length) {
+        const { count } = await context.supabase
+          .from("service_availability")
+          .select("id", { count: "exact", head: true })
+          .in("service_id", ids)
+          .gte("starts_at", new Date().toISOString())
+          .eq("is_blackout", false);
+        slots = count ?? 0;
+      }
+      const { count: prodCount } = await context.supabase
+        .from("inventory_products")
+        .select("id", { count: "exact", head: true })
+        .eq("business_id", biz.id)
+        .eq("is_published", true)
+        .gt("stock_qty", 0);
+      if (!slots && !(prodCount ?? 0)) missing.push("availability");
+      if (missing.length) {
+        return { ok: false as const, isPublished: Boolean(biz.is_published), missing };
+      }
+    }
+
     const { error } = await context.supabase
       .from("businesses")
       .update({ is_published: data.live })
       .eq("id", biz.id);
     if (error) throw new Response(error.message, { status: 400 });
+
     return { ok: true, isPublished: data.live };
   });
