@@ -74,7 +74,7 @@ export const Route = createFileRoute("/api/public/stripe-webhook")({
           for (const orderId of orderIds) {
             const { data: order } = await supabaseAdmin
               .from("product_orders")
-              .select("id,business_id,total_cents,payout_cents,paid_at,stripe_transfer_id")
+              .select("id,business_id,total_cents,payout_cents,paid_at,stripe_transfer_id,discount_code")
               .eq("id", orderId)
               .maybeSingle();
             if (!order || order.paid_at) continue;
@@ -90,6 +90,21 @@ export const Route = createFileRoute("/api/public/stripe-webhook")({
                 ...(buyer?.name ? { buyer_name: buyer.name } : {}),
               })
               .eq("id", orderId);
+
+            if (order.discount_code) {
+              const { data: discount } = await supabaseAdmin
+                .from("product_discounts")
+                .select("id,redemption_count")
+                .eq("business_id", order.business_id)
+                .ilike("code", order.discount_code)
+                .maybeSingle();
+              if (discount) {
+                await supabaseAdmin
+                  .from("product_discounts")
+                  .update({ redemption_count: (discount.redemption_count ?? 0) + 1 })
+                  .eq("id", discount.id);
+              }
+            }
 
             // Draw down inventory for each line.
             const { data: items } = await supabaseAdmin

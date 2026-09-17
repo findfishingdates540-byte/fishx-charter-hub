@@ -2355,6 +2355,62 @@ export type Database = {
           },
         ]
       }
+      product_discounts: {
+        Row: {
+          business_id: string
+          code: string
+          created_at: string
+          discount_type: string
+          expires_at: string | null
+          id: string
+          is_active: boolean
+          max_redemptions: number | null
+          minimum_order_cents: number
+          redemption_count: number
+          starts_at: string | null
+          updated_at: string
+          value: number
+        }
+        Insert: {
+          business_id: string
+          code: string
+          created_at?: string
+          discount_type: string
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          max_redemptions?: number | null
+          minimum_order_cents?: number
+          redemption_count?: number
+          starts_at?: string | null
+          updated_at?: string
+          value: number
+        }
+        Update: {
+          business_id?: string
+          code?: string
+          created_at?: string
+          discount_type?: string
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          max_redemptions?: number | null
+          minimum_order_cents?: number
+          redemption_count?: number
+          starts_at?: string | null
+          updated_at?: string
+          value?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_discounts_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       product_order_items: {
         Row: {
           created_at: string
@@ -2422,10 +2478,14 @@ export type Database = {
           business_id: string
           buyer_email: string | null
           buyer_id: string | null
+          buyer_marketing_consent: boolean
           buyer_name: string | null
           created_at: string
           delivered_at: string | null
+          discount_cents: number
+          discount_code: string | null
           id: string
+          marketing_consent_at: string | null
           notes: string | null
           paid_at: string | null
           payout_cents: number | null
@@ -2449,10 +2509,14 @@ export type Database = {
           business_id: string
           buyer_email?: string | null
           buyer_id?: string | null
+          buyer_marketing_consent?: boolean
           buyer_name?: string | null
           created_at?: string
           delivered_at?: string | null
+          discount_cents?: number
+          discount_code?: string | null
           id?: string
+          marketing_consent_at?: string | null
           notes?: string | null
           paid_at?: string | null
           payout_cents?: number | null
@@ -2476,10 +2540,14 @@ export type Database = {
           business_id?: string
           buyer_email?: string | null
           buyer_id?: string | null
+          buyer_marketing_consent?: boolean
           buyer_name?: string | null
           created_at?: string
           delivered_at?: string | null
+          discount_cents?: number
+          discount_code?: string | null
           id?: string
+          marketing_consent_at?: string | null
           notes?: string | null
           paid_at?: string | null
           payout_cents?: number | null

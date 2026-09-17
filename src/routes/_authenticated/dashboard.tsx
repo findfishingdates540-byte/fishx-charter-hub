@@ -64,8 +64,11 @@ const myProfileQO = queryOptions({
 function pickPrimaryBusiness(
   businesses: any[],
   primaryRole: string | null,
+  requestedBusinessId?: string,
 ): any | undefined {
   const owned = businesses.filter((m) => m?.business);
+  const requested = owned.find((m) => m.business.id === requestedBusinessId);
+  if (requested) return requested.business;
   // The role chosen at signup decides the workspace, so an account that also
   // belongs to another vertical never gets swapped into it.
   const wantedCategory = roleCategoryKey(primaryRole);
@@ -83,12 +86,20 @@ function pickPrimaryBusiness(
 
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
-  validateSearch: (search: Record<string, unknown>): { tab?: string; as?: string; vertical?: string } => ({
+  validateSearch: (search: Record<string, unknown>): { tab?: string; as?: string; vertical?: string; biz?: string } => ({
     ...(typeof search.tab === "string" ? { tab: search.tab } : {}),
     ...(search.as === "angler" ? { as: "angler" as const } : {}),
     ...(typeof search.vertical === "string" ? { vertical: search.vertical } : {}),
+    ...(typeof search.biz === "string" ? { biz: search.biz } : {}),
   }),
-  head: () => ({ meta: [{ title: "Dashboard — FISH-X.COM Bookings & Marketplace" }] }),
+  head: () => ({ meta: [
+    { title: "Dashboard — FISH-X.COM Bookings & Marketplace" },
+    { name: "description", content: "Manage Fish-X bookings, products, orders, customers and payouts." },
+    { property: "og:title", content: "Dashboard — FISH-X.COM Bookings & Marketplace" },
+    { property: "og:description", content: "Manage Fish-X bookings, products, orders, customers and payouts." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+  ] }),
   loader: async ({ context, location }) => {
     try {
       // One request returns roles, businesses and profile together, then the
@@ -127,7 +138,8 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
       }
 
 
-      const biz = pickPrimaryBusiness(businesses, primary) as { id: string; category_key: string } | undefined;
+      const requestedBusinessId = (location.search as { biz?: string } | undefined)?.biz;
+      const biz = pickPrimaryBusiness(businesses, primary, requestedBusinessId) as { id: string; category_key: string } | undefined;
       const key = biz?.category_key ?? roleCategoryKey(primary);
       if (!biz || !key || key === "charter") {
         void import("@/components/captain/CaptainDashboard");
@@ -221,7 +233,7 @@ function Dashboard() {
   const businesses = Array.isArray(boot?.businesses) ? boot.businesses : [];
   const profile = boot?.profile ?? null;
   const primaryRole = hasPrimaryRole(roles);
-  const { as, tab } = Route.useSearch();
+  const { as, tab, biz: requestedBusinessId } = Route.useSearch();
   // Browsing "as angler" is an explicit choice (?as=angler). Merely having an
   // angler role alongside an operator role must not land an operator on the
   // angler dashboard — their routing role is the vertical they signed up for.
@@ -260,7 +272,7 @@ function Dashboard() {
     }
 
     {
-      const biz = pickPrimaryBusiness(businesses, primaryRole) as
+      const biz = pickPrimaryBusiness(businesses, primaryRole, requestedBusinessId) as
         | { id: string; name: string; category_key: string }
         | undefined;
       if (!biz) return <AnglerDashboard />;
@@ -292,6 +304,9 @@ function Dashboard() {
             operatorName={operatorName}
             categoryKey={key}
             initialTab={tab}
+            workspaces={businesses
+              .map((membership: any) => membership?.business)
+              .filter((business: any) => business && ["tackle_shop", "bait_shop", "gear_mfg", "apparel"].includes(business.category_key))}
           />
         );
       if (key === "guide_service")

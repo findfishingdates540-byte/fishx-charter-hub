@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { MediaImg } from "@/components/media/MediaImg";
 import { WholesalePanel } from "@/components/tackle/WholesalePanel";
@@ -31,6 +31,12 @@ import { BusinessInbox } from "@/components/messages/BusinessInbox";
 import { MessagesFullScreen } from "@/components/messages/MessagesFullScreen";
 import { ImageUpload } from "@/components/business/ImageUpload";
 import { useQuery } from "@tanstack/react-query";
+import {
+  MerchantAnalytics,
+  MerchantCustomers,
+  MerchantDiscounts,
+  MerchantOnlineStore,
+} from "@/components/tackle/MerchantCommerce";
 
 export type Product = {
   id: string;
@@ -113,19 +119,25 @@ export function ShopDashboard({
   operatorName,
   categoryKey,
   initialTab,
+  workspaces = [],
 }: {
   businessId: string;
   workspaceName: string;
   operatorName: string;
   categoryKey: string;
   initialTab?: string;
+  workspaces?: Array<{ id: string; name: string; category_key: string }>;
 }) {
   const copy = KIND_COPY[categoryKey] ?? KIND_COPY.tackle_shop;
   const { data } = useSuspenseQuery(overviewQO(businessId));
   const SHOP_TABS = [
     "overview",
-    "products",
     "orders",
+    "products",
+    "customers",
+    "analytics",
+    "discounts",
+    "online-store",
     "bookings",
     "wholesale",
     "messages",
@@ -135,16 +147,24 @@ export function ShopDashboard({
   const [active, setActive] = useState(
     initialTab && SHOP_TABS.includes(initialTab) ? initialTab : "overview",
   );
+  const navigate = useNavigate();
+  useEffect(() => {
+    setActive(initialTab && SHOP_TABS.includes(initialTab) ? initialTab : "overview");
+  }, [initialTab]);
 
   const nav: OperatorNavItem[] = [
-    { key: "overview", label: "Overview", icon: <BoxIcon /> },
-    { key: "products", label: copy.productLabel, icon: <TagIcon /> },
+    { key: "overview", label: "Home", icon: <BoxIcon /> },
     {
       key: "orders",
       label: copy.ordersLabel,
       icon: <CartIcon />,
       badge: data.kpis.toShip || undefined,
     },
+    { key: "products", label: "Products", icon: <TagIcon /> },
+    { key: "customers", label: "Customers", icon: <PeopleIcon /> },
+    { key: "analytics", label: "Analytics", icon: <ChartIcon /> },
+    { key: "discounts", label: "Discounts", icon: <DiscountIcon /> },
+    { key: "online-store", label: "Online store", icon: <StoreIcon /> },
     { key: "bookings", label: "Bookings", icon: <CartIcon /> },
     { key: "wholesale", label: "Wholesale", icon: <TagIcon /> },
     { key: "messages", label: "Messages", icon: <CartIcon /> },
@@ -153,9 +173,13 @@ export function ShopDashboard({
   ];
 
   const titles: Record<string, { t: string; s: string }> = {
-    overview: { t: "Shop overview", s: "Revenue, orders and inventory health." },
+    overview: { t: "Home", s: "Store performance and the next actions that need attention." },
     products: { t: `${copy.productLabel} catalog`, s: "Publish, edit, restock." },
     orders: { t: copy.ordersLabel, s: "Fulfillment queue and history." },
+    customers: { t: "Customers", s: "Buyer profiles, spending and order history." },
+    analytics: { t: "Analytics", s: "Real sales, order and product performance." },
+    discounts: { t: "Discounts", s: "Create and manage checkout discount codes." },
+    "online-store": { t: "Online store", s: "Preview and manage your public Fish-X storefront." },
     bookings: {
       t: "Bookings",
       s: "Trips booked on your storefront. Confirmed trips appear here automatically.",
@@ -177,13 +201,27 @@ export function ShopDashboard({
       operatorRole={copy.brand}
       nav={nav}
       active={active}
-      onNav={setActive}
+      onNav={(key) => navigate({ to: "/dashboard", search: { tab: key, biz: businessId } })}
       pageTitle={(titles[active] ?? titles.overview).t}
       pageSub={(titles[active] ?? titles.overview).s}
+      headerRight={workspaces.length > 1 ? (
+        <select
+          aria-label="Current store"
+          value={businessId}
+          onChange={(event) => navigate({ to: "/dashboard", search: { tab: active, biz: event.target.value } })}
+          style={{ maxWidth: 220, border: "1px solid rgba(255,255,255,.12)", borderRadius: 8, padding: "8px 10px", background: "#14202B", color: "#F0F2F5", fontFamily: "inherit" }}
+        >
+          {workspaces.map((workspace) => <option key={workspace.id} value={workspace.id}>{workspace.name}</option>)}
+        </select>
+      ) : undefined}
     >
       {active === "overview" && <Overview data={data} />}
       {active === "products" && <Products data={data} businessId={businessId} />}
       {active === "orders" && <Orders businessId={businessId} data={data} />}
+      {active === "customers" && <MerchantCustomers businessId={businessId} />}
+      {active === "analytics" && <MerchantAnalytics businessId={businessId} />}
+      {active === "discounts" && <MerchantDiscounts businessId={businessId} />}
+      {active === "online-store" && <MerchantOnlineStore businessId={businessId} />}
       {active === "bookings" && <Bookings businessId={businessId} />}
       {active === "wholesale" && (
         <WholesalePanel businessId={businessId} products={data.products} />
@@ -270,6 +308,16 @@ function Overview({ data }: { data: any }) {
           )}
         </Card>
       </div>
+      <Card eyebrow="Next steps" title="Store action list">
+        <div style={{ display: "grid", gap: 10 }}>
+          {[
+            data.kpis.toShip ? `${data.kpis.toShip} paid order${data.kpis.toShip === 1 ? " is" : "s are"} ready to fulfill` : null,
+            data.kpis.lowStockCount ? `${data.kpis.lowStockCount} product${data.kpis.lowStockCount === 1 ? " is" : "s are"} low on stock` : null,
+            data.kpis.totalProducts - data.kpis.publishedCount ? `${data.kpis.totalProducts - data.kpis.publishedCount} product draft${data.kpis.totalProducts - data.kpis.publishedCount === 1 ? " needs" : "s need"} publishing` : null,
+          ].filter(Boolean).map((item) => <div key={item} style={{ padding: "12px 14px", background: "#1C2936", borderRadius: 8, color: "#F0F2F5" }}>→ {item}</div>)}
+          {!data.kpis.toShip && !data.kpis.lowStockCount && data.kpis.totalProducts === data.kpis.publishedCount && <div style={{ color: "#92A0AB" }}>Your store has no urgent actions.</div>}
+        </div>
+      </Card>
     </div>
   );
 }
@@ -1141,6 +1189,10 @@ function GearIcon() {
     </svg>
   );
 }
+function PeopleIcon() { return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7}><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>; }
+function ChartIcon() { return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7}><path d="M3 3v18h18"/><path d="m7 16 4-5 4 3 5-7"/></svg>; }
+function DiscountIcon() { return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7}><path d="m20 12-8 8-9-9V3h8l9 9Z"/><path d="m8 8 .01 0"/><path d="m15 9-6 6"/></svg>; }
+function StoreIcon() { return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7}><path d="M3 9l2-6h14l2 6"/><path d="M5 13v8h14v-8"/><path d="M9 21v-6h6v6"/><path d="M3 9a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0"/></svg>; }
 
 /** Trips booked on this storefront — confirmed ones land here automatically. */
 function Bookings({ businessId }: { businessId: string }) {
