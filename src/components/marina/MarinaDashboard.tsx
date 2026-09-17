@@ -110,8 +110,8 @@ export function MarinaDashboard({
       nav={nav}
       active={active}
       onNav={setActive}
-      pageTitle={titles[active].t}
-      pageSub={titles[active].s}
+      pageTitle={(titles[active] ?? titles.overview).t}
+      pageSub={(titles[active] ?? titles.overview).s}
       headerRight={
         <div
           style={{
