@@ -44,10 +44,12 @@ export function ReadinessGate({
 
   if (q.isLoading || !q.data) return null;
   const r = q.data;
+  const grace = Boolean((r as any).grace);
 
   if (compact && r.ready && r.isPublished) return null;
 
-  const tone = r.ready ? "#22C55E" : "#2DE2F2";
+  const tone = r.ready ? "#22C55E" : grace ? "#F5A524" : "#2DE2F2";
+
 
   return (
     <div
