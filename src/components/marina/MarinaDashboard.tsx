@@ -196,6 +196,7 @@ export function MarinaDashboard({
           <Card eyebrow="Payouts" title="Bank & payouts">
             <PayoutsConnect businessId={businessId} />
           </Card>
+          <TripPayouts trips={data.bookings ?? []} />
           <PaymentsDashboard businessId={businessId} />
         </div>
       )}
