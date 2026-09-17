@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { MediaImg } from "@/components/media/MediaImg";
 import { WholesalePanel } from "@/components/tackle/WholesalePanel";
@@ -148,6 +148,9 @@ export function ShopDashboard({
     initialTab && SHOP_TABS.includes(initialTab) ? initialTab : "overview",
   );
   const navigate = useNavigate();
+  useEffect(() => {
+    setActive(initialTab && SHOP_TABS.includes(initialTab) ? initialTab : "overview");
+  }, [initialTab]);
 
   const nav: OperatorNavItem[] = [
     { key: "overview", label: "Home", icon: <BoxIcon /> },
@@ -198,7 +201,7 @@ export function ShopDashboard({
       operatorRole={copy.brand}
       nav={nav}
       active={active}
-      onNav={setActive}
+      onNav={(key) => navigate({ to: "/dashboard", search: { tab: key, biz: businessId } })}
       pageTitle={(titles[active] ?? titles.overview).t}
       pageSub={(titles[active] ?? titles.overview).s}
       headerRight={workspaces.length > 1 ? (

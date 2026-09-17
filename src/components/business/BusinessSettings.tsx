@@ -302,7 +302,7 @@ function ProfileCard({ business, canEdit }: { business: any; canEdit: boolean })
       tiktok: s0.tiktok ?? "",
     };
   });
-  const [policies, setPolicies] = useState<Record<string, string>>(() => {
+  const [policies, setPolicies] = useState<Record<string, string | boolean>>(() => {
     const p0 = (business.policies_json ?? {}) as any;
     return {
       cancellation: p0.cancellation ?? "",
@@ -525,7 +525,7 @@ function ProfileCard({ business, canEdit }: { business: any; canEdit: boolean })
             <input
               style={input}
               placeholder="English, Spanish"
-              value={policies.languages ?? ""}
+              value={String(policies.languages ?? "")}
               onChange={(e) => setPolicies((p) => ({ ...p, languages: e.target.value }))}
               disabled={!canEdit}
             />
@@ -534,7 +534,7 @@ function ProfileCard({ business, canEdit }: { business: any; canEdit: boolean })
             <input
               style={input}
               placeholder="Card, bank transfer, cash on the dock"
-              value={policies.payment_methods ?? ""}
+              value={String(policies.payment_methods ?? "")}
               onChange={(e) => setPolicies((p) => ({ ...p, payment_methods: e.target.value }))}
               disabled={!canEdit}
             />
@@ -545,7 +545,7 @@ function ProfileCard({ business, canEdit }: { business: any; canEdit: boolean })
           <textarea
             style={{ ...input, minHeight: 88, resize: "vertical", lineHeight: 1.55 }}
             placeholder="Free cancellation up to 7 days before departure…"
-            value={policies.cancellation ?? ""}
+            value={String(policies.cancellation ?? "")}
             onChange={(e) => setPolicies((p) => ({ ...p, cancellation: e.target.value }))}
             disabled={!canEdit}
           />
@@ -555,7 +555,7 @@ function ProfileCard({ business, canEdit }: { business: any; canEdit: boolean })
           <textarea
             style={{ ...input, minHeight: 88, resize: "vertical", lineHeight: 1.55 }}
             placeholder="Arrive 30 minutes early, bring sunscreen, no glass bottles on board."
-            value={policies.rules ?? ""}
+            value={String(policies.rules ?? "")}
             onChange={(e) => setPolicies((p) => ({ ...p, rules: e.target.value }))}
             disabled={!canEdit}
           />
@@ -563,22 +563,22 @@ function ProfileCard({ business, canEdit }: { business: any; canEdit: boolean })
 
         <Grid2>
           <Field label="Shipping policy">
-            <textarea style={{ ...input, minHeight: 100, resize: "vertical" }} value={policies.shipping ?? ""} onChange={(e) => setPolicies((p) => ({ ...p, shipping: e.target.value }))} disabled={!canEdit} placeholder="Processing times, delivery areas and shipping expectations." />
+            <textarea style={{ ...input, minHeight: 100, resize: "vertical" }} value={String(policies.shipping ?? "")} onChange={(e) => setPolicies((p) => ({ ...p, shipping: e.target.value }))} disabled={!canEdit} placeholder="Processing times, delivery areas and shipping expectations." />
           </Field>
           <Field label="Returns & refunds policy">
-            <textarea style={{ ...input, minHeight: 100, resize: "vertical" }} value={policies.returns ?? ""} onChange={(e) => setPolicies((p) => ({ ...p, returns: e.target.value }))} disabled={!canEdit} placeholder="Return window, item condition and refund timing." />
+            <textarea style={{ ...input, minHeight: 100, resize: "vertical" }} value={String(policies.returns ?? "")} onChange={(e) => setPolicies((p) => ({ ...p, returns: e.target.value }))} disabled={!canEdit} placeholder="Return window, item condition and refund timing." />
           </Field>
           <Field label="Privacy policy">
-            <textarea style={{ ...input, minHeight: 100, resize: "vertical" }} value={policies.privacy ?? ""} onChange={(e) => setPolicies((p) => ({ ...p, privacy: e.target.value }))} disabled={!canEdit} placeholder="How your shop handles customer information." />
+            <textarea style={{ ...input, minHeight: 100, resize: "vertical" }} value={String(policies.privacy ?? "")} onChange={(e) => setPolicies((p) => ({ ...p, privacy: e.target.value }))} disabled={!canEdit} placeholder="How your shop handles customer information." />
           </Field>
           <Field label="Terms of sale">
-            <textarea style={{ ...input, minHeight: 100, resize: "vertical" }} value={policies.terms ?? ""} onChange={(e) => setPolicies((p) => ({ ...p, terms: e.target.value }))} disabled={!canEdit} placeholder="Terms that apply to purchases from your shop." />
+            <textarea style={{ ...input, minHeight: 100, resize: "vertical" }} value={String(policies.terms ?? "")} onChange={(e) => setPolicies((p) => ({ ...p, terms: e.target.value }))} disabled={!canEdit} placeholder="Terms that apply to purchases from your shop." />
           </Field>
           <Field label="Privacy policy link">
-            <input style={input} value={policies.privacy_url ?? ""} onChange={(e) => setPolicies((p) => ({ ...p, privacy_url: e.target.value }))} disabled={!canEdit} placeholder="https://…" />
+            <input style={input} value={String(policies.privacy_url ?? "")} onChange={(e) => setPolicies((p) => ({ ...p, privacy_url: e.target.value }))} disabled={!canEdit} placeholder="https://…" />
           </Field>
           <Field label="Terms link">
-            <input style={input} value={policies.terms_url ?? ""} onChange={(e) => setPolicies((p) => ({ ...p, terms_url: e.target.value }))} disabled={!canEdit} placeholder="https://…" />
+            <input style={input} value={String(policies.terms_url ?? "")} onChange={(e) => setPolicies((p) => ({ ...p, terms_url: e.target.value }))} disabled={!canEdit} placeholder="https://…" />
           </Field>
         </Grid2>
         <Toggle label="Show the Fish-X cookie notice" hint="Uses the shared Fish-X notice on your storefront." checked={policies.cookie_notice !== false} onChange={(value) => setPolicies((p) => ({ ...p, cookie_notice: value }))} />
