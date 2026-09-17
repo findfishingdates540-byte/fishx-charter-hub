@@ -15,6 +15,13 @@ import {
   runPayoutReconciliation,
 } from "@/lib/admin.functions";
 import { AdminTripCalendar } from "@/components/admin/AdminTripCalendar";
+import {
+  AdminOperators,
+  AdminMembers,
+  AdminListings,
+  AdminBookings,
+  AdminAudit,
+} from "@/components/admin/AdminManagement";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({
