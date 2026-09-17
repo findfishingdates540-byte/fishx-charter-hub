@@ -39,7 +39,15 @@ export function ReadinessGate({
   const goLive = useMutation({
     mutationFn: (live: boolean) =>
       goLiveFn({ data: { ...(businessId ? { businessId } : {}), live } }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["operator-readiness"] }),
+    onSuccess: (res: any) => {
+      if (res && res.ok === false) {
+        toast.error("Finish setup before going live", {
+          description: "Connect payouts and add an upcoming date or an in-stock product first.",
+        });
+      }
+      qc.invalidateQueries({ queryKey: ["operator-readiness"] });
+    },
+
   });
 
   if (q.isLoading || !q.data) return null;
