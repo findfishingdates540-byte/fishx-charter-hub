@@ -15,6 +15,13 @@ import {
   runPayoutReconciliation,
 } from "@/lib/admin.functions";
 import { AdminTripCalendar } from "@/components/admin/AdminTripCalendar";
+import {
+  AdminOperators,
+  AdminMembers,
+  AdminListings,
+  AdminBookings,
+  AdminAudit,
+} from "@/components/admin/AdminManagement";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({
@@ -94,7 +101,30 @@ const money = (c: number) =>
 
 const day = (s?: string | null) => (s ? new Date(s).toLocaleDateString() : "—");
 
-type Tab = "verifications" | "calendar" | "payouts" | "reconciliation" | "disputes";
+type Tab =
+  | "operators"
+  | "verifications"
+  | "members"
+  | "listings"
+  | "bookings"
+  | "calendar"
+  | "payouts"
+  | "reconciliation"
+  | "disputes"
+  | "activity";
+
+const TABS: Array<[Tab, string]> = [
+  ["operators", "Operators"],
+  ["verifications", "Documents"],
+  ["members", "Members"],
+  ["listings", "Listings"],
+  ["bookings", "Bookings"],
+  ["calendar", "Calendar"],
+  ["payouts", "Payouts"],
+  ["reconciliation", "Reconciliation"],
+  ["disputes", "Disputes"],
+  ["activity", "Activity log"],
+];
 
 function AdminConsole() {
   const fetchOverview = useServerFn(getAdminOverview);
@@ -104,7 +134,7 @@ function AdminConsole() {
     queryFn: () => fetchOverview(),
     staleTime: 15_000,
   });
-  const [tab, setTab] = useState<Tab>("verifications");
+  const [tab, setTab] = useState<Tab>("operators");
 
   const fetchRecon = useServerFn(getPayoutReconciliation);
   const rerunRecon = useServerFn(runPayoutReconciliation);
@@ -181,7 +211,7 @@ function AdminConsole() {
       </div>
 
       <div style={{ display: "flex", gap: 8, marginBottom: 16, flexWrap: "wrap" }}>
-        {(["verifications", "calendar", "payouts", "reconciliation", "disputes"] as Tab[]).map((k) => (
+        {TABS.map(([k, label]) => (
           <button
             key={k}
             onClick={() => setTab(k)}
@@ -189,13 +219,19 @@ function AdminConsole() {
               ...ghost,
               background: tab === k ? T.accent : "transparent",
               color: tab === k ? "#04121B" : T.ink,
-              textTransform: "capitalize",
             }}
           >
-            {k}
+            {label}
           </button>
         ))}
       </div>
+
+      {tab === "operators" && <AdminOperators />}
+      {tab === "members" && <AdminMembers />}
+      {tab === "listings" && <AdminListings />}
+      {tab === "bookings" && <AdminBookings />}
+      {tab === "activity" && <AdminAudit />}
+
 
       {tab === "verifications" && (
         <div style={{ display: "grid", gap: 12 }}>

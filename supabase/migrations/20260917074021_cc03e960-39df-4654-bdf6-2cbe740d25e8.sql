@@ -1,0 +1,1 @@
+revoke all on function public.grant_platform_admin_for_staff_email() from public, anon, authenticated;

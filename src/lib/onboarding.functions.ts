@@ -187,6 +187,33 @@ export const submitVerification = createServerFn({ method: "POST" })
       .select()
       .single();
     if (error) throw new Response(error.message, { status: 400 });
+
+    // Route the submission to the admin review queue (best effort — a
+    // notification failure must never block the operator's setup).
+    try {
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      const { sendDirectNotification } = await import("./notifications.server");
+      const [{ data: biz }, { data: admins }] = await Promise.all([
+        supabaseAdmin.from("businesses").select("name").eq("id", businessId).maybeSingle(),
+        supabaseAdmin.from("user_roles").select("user_id").eq("role", "admin"),
+      ]);
+      await Promise.all(
+        (admins ?? []).map((a: { user_id: string }) =>
+          sendDirectNotification(supabaseAdmin, {
+            userId: a.user_id,
+            category: "verification",
+            title: "New operator documents to review",
+            body: `${biz?.name ?? "An operator"} submitted ${data.docPaths.length} document(s) for verification.`,
+            link: "/admin",
+            severity: "info",
+            meta: { businessId, requestId: row.id },
+          }),
+        ),
+      );
+    } catch (e) {
+      console.error("verification admin notification failed", e);
+    }
+
     return row;
   });
 
