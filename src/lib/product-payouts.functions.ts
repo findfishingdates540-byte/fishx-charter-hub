@@ -26,6 +26,17 @@ export const releaseProductOrderPayout = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     if (!order) throw new Error("Order not found, or it isn't yours to settle.");
 
+    // Buyers can also read their own orders, so an explicit staff check is
+    // required — only the vendor's team may release the payout.
+    const { data: isStaff, error: staffErr } = await context.supabase.rpc("is_business_member", {
+      _business_id: order.business_id,
+      _user_id: context.userId,
+      _min_role: "staff",
+    });
+    if (staffErr) throw new Error(staffErr.message);
+    if (!isStaff) throw new Error("Only the shop's team can settle this payout.");
+
+
     if (order.payout_released_at || order.stripe_transfer_id) {
       return { ok: true as const, alreadyReleased: true, transferId: order.stripe_transfer_id };
     }
