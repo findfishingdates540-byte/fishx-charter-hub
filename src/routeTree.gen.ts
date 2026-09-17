@@ -33,6 +33,7 @@ import { Route as CaptainsProfileRouteImport } from './routes/captains.profile'
 import { Route as ChartersIndexRouteImport } from './routes/charters.index'
 import { Route as ChartersCharterIdRouteImport } from './routes/charters.$charterId'
 import { Route as ChartersSearchRouteImport } from './routes/charters.search'
+import { Route as ExploreVerticalRouteImport } from './routes/explore.$vertical'
 import { Route as GuidesProfileRouteImport } from './routes/guides.profile'
 import { Route as MarketplaceIndexRouteImport } from './routes/marketplace.index'
 import { Route as MarketplaceProductIdRouteImport } from './routes/marketplace.$productId'
@@ -177,6 +178,11 @@ const ChartersSearchRoute = ChartersSearchRouteImport.update({
   path: '/charters/search',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ExploreVerticalRoute = ExploreVerticalRouteImport.update({
+  id: '/explore/$vertical',
+  path: '/explore/$vertical',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const GuidesProfileRoute = GuidesProfileRouteImport.update({
   id: '/guides/profile',
   path: '/guides/profile',
@@ -318,6 +324,7 @@ export interface FileRoutesByFullPath {
   '/captains/profile': typeof CaptainsProfileRoute
   '/charters/$charterId': typeof ChartersCharterIdRoute
   '/charters/search': typeof ChartersSearchRoute
+  '/explore/$vertical': typeof ExploreVerticalRoute
   '/guides/profile': typeof GuidesProfileRoute
   '/marketplace/$productId': typeof MarketplaceProductIdRoute
   '/services/search': typeof ServicesSearchRoute
@@ -364,6 +371,7 @@ export interface FileRoutesByTo {
   '/captains/profile': typeof CaptainsProfileRoute
   '/charters/$charterId': typeof ChartersCharterIdRoute
   '/charters/search': typeof ChartersSearchRoute
+  '/explore/$vertical': typeof ExploreVerticalRoute
   '/guides/profile': typeof GuidesProfileRoute
   '/marketplace/$productId': typeof MarketplaceProductIdRoute
   '/services/search': typeof ServicesSearchRoute
@@ -412,6 +420,7 @@ export interface FileRoutesById {
   '/captains/profile': typeof CaptainsProfileRoute
   '/charters/$charterId': typeof ChartersCharterIdRoute
   '/charters/search': typeof ChartersSearchRoute
+  '/explore/$vertical': typeof ExploreVerticalRoute
   '/guides/profile': typeof GuidesProfileRoute
   '/marketplace/$productId': typeof MarketplaceProductIdRoute
   '/services/search': typeof ServicesSearchRoute
@@ -460,6 +469,7 @@ export interface FileRouteTypes {
     | '/captains/profile'
     | '/charters/$charterId'
     | '/charters/search'
+    | '/explore/$vertical'
     | '/guides/profile'
     | '/marketplace/$productId'
     | '/services/search'
@@ -506,6 +516,7 @@ export interface FileRouteTypes {
     | '/captains/profile'
     | '/charters/$charterId'
     | '/charters/search'
+    | '/explore/$vertical'
     | '/guides/profile'
     | '/marketplace/$productId'
     | '/services/search'
@@ -553,6 +564,7 @@ export interface FileRouteTypes {
     | '/captains/profile'
     | '/charters/$charterId'
     | '/charters/search'
+    | '/explore/$vertical'
     | '/guides/profile'
     | '/marketplace/$productId'
     | '/services/search'
@@ -590,6 +602,7 @@ export interface RootRouteChildren {
   CaptainsProfileRoute: typeof CaptainsProfileRoute
   ChartersCharterIdRoute: typeof ChartersCharterIdRoute
   ChartersSearchRoute: typeof ChartersSearchRoute
+  ExploreVerticalRoute: typeof ExploreVerticalRoute
   GuidesProfileRoute: typeof GuidesProfileRoute
   MarketplaceProductIdRoute: typeof MarketplaceProductIdRoute
   ServicesSearchRoute: typeof ServicesSearchRoute
@@ -775,6 +788,13 @@ declare module '@tanstack/react-router' {
       path: '/charters/search'
       fullPath: '/charters/search'
       preLoaderRoute: typeof ChartersSearchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/explore/$vertical': {
+      id: '/explore/$vertical'
+      path: '/explore/$vertical'
+      fullPath: '/explore/$vertical'
+      preLoaderRoute: typeof ExploreVerticalRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/guides/profile': {
@@ -988,6 +1008,7 @@ const rootRouteChildren: RootRouteChildren = {
   CaptainsProfileRoute: CaptainsProfileRoute,
   ChartersCharterIdRoute: ChartersCharterIdRoute,
   ChartersSearchRoute: ChartersSearchRoute,
+  ExploreVerticalRoute: ExploreVerticalRoute,
   GuidesProfileRoute: GuidesProfileRoute,
   MarketplaceProductIdRoute: MarketplaceProductIdRoute,
   ServicesSearchRoute: ServicesSearchRoute,

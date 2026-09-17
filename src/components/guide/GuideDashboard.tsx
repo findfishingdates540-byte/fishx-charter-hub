@@ -28,6 +28,11 @@ import { BusinessSettings } from "@/components/business/BusinessSettings";
 import { ServicesManager } from "@/components/business/ServicesManager";
 import { RequestInbox } from "@/components/operator/RequestInbox";
 import { CaptainTripCalendar } from "@/components/captain/CaptainTripCalendar";
+import {
+  GuideAvailabilityCalendar,
+  GuideTripPayouts,
+  GuideGuests,
+} from "./GuideConsole";
 import { ReadinessGate } from "@/components/operator/ReadinessGate";
 import { BusinessInbox } from "@/components/messages/BusinessInbox";
 import { MessagesFullScreen } from "@/components/messages/MessagesFullScreen";
@@ -75,6 +80,7 @@ export function GuideDashboard({
     { key: "calendar", label: "Calendar", icon: <CalIcon /> },
     { key: "guides", label: "Guides", icon: <TeamIcon /> },
     { key: "slots", label: "Availability", icon: <ClockIcon /> },
+    { key: "guests", label: "Guests", icon: <TeamIcon /> },
     {
       key: "requests",
       label: "Requests",
@@ -96,6 +102,7 @@ export function GuideDashboard({
     calendar: { t: "Trip Calendar", s: "Every booked trip by date, with price and payout status." },
     guides: { t: "Guides", s: "Your roster & performance." },
     slots: { t: "Availability", s: "Bookable slots across your services." },
+    guests: { t: "Guests", s: "Everyone who has booked you, with their trip history." },
     requests: { t: "Requests", s: "New bookings waiting on you." },
     listings: { t: "Listings", s: "Your bookable guided trips and clinics." },
     messages: { t: "Messages", s: "Direct conversations with anglers." },
@@ -136,7 +143,13 @@ export function GuideDashboard({
       {active === "trips" && <Trips businessId={businessId} data={data} />}
       {active === "calendar" && <CaptainTripCalendar />}
       {active === "guides" && <Roster data={data} />}
-      {active === "slots" && <Slots businessId={businessId} data={data} />}
+      {active === "slots" && (
+        <div style={{ display: "grid", gap: 18 }}>
+          <GuideAvailabilityCalendar slots={data.slots} />
+          <Slots businessId={businessId} data={data} />
+        </div>
+      )}
+      {active === "guests" && <GuideGuests trips={data.trips} />}
       {active === "requests" && (
         <div style={{ display: "grid", gap: 18 }}>
           <Card eyebrow="Request to book" title="Waiting on your decision">
@@ -162,6 +175,7 @@ export function GuideDashboard({
           <Card eyebrow="Payouts" title="Bank & payouts">
             <PayoutsConnect businessId={businessId} />
           </Card>
+          <GuideTripPayouts trips={data.trips} />
           <PaymentsDashboard businessId={businessId} />
         </div>
       )}
