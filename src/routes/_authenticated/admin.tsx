@@ -134,7 +134,7 @@ function AdminConsole() {
     queryFn: () => fetchOverview(),
     staleTime: 15_000,
   });
-  const [tab, setTab] = useState<Tab>("verifications");
+  const [tab, setTab] = useState<Tab>("operators");
 
   const fetchRecon = useServerFn(getPayoutReconciliation);
   const rerunRecon = useServerFn(runPayoutReconciliation);
