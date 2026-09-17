@@ -812,11 +812,13 @@ export function OperatorProfile({
                   <iframe
                     title={`Map of ${b.name}`}
                     loading="lazy"
-                    src={`https://www.openstreetmap.org/export/embed.html?bbox=-180,-60,180,75&layer=mapnik&marker=&query=${encodeURIComponent(
-                      [b.address, b.city, b.region, b.country].filter(Boolean).join(", "),
-                    )}`}
+                    referrerPolicy="no-referrer-when-downgrade"
+                    src={`https://maps.google.com/maps?q=${encodeURIComponent(
+                      [b.name, b.address, b.city, b.region, b.country].filter(Boolean).join(", "),
+                    )}&z=13&output=embed`}
                     style={{ width: "100%", height: 180, border: 0, borderRadius: 12 }}
                   />
+
                   <a
                     href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
                       [b.name, b.address, b.city, b.region, b.country].filter(Boolean).join(", "),
