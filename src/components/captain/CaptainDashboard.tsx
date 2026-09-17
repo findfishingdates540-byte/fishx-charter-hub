@@ -98,6 +98,8 @@ export function CaptainDashboard({ initialTab }: { initialTab?: string } = {}) {
   const pageSub: Record<Tab, string> = {
     overview: biz ? `${biz.name} · ${[biz.city, biz.region].filter(Boolean).join(", ")}` : "Set up your business to see bookings.",
     bookings: `${data.stats.upcomingCount} upcoming · ${data.stats.completedCount} completed`,
+    calendar: "Every booked trip by date, with price and payout status",
+
     services: "Create the charter trips anglers can book",
     blockouts: "Close date ranges across all your charters",
     fleet: "Boats, specs, and photo galleries — each charter picks one",
