@@ -389,6 +389,29 @@ async function sendEmail(to: string, draft: NotificationDraft) {
   return { sent: true, reason: null as string | null };
 }
 
+/**
+ * One-off notification outside the domain-event pipeline (e.g. a team invite):
+ * writes the in-app row and sends the email when Resend is configured.
+ */
+export async function sendDirectNotification(
+  admin: Admin,
+  draft: NotificationDraft & { to?: string | null },
+) {
+  await admin.from("notifications").insert({
+    user_id: draft.userId,
+    category: draft.category,
+    title: draft.title,
+    body: draft.body ?? null,
+    link: draft.link ?? null,
+    severity: draft.severity ?? "info",
+    meta: draft.meta ?? {},
+  });
+  const to = draft.to ?? (await recipientEmail(admin, draft.userId));
+  if (!to) return { sent: false, reason: "no email on file" };
+  return sendEmail(to, draft);
+}
+
+
 function emailHtml(draft: NotificationDraft) {
   const link = draft.link ? `${APP_URL}${draft.link}` : APP_URL;
   return `<!doctype html><html><body style="margin:0;background:#ffffff;font-family:'Outfit',system-ui,sans-serif;color:#031029">
