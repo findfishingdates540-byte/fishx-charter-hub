@@ -61,8 +61,9 @@ export const getOperatorDirectory = createServerFn({ method: "GET" })
       supabaseAdmin
         .from("businesses")
         .select(
-          "id,name,slug,category_key,city,region,country,phone,email,is_published,verified_at,onboarding_completed_at,charges_enabled,payouts_enabled,created_at,created_by",
+          "id,name,slug,category_key,city,region,country,phone,email,is_published,listing_ready,listing_grace,verified_at,onboarding_completed_at,charges_enabled,payouts_enabled,created_at,created_by",
         )
+
         .order("created_at", { ascending: false })
         .limit(1000),
       supabaseAdmin.from("business_members").select("business_id,user_id,role").limit(5000),
@@ -122,7 +123,7 @@ export const getOperatorDirectory = createServerFn({ method: "GET" })
         awaitingDocs: operators.filter((o) => o.docStatus === "not_submitted").length,
         pendingReview: operators.filter((o) => o.docStatus === "pending").length,
         verified: operators.filter((o) => Boolean(o.verified_at)).length,
-        live: operators.filter((o) => o.is_published).length,
+        live: operators.filter((o) => o.is_published && (o.listing_ready || o.listing_grace)).length,
         onboardingIncomplete: operators.filter((o) => !o.onboarding_completed_at).length,
       },
     };

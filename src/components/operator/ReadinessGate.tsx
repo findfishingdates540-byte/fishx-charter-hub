@@ -5,6 +5,8 @@
  */
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
+import { toast } from "sonner";
+
 import {
   getOperatorReadiness,
   setStorefrontLive,
@@ -39,15 +41,25 @@ export function ReadinessGate({
   const goLive = useMutation({
     mutationFn: (live: boolean) =>
       goLiveFn({ data: { ...(businessId ? { businessId } : {}), live } }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["operator-readiness"] }),
+    onSuccess: (res: any) => {
+      if (res && res.ok === false) {
+        toast.error("Finish setup before going live", {
+          description: "Connect payouts and add an upcoming date or an in-stock product first.",
+        });
+      }
+      qc.invalidateQueries({ queryKey: ["operator-readiness"] });
+    },
+
   });
 
   if (q.isLoading || !q.data) return null;
   const r = q.data;
+  const grace = Boolean((r as any).grace);
 
   if (compact && r.ready && r.isPublished) return null;
 
-  const tone = r.ready ? "#22C55E" : "#2DE2F2";
+  const tone = r.ready ? "#22C55E" : grace ? "#F5A524" : "#2DE2F2";
+
 
   return (
     <div
@@ -78,7 +90,7 @@ export function ReadinessGate({
               color: tone,
             }}
           >
-            {r.ready ? "Ready to take bookings" : "Not bookable yet"}
+            {r.ready ? "Ready to take bookings" : grace ? "Action needed to stay listed" : "Not bookable yet"}
           </div>
           <div
             style={{
@@ -95,7 +107,15 @@ export function ReadinessGate({
                 : "Everything checks out — go live when you're ready."
               : `${r.blockerCount} step${r.blockerCount === 1 ? "" : "s"} left before guests can book you`}
           </div>
+          {!r.ready && (
+            <div style={{ fontSize: 12.5, color: MUT, marginTop: 6, maxWidth: 560 }}>
+              {grace
+                ? "Your page is still showing to anglers for now, but it will be hidden from search and Explore until these steps are done — so nobody books a trip you can't get paid for."
+                : "Your page stays private to anglers until these steps are done, so nobody books a trip you can't get paid for."}
+            </div>
+          )}
         </div>
+
 
         {r.ready && (
           <button

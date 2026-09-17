@@ -1016,6 +1016,9 @@ export type Database = {
           id: string
           is_published: boolean
           lat: number | null
+          listing_grace: boolean
+          listing_grace_notified_at: string | null
+          listing_ready: boolean
           lng: number | null
           logo_url: string | null
           name: string
@@ -1059,6 +1062,9 @@ export type Database = {
           id?: string
           is_published?: boolean
           lat?: number | null
+          listing_grace?: boolean
+          listing_grace_notified_at?: string | null
+          listing_ready?: boolean
           lng?: number | null
           logo_url?: string | null
           name: string
@@ -1102,6 +1108,9 @@ export type Database = {
           id?: string
           is_published?: boolean
           lat?: number | null
+          listing_grace?: boolean
+          listing_grace_notified_at?: string | null
+          listing_ready?: boolean
           lng?: number | null
           logo_url?: string | null
           name?: string
@@ -3398,6 +3407,11 @@ export type Database = {
         Args: { _s: Database["public"]["Enums"]["booking_status"] }
         Returns: boolean
       }
+      business_has_bookable: {
+        Args: { _business_id: string }
+        Returns: boolean
+      }
+      business_is_listable: { Args: { _business_id: string }; Returns: boolean }
       can_view_profile: { Args: { _profile_id: string }; Returns: boolean }
       create_business_with_owner: {
         Args: {
@@ -3430,6 +3444,9 @@ export type Database = {
           id: string
           is_published: boolean
           lat: number | null
+          listing_grace: boolean
+          listing_grace_notified_at: string | null
+          listing_ready: boolean
           lng: number | null
           logo_url: string | null
           name: string
@@ -3527,6 +3544,10 @@ export type Database = {
         }[]
       }
       recompute_listing_metrics: { Args: never; Returns: number }
+      recompute_listing_ready: {
+        Args: { _business_id: string }
+        Returns: undefined
+      }
       reconcile_payouts: { Args: { _run_date?: string }; Returns: Json }
       release_delivered_product_payouts: {
         Args: { _limit?: number }
