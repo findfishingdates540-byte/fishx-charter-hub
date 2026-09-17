@@ -12,6 +12,7 @@ import {
   assignGuideToBooking,
   upsertGuideSlot,
   deleteGuideSlot,
+  bulkCreateGuideSlots,
 } from "@/lib/guide.functions";
 import {
   OperatorShell,
@@ -484,6 +485,7 @@ function Slots({ businessId, data }: { businessId: string; data: any }) {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+      <BulkSlotGenerator businessId={businessId} />
       <Card
         title="Bookable slots"
         right={
@@ -904,5 +906,187 @@ function GearIcon() {
       <circle cx="12" cy="12" r="3" />
       <path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-1.8-.3 1.6 1.6 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1A1.6 1.6 0 0 0 9 19.4a1.6 1.6 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.6 1.6 0 0 0 .3-1.8 1.6 1.6 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1A1.6 1.6 0 0 0 4.6 9a1.6 1.6 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.6 1.6 0 0 0 1.8.3H9a1.6 1.6 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.6 1.6 0 0 0 1 1.5 1.6 1.6 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0-.3 1.8V9a1.6 1.6 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.6 1.6 0 0 0-1.5 1Z" />
     </svg>
+  );
+}
+
+const WEEKDAYS = [
+  { n: 1, l: "Mon" },
+  { n: 2, l: "Tue" },
+  { n: 3, l: "Wed" },
+  { n: 4, l: "Thu" },
+  { n: 5, l: "Fri" },
+  { n: 6, l: "Sat" },
+  { n: 0, l: "Sun" },
+];
+
+/** Repeat one time window across a date range so guides don't add slots one by one. */
+function BulkSlotGenerator({ businessId }: { businessId: string }) {
+  const qc = useQueryClient();
+  const bulkFn = useServerFn(bulkCreateGuideSlots);
+  const [open, setOpen] = useState(false);
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
+  const [days, setDays] = useState<number[]>([5, 6, 0]);
+  const [startTime, setStartTime] = useState("06:00");
+  const [endTime, setEndTime] = useState("12:00");
+  const [capacity, setCapacity] = useState("4");
+  const [price, setPrice] = useState("0");
+  const [result, setResult] = useState<string>("");
+
+  const m = useMutation({
+    mutationFn: bulkFn,
+    onSuccess: (r: any) => {
+      qc.invalidateQueries({ queryKey: ["guide-overview", businessId] });
+      setResult(
+        `${r.created} slot${r.created === 1 ? "" : "s"} added${r.skipped ? ` · ${r.skipped} already existed` : ""}.`,
+      );
+    },
+    onError: (e: any) => setResult(e?.message ?? "Couldn't create those slots."),
+  });
+
+  const toggle = (n: number) =>
+    setDays((d) => (d.includes(n) ? d.filter((x) => x !== n) : [...d, n]));
+
+  return (
+    <Card
+      eyebrow="Faster setup"
+      title="Repeat a schedule"
+      right={
+        <button style={btnGhost} onClick={() => setOpen((o) => !o)}>
+          {open ? "Hide" : "Open generator"}
+        </button>
+      }
+    >
+      {!open ? (
+        <p style={{ color: "#92A0AB", fontSize: 13.5, margin: 0 }}>
+          Fill a whole season at once — pick a date range, the days you run, and the time window.
+        </p>
+      ) : (
+        <div style={{ display: "grid", gap: 14 }}>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit,minmax(150px,1fr))",
+              gap: 14,
+            }}
+          >
+            <Field label="From">
+              <input
+                type="date"
+                value={fromDate}
+                onChange={(e) => setFromDate(e.target.value)}
+                style={inputStyle}
+              />
+            </Field>
+            <Field label="To">
+              <input
+                type="date"
+                value={toDate}
+                onChange={(e) => setToDate(e.target.value)}
+                style={inputStyle}
+              />
+            </Field>
+            <Field label="Start">
+              <input
+                type="time"
+                value={startTime}
+                onChange={(e) => setStartTime(e.target.value)}
+                style={inputStyle}
+              />
+            </Field>
+            <Field label="End">
+              <input
+                type="time"
+                value={endTime}
+                onChange={(e) => setEndTime(e.target.value)}
+                style={inputStyle}
+              />
+            </Field>
+            <Field label="Capacity">
+              <input
+                type="number"
+                min={1}
+                value={capacity}
+                onChange={(e) => setCapacity(e.target.value)}
+                style={inputStyle}
+              />
+            </Field>
+            <Field label="Price per seat ($)">
+              <input
+                type="number"
+                min={0}
+                value={price}
+                onChange={(e) => setPrice(e.target.value)}
+                style={inputStyle}
+              />
+            </Field>
+          </div>
+
+          <div>
+            <div
+              style={{
+                fontSize: 11,
+                letterSpacing: ".1em",
+                textTransform: "uppercase",
+                color: "#92A0AB",
+                fontWeight: 700,
+                marginBottom: 8,
+              }}
+            >
+              Days you run
+            </div>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+              {WEEKDAYS.map((d) => {
+                const on = days.includes(d.n);
+                return (
+                  <button
+                    key={d.n}
+                    type="button"
+                    onClick={() => toggle(d.n)}
+                    style={{
+                      padding: "7px 14px",
+                      borderRadius: 30,
+                      cursor: "pointer",
+                      fontFamily: "'Outfit', system-ui, sans-serif",
+                      fontSize: 13,
+                      fontWeight: 700,
+                      border: `1px solid ${on ? "#2DE2F2" : "#273744"}`,
+                      background: on ? "#2DE2F2" : "transparent",
+                      color: on ? "#06131C" : "#92A0AB",
+                    }}
+                  >
+                    {d.l}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+            <button
+              style={btnPrimary}
+              disabled={m.isPending || !fromDate || !toDate || days.length === 0}
+              onClick={() =>
+                m.mutate({
+                  data: {
+                    businessId,
+                    fromDate,
+                    toDate,
+                    weekdays: days,
+                    startTime,
+                    endTime,
+                    capacity: Math.max(1, Number(capacity) || 1),
+                    priceCents: Math.round((Number(price) || 0) * 100),
+                  },
+                })
+              }
+            >
+              {m.isPending ? "Creating…" : "Create slots"}
+            </button>
+            {result && <span style={{ color: "#92A0AB", fontSize: 13 }}>{result}</span>}
+          </div>
+        </div>
+      )}
+    </Card>
   );
 }
