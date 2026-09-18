@@ -1218,3 +1218,16 @@ body.dc-body { margin:0; background:#072057; }
 .fx-dash-loading-card { height: 120px; border-radius: 14px; background: rgba(13,22,31,.06); animation: fxDashPulse 1.4s ease-in-out infinite; }
 @keyframes fxDashShimmer { to { background-position: -200% 0; } }
 @keyframes fxDashPulse { 0%, 100% { opacity: 1; } 50% { opacity: .45; } }
+
+/* Become a captain — mobile */
+@media (max-width: 900px) {
+  .dc-landing [data-screen-label="Become a captain"] { padding: 64px 0 !important; }
+  .dc-landing [data-screen-label="Become a captain"] > div { padding: 0 20px !important; gap: 48px !important; }
+  .dc-landing [data-screen-label="Become a captain"] [data-captain-stat] { right: 8px !important; bottom: -16px !important; padding: 14px 16px !important; gap: 12px !important; }
+  .dc-landing [data-screen-label="Become a captain"] img[alt="At the helm"] { height: 300px !important; }
+}
+@media (max-width: 640px) {
+  .dc-landing [data-screen-label="Become a captain"] [data-cta-row] { flex-direction: column !important; align-items: stretch !important; gap: 16px !important; }
+  .dc-landing [data-screen-label="Become a captain"] [data-cta-row] a:first-child { justify-content: center !important; }
+  .dc-landing [data-screen-label="Become a captain"] [data-cta-row] a:last-child { text-align: center !important; align-self: center !important; }
+}
