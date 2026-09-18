@@ -12,7 +12,7 @@ export const Route = createFileRoute("/auth")({
 type Vertical = "captain" | "tackle" | "marina" | "manufacturer" | "apparel" | "guide" | "";
 type View = "login" | "signup";
 type Step = "intent" | "angler" | "vertical" | "business";
-type Status = "idle" | "submitting" | "done";
+type Status = "idle" | "submitting" | "done" | "confirm";
 type DoneKind = "login" | "angler" | "business";
 
 const vLabels: Record<Exclude<Vertical, "">, string> = {
@@ -128,6 +128,7 @@ function AuthPage() {
   const stepLabel = atAngler ? "Step 2 of 2" : atVertical ? "Step 2 of 3" : atBusiness ? "Step 3 of 3" : "";
   const isSubmitting = status === "submitting";
   const isDone = status === "done";
+  const isConfirm = status === "confirm";
   const pwType = showPw ? "text" : "password";
   const pwToggleLabel = showPw ? "Hide" : "Show";
 
