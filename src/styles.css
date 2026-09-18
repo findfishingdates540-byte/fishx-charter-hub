@@ -274,21 +274,50 @@
 .dc-auth input::placeholder { color:#9aa7b2; }
 .dc-auth input:-webkit-autofill { -webkit-text-fill-color:#031029; -webkit-box-shadow:0 0 0 40px #fff inset; }
 body.dc-body { margin:0; background:#072057; }
-@media (max-width: 900px) {
+/* Tablet: stack the hero into one centered column and keep the photo
+ * collage fully inside the viewport (no clipped badges). */
+@media (max-width: 1024px) {
   .dc-landing .fx-hero-grid {
     grid-template-columns: 1fr !important;
-    gap: 32px !important;
+    gap: 28px !important;
     min-height: auto !important;
-    padding: 0 20px !important;
+    padding: 0 28px !important;
+    justify-items: center !important;
   }
-  .dc-landing [data-screen-label="Hero"] { padding: 24px 0 56px !important; }
-  .dc-landing [data-screen-label="Hero"] > div > div:last-child { height: 340px !important; }
-  .dc-landing [data-screen-label="Hero"] > div > div:last-child > div:first-child { width: min(240px, 58%) !important; }
-  .dc-landing [data-screen-label="Hero"] > div > div:last-child > div:last-child { width: min(220px, 56%) !important; }
+  .dc-landing [data-screen-label="Hero"] { padding: 28px 0 64px !important; }
+  .dc-landing .fx-hero-grid > div:first-child {
+    max-width: 640px !important;
+    width: 100% !important;
+    text-align: center !important;
+  }
+  .dc-landing .fx-hero-grid > div:first-child > p {
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+  .dc-landing .fx-hero-grid > div:first-child > div[data-reveal] {
+    margin-left: auto !important;
+    margin-right: auto !important;
+    text-align: left !important;
+  }
+  .dc-landing .fx-hero-grid > div:first-child > div:first-child { margin-bottom: 20px !important; }
+  .dc-landing [data-cats] { justify-content: center !important; }
+  .dc-landing .fx-hero-grid > div:first-child > div:last-child { justify-content: center !important; }
+  .dc-landing .fx-hero-grid > div:last-child {
+    position: relative !important;
+    width: 100% !important;
+    max-width: 620px !important;
+    height: 440px !important;
+    margin: 0 auto !important;
+    padding: 28px 14px 24px !important;
+    box-sizing: border-box !important;
+  }
+  .dc-landing .fx-hero-grid > div:last-child > div:first-child { width: min(260px, 46%) !important; top: 40px !important; right: 14px !important; }
+  .dc-landing .fx-hero-grid > div:last-child > div:last-child { width: min(220px, 40%) !important; }
   .dc-landing #fishx-root > header > div { padding: 14px 20px !important; gap: 14px !important; }
   .dc-landing #fishx-root > header nav { gap: 18px !important; }
   .dc-landing #fishx-root > header nav a { font-size: 13px !important; }
 }
+
 
 @media (max-width: 640px) {
   .dc-landing [data-screen-label="Hero"] > div > div:last-child { display: none !important; }
