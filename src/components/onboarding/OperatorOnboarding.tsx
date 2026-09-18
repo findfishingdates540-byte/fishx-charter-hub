@@ -539,6 +539,29 @@ export function OperatorOnboarding() {
     if (biz.is_published) setPublished(true);
   }
 
+  // No business row yet (first visit after sign-up): reuse what they already
+  // typed on the sign-up form instead of asking for it twice.
+  const signupPrefillRef = useRef(false);
+  useEffect(() => {
+    if (isLoading || biz || signupPrefillRef.current) return;
+    signupPrefillRef.current = true;
+    let cancelled = false;
+    supabase.auth.getUser().then(({ data: u }) => {
+      const m = (u.user?.user_metadata ?? {}) as Record<string, string | undefined>;
+      if (cancelled) return;
+      const cat = VERTICAL_TO_CATEGORY[m['vertical'] ?? ""] ?? undefined;
+      setProfile((p) => ({
+        ...p,
+        name: p.name || (m['business_name'] ?? ""),
+        city: p.city || (m['location'] ?? ""),
+        categoryKey: cat ?? p.categoryKey,
+      }));
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [isLoading, biz]);
+
   // Listing form — defaults come from the current category config
   const svc = data?.service;
   const listingConfig = getListingConfig(profile.categoryKey);
