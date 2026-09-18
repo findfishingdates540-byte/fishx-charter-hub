@@ -31,6 +31,13 @@ const vBizPlaceholder: Record<Exclude<Vertical, "">, string> = {
 };
 
 // -------- reusable style fragments --------
+// Confirmation/OAuth links must always land on the live site, never on a
+// preview or editor host. Local dev still redirects to localhost.
+const appOrigin = () =>
+  typeof window !== "undefined" && window.location.origin.includes("localhost")
+    ? window.location.origin
+    : "https://www.bookfishingtrips.com";
+
 const cssVars: CSSProperties = {
   // @ts-expect-error custom props
   "--serif": "'Outfit',Georgia,serif",
