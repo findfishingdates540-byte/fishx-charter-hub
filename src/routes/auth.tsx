@@ -246,6 +246,9 @@ function AuthPage() {
           },
         });
         if (e2) throw e2;
+        // Same confirmation rule for operators: the email link opens
+        // /onboarding, and finishing setup routes to their console.
+        if (!signData.session) { setStatus("confirm"); return; }
       }
       setStatus("done");
     } catch (err) {
