@@ -260,7 +260,7 @@ function AuthPage() {
         const { data: signData, error: e2 } = await supabase.auth.signUp({
           email, password: pw,
           options: {
-            emailRedirectTo: `${window.location.origin}/dashboard`,
+            emailRedirectTo: `${origin}/dashboard`,
             data: { intended_role: "angler", full_name: val("name") },
           },
         });
@@ -285,7 +285,7 @@ function AuthPage() {
         const { data: signData, error: e2 } = await supabase.auth.signUp({
           email, password: pw,
           options: {
-            emailRedirectTo: `${window.location.origin}/onboarding`,
+            emailRedirectTo: `${origin}/onboarding`,
             data: {
               intended_role: intendedRole, full_name: val("name"),
               vertical, business_name: val("bizName"),
