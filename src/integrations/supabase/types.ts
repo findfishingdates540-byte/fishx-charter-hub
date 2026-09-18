@@ -3785,6 +3785,8 @@ export type Database = {
         }
         Returns: string
       }
+      user_booked_business: { Args: { _business_id: string }; Returns: boolean }
+      user_booked_service: { Args: { _service_id: string }; Returns: boolean }
       withdraw_dispute: { Args: { _dispute_id: string }; Returns: undefined }
     }
     Enums: {
