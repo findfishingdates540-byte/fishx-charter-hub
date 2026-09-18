@@ -639,7 +639,20 @@ function AuthPage() {
                 We sent a confirmation link to your email. Open it and you’ll be signed straight into
                 {doneKind === "business" ? " your setup — then your dashboard" : " your dashboard"}.
               </p>
-              <div style={{ marginTop: 4 }}>
+              {resendMsg && (
+                <p style={{ fontSize: 13, lineHeight: 1.5, color: resendMsg.startsWith("New link") ? "var(--goldtext)" : "#a23a34", margin: "-14px 0 18px" }}>{resendMsg}</p>
+              )}
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12, marginTop: 4 }}>
+                <button type="button" onClick={handleResend} disabled={resendIn > 0}
+                  style={{
+                    display: "inline-flex", alignItems: "center", gap: 9,
+                    background: resendIn > 0 ? "var(--paper2)" : "var(--sand)", color: resendIn > 0 ? "var(--tmut)" : "#04121B",
+                    border: 0, fontSize: 13, fontWeight: 700, letterSpacing: ".08em",
+                    textTransform: "uppercase", padding: "14px 28px", borderRadius: 40,
+                    cursor: resendIn > 0 ? "default" : "pointer", fontFamily: "var(--sans)",
+                  }}>
+                  {resendIn > 0 ? `Resend email in ${resendIn}s` : "Resend email"}
+                </button>
                 <button onClick={reset} style={{ background: "transparent", border: 0, cursor: "pointer", fontSize: 13, color: "var(--tmut)", fontFamily: "var(--sans)" }}>Back to sign in</button>
               </div>
             </div>
