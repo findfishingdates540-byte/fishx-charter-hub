@@ -595,8 +595,8 @@ function AuthPage() {
 
         {/* Confirm-your-email overlay (signup without a session yet) */}
         {isConfirm && (
-          <div style={{ position: "absolute", inset: 0, background: "var(--paper)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 6 }}>
-            <div style={{ textAlign: "center", maxWidth: 380, padding: "0 30px" }}>
+          <div style={{ position: "fixed", inset: 0, height: "100dvh", overflowY: "hidden", background: "var(--paper)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 60 }}>
+            <div style={{ textAlign: "center", maxWidth: 380, padding: "0 30px", maxHeight: "100dvh", overflowY: "hidden" }}>
               <div style={{ width: 78, height: 78, borderRadius: "50%", background: "var(--sandsoft)", display: "grid", placeItems: "center", margin: "0 auto 24px", animation: "fx-pop .5s both" }}>
                 <span style={{ color: "var(--goldtext)", fontSize: 32 }}>✉</span>
               </div>
