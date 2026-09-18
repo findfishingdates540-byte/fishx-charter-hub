@@ -144,6 +144,36 @@ function AuthPage() {
     return () => clearTimeout(timer);
   }, [isDone, doneKind, navigate]);
 
+  // 60-second cooldown on the "Resend email" button (Supabase rate-limits
+  // repeated resend calls, so the button waits it out).
+  useEffect(() => {
+    if (!isConfirm || resendIn <= 0) return;
+    const timer = setTimeout(() => setResendIn((s) => s - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [isConfirm, resendIn]);
+
+  const handleResend = async () => {
+    if (!confirmEmail || resendIn > 0) return;
+    setResendMsg("");
+    setResendIn(60);
+    const { error: e2 } = await supabase.auth.resend({
+      type: "signup",
+      email: confirmEmail,
+      options: {
+        emailRedirectTo:
+          doneKind === "business"
+            ? `${window.location.origin}/onboarding`
+            : `${window.location.origin}/dashboard`,
+      },
+    });
+    if (e2) {
+      setResendIn(0);
+      setResendMsg(e2.message);
+    } else {
+      setResendMsg("New link sent — check your inbox (and spam folder).");
+    }
+  };
+
   const doneTitle = doneKind === "business" ? "Workspace created" : doneKind === "angler" ? "Account created" : "You’re in";
   const doneMsg = doneKind === "business"
     ? "Welcome aboard. Complete a few quick steps to get verified and start selling."
