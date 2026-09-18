@@ -53,11 +53,54 @@ function LandingPage() {
       animate: true,
       showMarquee: true,
     });
+
+    // Wire the hero search widget to the real results pages.
+    const host = hostRef.current;
+    const go = () => {
+      const active = host.querySelector<HTMLElement>("[data-cats] [data-cat][data-active='1']");
+      const cat = active?.getAttribute("data-cat") ?? "charters";
+      const q = host.querySelector<HTMLInputElement>("[data-search-input]")?.value.trim() ?? "";
+      const city = host.querySelector<HTMLInputElement>("[data-loc-input]")?.value.trim() ?? "";
+      if (cat === "charters") {
+        navigate({
+          to: "/charters/search",
+          search: { ...(q ? { q } : {}), ...(city ? { city } : {}), sort: "recommended" as const },
+        });
+        return;
+      }
+      const vertical = cat === "tackle" ? "tackle" : cat === "marinas" ? "marinas" : "gear";
+      navigate({ to: "/explore/$vertical", params: { vertical }, search: city ? { city } : {} });
+    };
+
+    const onClick = (e: Event) => {
+      const t = e.target as HTMLElement;
+      const chip = t.closest<HTMLElement>("[data-cats] [data-cat]");
+      if (chip) {
+        host
+          .querySelectorAll<HTMLElement>("[data-cats] [data-cat]")
+          .forEach((b) => b.removeAttribute("data-active"));
+        chip.setAttribute("data-active", "1");
+        return;
+      }
+      if (t.closest("[data-search-btn]")) go();
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "Enter") return;
+      const t = e.target as HTMLElement;
+      if (t.matches("[data-search-input],[data-loc-input]")) go();
+    };
+    host.querySelector<HTMLElement>("[data-cats] [data-cat]")?.setAttribute("data-active", "1");
+    host.addEventListener("click", onClick);
+    host.addEventListener("keydown", onKey);
+
     return () => {
+      host.removeEventListener("click", onClick);
+      host.removeEventListener("keydown", onKey);
       dispose();
       document.body.classList.remove("dc-body");
     };
-  }, [script]);
+  }, [script, navigate]);
+
 
   return (
     <div
