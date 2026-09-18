@@ -30,8 +30,10 @@ export const sendSignupConfirmation = createServerFn({ method: "POST" })
     const redirectTo =
       data.kind === "business" ? `${APP_URL}/onboarding` : `${APP_URL}/dashboard`;
 
+    // magiclink (not "signup", which demands the password we don't have):
+    // verifying it both confirms the email and signs the user in.
     const { data: linkData, error } = await supabaseAdmin.auth.admin.generateLink({
-      type: "signup",
+      type: "magiclink",
       email: data.email,
       options: { redirectTo },
     });
