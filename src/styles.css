@@ -293,7 +293,12 @@ body.dc-body { margin:0; background:#072057; }
 @media (max-width: 640px) {
   .dc-landing [data-screen-label="Hero"] > div > div:last-child { display: none !important; }
   .dc-landing [data-screen-label="Hero"] > div { grid-template-columns: 1fr !important; }
-  .dc-landing [data-screen-label="Hero"] > div > div:first-child { max-width: 100% !important; }
+  .dc-landing [data-screen-label="Hero"] > div > div:first-child { max-width: 100% !important; text-align: center !important; }
+  .dc-landing [data-screen-label="Hero"] h1 { text-align: center !important; }
+  .dc-landing [data-screen-label="Hero"] > div > div:first-child > p { margin-left: auto !important; margin-right: auto !important; text-align: center !important; }
+  .dc-landing [data-screen-label="Hero"] > div > div:first-child > div[data-reveal] { margin-left: auto !important; margin-right: auto !important; text-align: left !important; }
+  .dc-landing [data-cats] { justify-content: center !important; }
+  .dc-landing [data-screen-label="Hero"] > div > div:first-child > div:last-child { justify-content: center !important; }
   .dc-landing [data-cats] { flex-wrap: wrap !important; }
   .dc-landing [data-cats] button { flex: 1 1 auto; min-width: 90px; }
   .dc-landing [data-screen-label="Hero"] [style*="grid-template-columns:1.6fr 1fr auto"] { grid-template-columns: 1fr !important; }
