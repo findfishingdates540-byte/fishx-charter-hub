@@ -592,6 +592,25 @@ function AuthPage() {
             </div>
           </div>
         )}
+
+        {/* Confirm-your-email overlay (signup without a session yet) */}
+        {isConfirm && (
+          <div style={{ position: "absolute", inset: 0, background: "var(--paper)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 6 }}>
+            <div style={{ textAlign: "center", maxWidth: 380, padding: "0 30px" }}>
+              <div style={{ width: 78, height: 78, borderRadius: "50%", background: "var(--sandsoft)", display: "grid", placeItems: "center", margin: "0 auto 24px", animation: "fx-pop .5s both" }}>
+                <span style={{ color: "var(--goldtext)", fontSize: 32 }}>✉</span>
+              </div>
+              <h2 style={{ fontFamily: "var(--serif)", fontWeight: 600, fontSize: 31, letterSpacing: "-.01em", margin: "0 0 10px", color: "var(--ink)" }}>Check your inbox.</h2>
+              <p style={{ fontSize: 15.5, lineHeight: 1.55, color: "var(--tmut)", margin: "0 0 26px" }}>
+                We sent a confirmation link to your email. Open it and you’ll be signed straight into
+                {doneKind === "business" ? " your setup — then your dashboard" : " your dashboard"}.
+              </p>
+              <div style={{ marginTop: 4 }}>
+                <button onClick={reset} style={{ background: "transparent", border: 0, cursor: "pointer", fontSize: 13, color: "var(--tmut)", fontFamily: "var(--sans)" }}>Back to sign in</button>
+              </div>
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );
