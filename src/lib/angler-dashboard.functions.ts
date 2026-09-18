@@ -31,7 +31,7 @@ export const getAnglerDashboard = createServerFn({ method: "GET" })
       supabase
         .from("bookings")
         .select(
-          "id,trip_date,start_time,status,total_cents,party_size,escrow_state,service:bookable_services(id,title,hero_url,departure_location),business:businesses(id,slug,name,city,region,hero_url,logo_url)",
+          "id,trip_date,start_time,status,total_cents,party_size,escrow_state,service:bookable_services(id,title,hero_url,departure_location),business:businesses(id,slug,name,city,region,hero_url,logo_url,verified_at)",
         )
         .eq("angler_id", userId)
         .in("status", UPCOMING_STATUSES)

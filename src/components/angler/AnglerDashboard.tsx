@@ -105,7 +105,10 @@ export function AnglerDashboard() {
     "A";
   const firstName =
     (home.profile?.display_name || home.profile?.full_name || "Angler").split(" ")[0] || "Angler";
-  const nextTrip = home.upcoming[0] ?? null;
+  // Never trust the wire shape blindly — a malformed payload must not crash the dashboard.
+  const upcoming = Array.isArray(home.upcoming) ? home.upcoming : [];
+  const recoList = Array.isArray(recos) ? recos : [];
+  const nextTrip = upcoming[0] ?? null;
   const nextTripDate = nextTrip ? new Date(`${nextTrip.trip_date}T${nextTrip.start_time ?? "08:00"}`) : null;
   const cd = useCountdown(nextTripDate);
 
@@ -241,8 +244,8 @@ export function AnglerDashboard() {
               escrowCents={home.escrowCents}
               upcomingCount={home.upcomingCount}
               completedCount={home.completedCount}
-              upcoming={home.upcoming}
-              recos={recos}
+              upcoming={upcoming}
+              recos={recoList}
               onGoTrips={() => goTab("trips")}
               onGoExplore={() => goTab("explore")}
             />
@@ -340,7 +343,11 @@ function HomeTab(props: {
             </div>
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: 13.5, fontWeight: 600, color: "#fff" }}>{capName}</div>
-              <div style={{ fontSize: 12, color: "var(--sand)" }}>★ 4.98 · Verified</div>
+              <div style={{ fontSize: 12, color: "var(--sand)" }}>
+                {nextTrip?.business?.verified_at
+                  ? "Verified operator"
+                  : [nextTrip?.business?.city, nextTrip?.business?.region].filter(Boolean).join(", ") || "Fish-X operator"}
+              </div>
             </div>
           </div>
           <div style={{ display: "flex", gap: 10, marginTop: 20 }}>
@@ -489,9 +496,8 @@ function RecoCard({ c }: { c: Reco }) {
       </div>
       <div style={{ padding: "16px 18px 18px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "var(--tmut)", marginBottom: 6 }}>
-          <span style={{ color: "var(--sand)" }}>★</span>
-          <b style={{ color: "var(--ink)" }}>4.9</b> ·{" "}
           {[c.business?.city, c.business?.region].filter(Boolean).join(", ") || c.departure_location || "—"}
+          {c.business?.verified_at ? <span style={{ color: "var(--goldtext)", fontWeight: 700 }}>· Verified</span> : null}
         </div>
         <h3 style={{ fontFamily: "var(--serif)", fontWeight: 600, fontSize: 19, lineHeight: 1.15, margin: "0 0 12px", color: "var(--ink)" }}>{c.title}</h3>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
