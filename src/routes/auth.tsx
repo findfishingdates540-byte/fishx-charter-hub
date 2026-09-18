@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState, type CSSProperties, type FormEvent, type 
 import { flushSync } from "react-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { resolveAsset } from "@/lib/dc-template";
+import { sendSignupConfirmation } from "@/lib/auth-emails.functions";
 
 export const Route = createFileRoute("/auth")({
   component: AuthPage,
