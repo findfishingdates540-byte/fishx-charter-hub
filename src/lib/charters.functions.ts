@@ -8,12 +8,21 @@ import { z } from "zod";
 import type { Database } from "@/integrations/supabase/types";
 
 function publicClient() {
-  return createClient<Database>(
-    process.env.SUPABASE_URL!,
-    process.env.SUPABASE_PUBLISHABLE_KEY!,
-    { auth: { storage: undefined, persistSession: false, autoRefreshToken: false } },
-  );
+  const key = process.env["SUPABASE_PUBLISHABLE_KEY"]!;
+  return createClient<Database>(process.env["SUPABASE_URL"]!, key, {
+    auth: { storage: undefined, persistSession: false, autoRefreshToken: false },
+    // Opaque sb_ publishable keys aren't JWTs: send them only as `apikey`.
+    global: {
+      fetch: (input, init) => {
+        const h = new Headers(init?.headers);
+        if (key.startsWith("sb_") && h.get("Authorization") === `Bearer ${key}`) h.delete("Authorization");
+        h.set("apikey", key);
+        return fetch(input, { ...init, headers: h });
+      },
+    },
+  });
 }
+
 
 const CHARTER_KINDS = ["charter_trip", "guided_trip"] as const;
 
