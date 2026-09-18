@@ -153,8 +153,8 @@ function AuthPage() {
     return () => clearTimeout(timer);
   }, [isConfirm, resendIn]);
 
-  // Confirmation emails go through our own sender (Resend, verified domain):
-  // Supabase's built-in sender is capped and often never reaches the inbox.
+  // Resends go through our own sender (Resend, verified domain) — the initial
+  // sign-up email comes from Supabase's signUp() call, only once.
   const sendConfirmation = async (email: string, bizKind: "angler" | "business") => {
     const result = await sendSignupConfirmation({ data: { email, kind: bizKind } });
     return result.sent;
