@@ -306,13 +306,13 @@ body.dc-body { margin:0; background:#072057; }
     position: relative !important;
     width: 100% !important;
     max-width: 620px !important;
-    height: 420px !important;
+    height: 440px !important;
     margin: 0 auto !important;
-    padding: 28px 14px 0 !important;
+    padding: 28px 14px 24px !important;
     box-sizing: border-box !important;
   }
-  .dc-landing .fx-hero-grid > div:last-child > div:first-child { width: min(300px, 52%) !important; top: 44px !important; right: 14px !important; }
-  .dc-landing .fx-hero-grid > div:last-child > div:last-child { width: min(250px, 44%) !important; }
+  .dc-landing .fx-hero-grid > div:last-child > div:first-child { width: min(260px, 46%) !important; top: 40px !important; right: 14px !important; }
+  .dc-landing .fx-hero-grid > div:last-child > div:last-child { width: min(220px, 40%) !important; }
   .dc-landing #fishx-root > header > div { padding: 14px 20px !important; gap: 14px !important; }
   .dc-landing #fishx-root > header nav { gap: 18px !important; }
   .dc-landing #fishx-root > header nav a { font-size: 13px !important; }
