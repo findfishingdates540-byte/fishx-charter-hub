@@ -105,7 +105,10 @@ export function AnglerDashboard() {
     "A";
   const firstName =
     (home.profile?.display_name || home.profile?.full_name || "Angler").split(" ")[0] || "Angler";
-  const nextTrip = home.upcoming[0] ?? null;
+  // Never trust the wire shape blindly — a malformed payload must not crash the dashboard.
+  const upcoming = Array.isArray(home.upcoming) ? home.upcoming : [];
+  const recoList = Array.isArray(recos) ? recos : [];
+  const nextTrip = upcoming[0] ?? null;
   const nextTripDate = nextTrip ? new Date(`${nextTrip.trip_date}T${nextTrip.start_time ?? "08:00"}`) : null;
   const cd = useCountdown(nextTripDate);
 
