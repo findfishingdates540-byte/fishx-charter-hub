@@ -211,7 +211,7 @@ function AuthPage() {
         const { error: e2 } = await supabase.auth.signInWithPassword({ email, password: pw });
         if (e2) throw e2;
       } else if (kind === "angler") {
-        const { error: e2 } = await supabase.auth.signUp({
+        const { data: signData, error: e2 } = await supabase.auth.signUp({
           email, password: pw,
           options: {
             emailRedirectTo: `${window.location.origin}/dashboard`,
@@ -219,6 +219,9 @@ function AuthPage() {
           },
         });
         if (e2) throw e2;
+        // Email confirmation is on: no session yet. Show the check-your-inbox
+        // screen; the link in the email opens /dashboard once confirmed.
+        if (!signData.session) { setStatus("confirm"); return; }
       } else {
         // The vertical picked at signup becomes the account's role, so the
         // operator always lands on the matching workspace.
@@ -231,7 +234,7 @@ function AuthPage() {
           guide: "guide_service",
         };
         const intendedRole = VERTICAL_ROLE[vertical] ?? "business_owner";
-        const { error: e2 } = await supabase.auth.signUp({
+        const { data: signData, error: e2 } = await supabase.auth.signUp({
           email, password: pw,
           options: {
             emailRedirectTo: `${window.location.origin}/onboarding`,
