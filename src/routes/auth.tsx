@@ -31,6 +31,13 @@ const vBizPlaceholder: Record<Exclude<Vertical, "">, string> = {
 };
 
 // -------- reusable style fragments --------
+// Confirmation/OAuth links must always land on the live site, never on a
+// preview or editor host. Local dev still redirects to localhost.
+const appOrigin = () =>
+  typeof window !== "undefined" && window.location.origin.includes("localhost")
+    ? window.location.origin
+    : "https://www.bookfishingtrips.com";
+
 const cssVars: CSSProperties = {
   // @ts-expect-error custom props
   "--serif": "'Outfit',Georgia,serif",
@@ -244,6 +251,7 @@ function AuthPage() {
     setStatus("submitting");
     setDoneKind(kind);
 
+    const origin = appOrigin();
     try {
       if (kind === "login") {
         const { error: e2 } = await supabase.auth.signInWithPassword({ email, password: pw });
@@ -252,7 +260,7 @@ function AuthPage() {
         const { data: signData, error: e2 } = await supabase.auth.signUp({
           email, password: pw,
           options: {
-            emailRedirectTo: `${window.location.origin}/dashboard`,
+            emailRedirectTo: `${origin}/dashboard`,
             data: { intended_role: "angler", full_name: val("name") },
           },
         });
@@ -277,7 +285,7 @@ function AuthPage() {
         const { data: signData, error: e2 } = await supabase.auth.signUp({
           email, password: pw,
           options: {
-            emailRedirectTo: `${window.location.origin}/onboarding`,
+            emailRedirectTo: `${origin}/onboarding`,
             data: {
               intended_role: intendedRole, full_name: val("name"),
               vertical, business_name: val("bizName"),
@@ -316,7 +324,7 @@ function AuthPage() {
         provider,
         options: {
           // Must be a public page; /auth sends signed-in users on to /dashboard.
-          redirectTo: `${window.location.origin}/auth`,
+          redirectTo: `${appOrigin()}/auth`,
           skipBrowserRedirect: inFrame,
           queryParams: provider === "google" ? { prompt: "select_account" } : undefined,
           ...(role ? { data: { intended_role: role } } : {}),
