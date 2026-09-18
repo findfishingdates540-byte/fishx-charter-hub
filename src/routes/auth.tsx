@@ -102,6 +102,10 @@ function AuthPage() {
   const [error, setError] = useState("");
   const [showPw, setShowPw] = useState(false);
   const [doneKind, setDoneKind] = useState<DoneKind>("login");
+  // "Check your inbox" screen: keep the email so the user can request a new link.
+  const [confirmEmail, setConfirmEmail] = useState("");
+  const [resendIn, setResendIn] = useState(60);
+  const [resendMsg, setResendMsg] = useState("");
 
   // Already signed in? Skip the sign-in form entirely.
   useEffect(() => {
@@ -221,7 +225,7 @@ function AuthPage() {
         if (e2) throw e2;
         // Email confirmation is on: no session yet. Show the check-your-inbox
         // screen; the link in the email opens /dashboard once confirmed.
-        if (!signData.session) { setStatus("confirm"); return; }
+        if (!signData.session) { setConfirmEmail(email); setResendIn(60); setResendMsg(""); setStatus("confirm"); return; }
       } else {
         // The vertical picked at signup becomes the account's role, so the
         // operator always lands on the matching workspace.
@@ -248,7 +252,7 @@ function AuthPage() {
         if (e2) throw e2;
         // Same confirmation rule for operators: the email link opens
         // /onboarding, and finishing setup routes to their console.
-        if (!signData.session) { setStatus("confirm"); return; }
+        if (!signData.session) { setConfirmEmail(email); setResendIn(60); setResendMsg(""); setStatus("confirm"); return; }
       }
       setStatus("done");
     } catch (err) {
