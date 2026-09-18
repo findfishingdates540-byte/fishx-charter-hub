@@ -25,7 +25,11 @@
   @keyframes fx-sonar{0%{transform:scale(.7);opacity:.55}70%{opacity:0}100%{transform:scale(2.1);opacity:0}}
   @keyframes fx-rise{0%{opacity:0;transform:translateY(24px)}100%{opacity:1;transform:translateY(0)}}
   @keyframes fx-shimmer{0%{background-position:0% 50%}100%{background-position:200% 50%}}
-  @media (prefers-reduced-motion: reduce){*{animation:none !important;transition:none !important}}
+   @media (prefers-reduced-motion: reduce){*{animation:none !important;transition:none !important}}
+   @media (max-width: 900px){
+     [data-topnav]{display:none !important}
+     [data-header] > div{padding:14px 20px !important}
+   }
 </style>
 <template id="__bundler_thumbnail"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400"><rect width="400" height="400" fill="#072057"/><circle cx="200" cy="172" r="92" fill="none" stroke="#2DE2F2" stroke-width="5"/><text x="200" y="196" font-family="Georgia,serif" font-size="84" fill="#2DE2F2" text-anchor="middle">F·X</text><text x="200" y="300" font-family="Georgia,serif" font-size="34" letter-spacing="10" fill="#eaf1f6" text-anchor="middle">FISH—X</text></svg></template>
 </helmet>
