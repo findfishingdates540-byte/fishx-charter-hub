@@ -153,8 +153,8 @@ function AuthPage() {
     return () => clearTimeout(timer);
   }, [isConfirm, resendIn]);
 
-  // Confirmation emails go through our own sender (Resend, verified domain):
-  // Supabase's built-in sender is capped and often never reaches the inbox.
+  // Resends go through our own sender (Resend, verified domain) — the initial
+  // sign-up email comes from Supabase's signUp() call, only once.
   const sendConfirmation = async (email: string, bizKind: "angler" | "business") => {
     const result = await sendSignupConfirmation({ data: { email, kind: bizKind } });
     return result.sent;
@@ -260,7 +260,6 @@ function AuthPage() {
         // Email confirmation is on: no session yet. Show the check-your-inbox
         // screen; the link in the email opens /dashboard once confirmed.
         if (!signData.session) {
-          sendConfirmation(email, "angler").catch(() => {});
           setConfirmEmail(email); setResendIn(60); setResendMsg(""); setStatus("confirm"); return;
         }
       } else {
@@ -290,7 +289,6 @@ function AuthPage() {
         // Same confirmation rule for operators: the email link opens
         // /onboarding, and finishing setup routes to their console.
         if (!signData.session) {
-          sendConfirmation(email, "business").catch(() => {});
           setConfirmEmail(email); setResendIn(60); setResendMsg(""); setStatus("confirm"); return;
         }
       }
