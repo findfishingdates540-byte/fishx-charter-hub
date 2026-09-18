@@ -13,6 +13,18 @@ import {
   upsertBusinessProfile,
 } from "@/lib/onboarding.functions";
 
+// Sign-up asks for a "vertical"; onboarding stores a business category key.
+const VERTICAL_TO_CATEGORY: Record<string, string> = {
+  captain: "charter",
+  guide: "guide_service",
+  tackle: "tackle_shop",
+  bait: "bait_shop",
+  marina: "marina",
+  lodge: "lodge",
+  apparel: "apparel",
+  manufacturer: "gear_mfg",
+};
+
 type DocKey = string;
 type DocSpec = { key: string; title: string; desc: string };
 
@@ -538,6 +550,29 @@ export function OperatorOnboarding() {
     });
     if (biz.is_published) setPublished(true);
   }
+
+  // No business row yet (first visit after sign-up): reuse what they already
+  // typed on the sign-up form instead of asking for it twice.
+  const signupPrefillRef = useRef(false);
+  useEffect(() => {
+    if (isLoading || biz || signupPrefillRef.current) return;
+    signupPrefillRef.current = true;
+    let cancelled = false;
+    supabase.auth.getUser().then(({ data: u }) => {
+      const m = (u.user?.user_metadata ?? {}) as Record<string, string | undefined>;
+      if (cancelled) return;
+      const cat = VERTICAL_TO_CATEGORY[m['vertical'] ?? ""] ?? undefined;
+      setProfile((p) => ({
+        ...p,
+        name: p.name || (m['business_name'] ?? ""),
+        city: p.city || (m['location'] ?? ""),
+        categoryKey: cat ?? p.categoryKey,
+      }));
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [isLoading, biz]);
 
   // Listing form — defaults come from the current category config
   const svc = data?.service;
