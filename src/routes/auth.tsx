@@ -102,6 +102,10 @@ function AuthPage() {
   const [error, setError] = useState("");
   const [showPw, setShowPw] = useState(false);
   const [doneKind, setDoneKind] = useState<DoneKind>("login");
+  // "Check your inbox" screen: keep the email so the user can request a new link.
+  const [confirmEmail, setConfirmEmail] = useState("");
+  const [resendIn, setResendIn] = useState(60);
+  const [resendMsg, setResendMsg] = useState("");
 
   // Already signed in? Skip the sign-in form entirely.
   useEffect(() => {
@@ -139,6 +143,36 @@ function AuthPage() {
     }, 1200);
     return () => clearTimeout(timer);
   }, [isDone, doneKind, navigate]);
+
+  // 60-second cooldown on the "Resend email" button (Supabase rate-limits
+  // repeated resend calls, so the button waits it out).
+  useEffect(() => {
+    if (!isConfirm || resendIn <= 0) return;
+    const timer = setTimeout(() => setResendIn((s) => s - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [isConfirm, resendIn]);
+
+  const handleResend = async () => {
+    if (!confirmEmail || resendIn > 0) return;
+    setResendMsg("");
+    setResendIn(60);
+    const { error: e2 } = await supabase.auth.resend({
+      type: "signup",
+      email: confirmEmail,
+      options: {
+        emailRedirectTo:
+          doneKind === "business"
+            ? `${window.location.origin}/onboarding`
+            : `${window.location.origin}/dashboard`,
+      },
+    });
+    if (e2) {
+      setResendIn(0);
+      setResendMsg(e2.message);
+    } else {
+      setResendMsg("New link sent — check your inbox (and spam folder).");
+    }
+  };
 
   const doneTitle = doneKind === "business" ? "Workspace created" : doneKind === "angler" ? "Account created" : "You’re in";
   const doneMsg = doneKind === "business"
@@ -221,7 +255,7 @@ function AuthPage() {
         if (e2) throw e2;
         // Email confirmation is on: no session yet. Show the check-your-inbox
         // screen; the link in the email opens /dashboard once confirmed.
-        if (!signData.session) { setStatus("confirm"); return; }
+        if (!signData.session) { setConfirmEmail(email); setResendIn(60); setResendMsg(""); setStatus("confirm"); return; }
       } else {
         // The vertical picked at signup becomes the account's role, so the
         // operator always lands on the matching workspace.
@@ -248,7 +282,7 @@ function AuthPage() {
         if (e2) throw e2;
         // Same confirmation rule for operators: the email link opens
         // /onboarding, and finishing setup routes to their console.
-        if (!signData.session) { setStatus("confirm"); return; }
+        if (!signData.session) { setConfirmEmail(email); setResendIn(60); setResendMsg(""); setStatus("confirm"); return; }
       }
       setStatus("done");
     } catch (err) {
@@ -605,7 +639,20 @@ function AuthPage() {
                 We sent a confirmation link to your email. Open it and you’ll be signed straight into
                 {doneKind === "business" ? " your setup — then your dashboard" : " your dashboard"}.
               </p>
-              <div style={{ marginTop: 4 }}>
+              {resendMsg && (
+                <p style={{ fontSize: 13, lineHeight: 1.5, color: resendMsg.startsWith("New link") ? "var(--goldtext)" : "#a23a34", margin: "-14px 0 18px" }}>{resendMsg}</p>
+              )}
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12, marginTop: 4 }}>
+                <button type="button" onClick={handleResend} disabled={resendIn > 0}
+                  style={{
+                    display: "inline-flex", alignItems: "center", gap: 9,
+                    background: resendIn > 0 ? "var(--paper2)" : "var(--sand)", color: resendIn > 0 ? "var(--tmut)" : "#04121B",
+                    border: 0, fontSize: 13, fontWeight: 700, letterSpacing: ".08em",
+                    textTransform: "uppercase", padding: "14px 28px", borderRadius: 40,
+                    cursor: resendIn > 0 ? "default" : "pointer", fontFamily: "var(--sans)",
+                  }}>
+                  {resendIn > 0 ? `Resend email in ${resendIn}s` : "Resend email"}
+                </button>
                 <button onClick={reset} style={{ background: "transparent", border: 0, cursor: "pointer", fontSize: 13, color: "var(--tmut)", fontFamily: "var(--sans)" }}>Back to sign in</button>
               </div>
             </div>
