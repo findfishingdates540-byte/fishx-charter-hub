@@ -13,6 +13,18 @@ import {
   upsertBusinessProfile,
 } from "@/lib/onboarding.functions";
 
+// Sign-up asks for a "vertical"; onboarding stores a business category key.
+const VERTICAL_TO_CATEGORY: Record<string, string> = {
+  captain: "charter",
+  guide: "guide_service",
+  tackle: "tackle_shop",
+  bait: "bait_shop",
+  marina: "marina",
+  lodge: "lodge",
+  apparel: "apparel",
+  manufacturer: "gear_mfg",
+};
+
 type DocKey = string;
 type DocSpec = { key: string; title: string; desc: string };
 
