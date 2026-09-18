@@ -12,7 +12,7 @@ export const Route = createFileRoute("/auth")({
 type Vertical = "captain" | "tackle" | "marina" | "manufacturer" | "apparel" | "guide" | "";
 type View = "login" | "signup";
 type Step = "intent" | "angler" | "vertical" | "business";
-type Status = "idle" | "submitting" | "done";
+type Status = "idle" | "submitting" | "done" | "confirm";
 type DoneKind = "login" | "angler" | "business";
 
 const vLabels: Record<Exclude<Vertical, "">, string> = {
@@ -128,6 +128,7 @@ function AuthPage() {
   const stepLabel = atAngler ? "Step 2 of 2" : atVertical ? "Step 2 of 3" : atBusiness ? "Step 3 of 3" : "";
   const isSubmitting = status === "submitting";
   const isDone = status === "done";
+  const isConfirm = status === "confirm";
   const pwType = showPw ? "text" : "password";
   const pwToggleLabel = showPw ? "Hide" : "Show";
 
@@ -210,7 +211,7 @@ function AuthPage() {
         const { error: e2 } = await supabase.auth.signInWithPassword({ email, password: pw });
         if (e2) throw e2;
       } else if (kind === "angler") {
-        const { error: e2 } = await supabase.auth.signUp({
+        const { data: signData, error: e2 } = await supabase.auth.signUp({
           email, password: pw,
           options: {
             emailRedirectTo: `${window.location.origin}/dashboard`,
@@ -218,6 +219,9 @@ function AuthPage() {
           },
         });
         if (e2) throw e2;
+        // Email confirmation is on: no session yet. Show the check-your-inbox
+        // screen; the link in the email opens /dashboard once confirmed.
+        if (!signData.session) { setStatus("confirm"); return; }
       } else {
         // The vertical picked at signup becomes the account's role, so the
         // operator always lands on the matching workspace.
@@ -230,7 +234,7 @@ function AuthPage() {
           guide: "guide_service",
         };
         const intendedRole = VERTICAL_ROLE[vertical] ?? "business_owner";
-        const { error: e2 } = await supabase.auth.signUp({
+        const { data: signData, error: e2 } = await supabase.auth.signUp({
           email, password: pw,
           options: {
             emailRedirectTo: `${window.location.origin}/onboarding`,
@@ -242,6 +246,9 @@ function AuthPage() {
           },
         });
         if (e2) throw e2;
+        // Same confirmation rule for operators: the email link opens
+        // /onboarding, and finishing setup routes to their console.
+        if (!signData.session) { setStatus("confirm"); return; }
       }
       setStatus("done");
     } catch (err) {
@@ -580,6 +587,25 @@ function AuthPage() {
               )}
               <button onClick={handleDoneCta} style={{ display: "inline-flex", alignItems: "center", gap: 9, background: "var(--sand)", color: "#04121B", border: 0, textDecoration: "none", fontSize: 13, fontWeight: 700, letterSpacing: ".08em", textTransform: "uppercase", padding: "15px 30px", borderRadius: 40, cursor: "pointer" }}>{doneCta} →</button>
               <div style={{ marginTop: 18 }}>
+                <button onClick={reset} style={{ background: "transparent", border: 0, cursor: "pointer", fontSize: 13, color: "var(--tmut)", fontFamily: "var(--sans)" }}>Back to sign in</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Confirm-your-email overlay (signup without a session yet) */}
+        {isConfirm && (
+          <div style={{ position: "absolute", inset: 0, background: "var(--paper)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 6 }}>
+            <div style={{ textAlign: "center", maxWidth: 380, padding: "0 30px" }}>
+              <div style={{ width: 78, height: 78, borderRadius: "50%", background: "var(--sandsoft)", display: "grid", placeItems: "center", margin: "0 auto 24px", animation: "fx-pop .5s both" }}>
+                <span style={{ color: "var(--goldtext)", fontSize: 32 }}>✉</span>
+              </div>
+              <h2 style={{ fontFamily: "var(--serif)", fontWeight: 600, fontSize: 31, letterSpacing: "-.01em", margin: "0 0 10px", color: "var(--ink)" }}>Check your inbox.</h2>
+              <p style={{ fontSize: 15.5, lineHeight: 1.55, color: "var(--tmut)", margin: "0 0 26px" }}>
+                We sent a confirmation link to your email. Open it and you’ll be signed straight into
+                {doneKind === "business" ? " your setup — then your dashboard" : " your dashboard"}.
+              </p>
+              <div style={{ marginTop: 4 }}>
                 <button onClick={reset} style={{ background: "transparent", border: 0, cursor: "pointer", fontSize: 13, color: "var(--tmut)", fontFamily: "var(--sans)" }}>Back to sign in</button>
               </div>
             </div>
