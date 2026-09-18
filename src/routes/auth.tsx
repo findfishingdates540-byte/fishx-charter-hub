@@ -251,12 +251,7 @@ function AuthPage() {
     setStatus("submitting");
     setDoneKind(kind);
 
-    // Confirmation links must always land on the live site, never on a
-    // preview/editor host. Local dev still redirects to localhost.
-    const origin =
-      typeof window !== "undefined" && window.location.origin.includes("localhost")
-        ? window.location.origin
-        : "https://www.bookfishingtrips.com";
+    const origin = appOrigin();
     try {
       if (kind === "login") {
         const { error: e2 } = await supabase.auth.signInWithPassword({ email, password: pw });
