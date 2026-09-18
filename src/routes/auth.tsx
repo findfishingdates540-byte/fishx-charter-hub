@@ -260,7 +260,6 @@ function AuthPage() {
         // Email confirmation is on: no session yet. Show the check-your-inbox
         // screen; the link in the email opens /dashboard once confirmed.
         if (!signData.session) {
-          sendConfirmation(email, "angler").catch(() => {});
           setConfirmEmail(email); setResendIn(60); setResendMsg(""); setStatus("confirm"); return;
         }
       } else {
@@ -290,7 +289,6 @@ function AuthPage() {
         // Same confirmation rule for operators: the email link opens
         // /onboarding, and finishing setup routes to their console.
         if (!signData.session) {
-          sendConfirmation(email, "business").catch(() => {});
           setConfirmEmail(email); setResendIn(60); setResendMsg(""); setStatus("confirm"); return;
         }
       }
