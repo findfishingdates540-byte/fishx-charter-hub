@@ -62,7 +62,11 @@ async function loadCharters(sb: ReturnType<typeof publicClient>) {
     .in("kind", [...CHARTER_KINDS])
     .order("created_at", { ascending: false })
     .limit(500);
-  if (error) throw new Response(error.message, { status: 500 });
+  if (error) {
+    console.error("loadCharters failed", error.message);
+    return [] as Listing[];
+  }
+
   return (data ?? []) as unknown as Listing[];
 }
 
