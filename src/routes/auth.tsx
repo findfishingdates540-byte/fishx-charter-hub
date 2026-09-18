@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState, type CSSProperties, type FormEvent, type 
 import { flushSync } from "react-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { resolveAsset } from "@/lib/dc-template";
+import { sendSignupConfirmation } from "@/lib/auth-emails.functions";
 
 export const Route = createFileRoute("/auth")({
   component: AuthPage,
@@ -152,25 +153,28 @@ function AuthPage() {
     return () => clearTimeout(timer);
   }, [isConfirm, resendIn]);
 
+  // Confirmation emails go through our own sender (Resend, verified domain):
+  // Supabase's built-in sender is capped and often never reaches the inbox.
+  const sendConfirmation = async (email: string, bizKind: "angler" | "business") => {
+    const result = await sendSignupConfirmation({ data: { email, kind: bizKind } });
+    return result.sent;
+  };
+
   const handleResend = async () => {
     if (!confirmEmail || resendIn > 0) return;
     setResendMsg("");
     setResendIn(60);
-    const { error: e2 } = await supabase.auth.resend({
-      type: "signup",
-      email: confirmEmail,
-      options: {
-        emailRedirectTo:
-          doneKind === "business"
-            ? `${window.location.origin}/onboarding`
-            : `${window.location.origin}/dashboard`,
-      },
-    });
-    if (e2) {
+    try {
+      const sent = await sendConfirmation(confirmEmail, doneKind === "business" ? "business" : "angler");
+      if (sent) {
+        setResendMsg("New link sent — check your inbox (and spam folder).");
+      } else {
+        setResendIn(0);
+        setResendMsg("Couldn't send right now — wait a moment and try again.");
+      }
+    } catch {
       setResendIn(0);
-      setResendMsg(e2.message);
-    } else {
-      setResendMsg("New link sent — check your inbox (and spam folder).");
+      setResendMsg("Couldn't send right now — wait a moment and try again.");
     }
   };
 
@@ -255,7 +259,10 @@ function AuthPage() {
         if (e2) throw e2;
         // Email confirmation is on: no session yet. Show the check-your-inbox
         // screen; the link in the email opens /dashboard once confirmed.
-        if (!signData.session) { setConfirmEmail(email); setResendIn(60); setResendMsg(""); setStatus("confirm"); return; }
+        if (!signData.session) {
+          sendConfirmation(email, "angler").catch(() => {});
+          setConfirmEmail(email); setResendIn(60); setResendMsg(""); setStatus("confirm"); return;
+        }
       } else {
         // The vertical picked at signup becomes the account's role, so the
         // operator always lands on the matching workspace.
@@ -282,7 +289,10 @@ function AuthPage() {
         if (e2) throw e2;
         // Same confirmation rule for operators: the email link opens
         // /onboarding, and finishing setup routes to their console.
-        if (!signData.session) { setConfirmEmail(email); setResendIn(60); setResendMsg(""); setStatus("confirm"); return; }
+        if (!signData.session) {
+          sendConfirmation(email, "business").catch(() => {});
+          setConfirmEmail(email); setResendIn(60); setResendMsg(""); setStatus("confirm"); return;
+        }
       }
       setStatus("done");
     } catch (err) {
