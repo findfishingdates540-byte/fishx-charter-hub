@@ -351,8 +351,8 @@ body.dc-body { margin:0; background:#072057; }
 }
 
 @media (max-width: 480px) {
-  /* On the smallest screens keep only the gold CTA beside the wordmark */
-  .dc-landing #fishx-root header a[href="/auth"] { display: none !important; }
+  /* Keep the CTA visible on phones — just make it compact. */
+  .dc-landing #fishx-root header a[href="/auth"] { padding: 10px 16px !important; font-size: 11px !important; }
 }
 
 /* Hero search widget: the 3-column search / location / button grid is too
