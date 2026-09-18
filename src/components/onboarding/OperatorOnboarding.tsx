@@ -653,13 +653,61 @@ export function OperatorOnboarding() {
 
   return (
     <div
-      className="fx-shell dc-body min-h-screen flex bg-[#0D161F] text-[#F0F2F5]"
+      className="fx-shell dc-body min-h-screen flex flex-col md:flex-row bg-[#0D161F] text-[#F0F2F5]"
       style={{
         fontFamily: "'Outfit',system-ui,sans-serif",
       }}
     >
+      {/* Mobile header (replaces the sidebar on phones) */}
+      <header className="md:hidden bg-[#1C2936] px-5 pt-5 pb-4 sticky top-0 z-40 border-b border-[#2DE2F2]/10">
+        <div className="flex items-center justify-between gap-3 mb-3">
+          <span className="flex items-center gap-[10px]">
+            <span className="inline-block w-[11px] h-[11px] bg-[#2DE2F2] rotate-45" />
+            <span className="font-semibold text-[17px] tracking-[0.02em] whitespace-nowrap">FISH-X.COM</span>
+          </span>
+          <span className="text-[11.5px] font-bold text-[#2DE2F2]">
+            {published ? "Complete" : `Step ${step + 1} / 5`}
+          </span>
+        </div>
+        <div className="h-[6px] rounded-md bg-[#0D161F] overflow-hidden mb-3">
+          <div
+            className="h-full rounded-md bg-[#2DE2F2] transition-all duration-500"
+            style={{ width: `${pct}%` }}
+          />
+        </div>
+        <nav className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
+          {STEPS.map((s, i) => {
+            const done = i < step || published;
+            const current = i === step && !published;
+            return (
+              <button
+                key={i}
+                onClick={() => !published && setStep(i)}
+                className="flex items-center gap-2 flex-none border-0 rounded-full py-1.5 px-3 cursor-pointer text-[12px] font-semibold"
+                style={{
+                  background: current ? "rgba(45,226,242,.14)" : "transparent",
+                  color: done || current ? "#F0F2F5" : "#92A0AB",
+                }}
+              >
+                <span
+                  className="w-5 h-5 rounded-full grid place-items-center text-[10px] font-bold border-2"
+                  style={{
+                    background: done || current ? "#2DE2F2" : "transparent",
+                    borderColor: done || current ? "#2DE2F2" : "rgba(255,255,255,.2)",
+                    color: done || current ? "#04121B" : "#92A0AB",
+                  }}
+                >
+                  {done ? "✓" : i + 1}
+                </span>
+                {s.label}
+              </button>
+            );
+          })}
+        </nav>
+      </header>
+
       {/* Sidebar */}
-      <aside className="w-[300px] flex-none bg-[#1C2936] text-[#F0F2F5] flex flex-col p-[26px_24px] sticky top-0 h-screen">
+      <aside className="hidden md:flex w-[300px] flex-none bg-[#1C2936] text-[#F0F2F5] flex-col p-[26px_24px] sticky top-0 h-screen">
         <div className="flex items-center gap-[10px] mb-[26px]">
           <span className="inline-block w-[11px] h-[11px] bg-[#2DE2F2] rotate-45" />
           <span
@@ -738,8 +786,8 @@ export function OperatorOnboarding() {
       </aside>
 
       {/* Main */}
-      <main className="flex-1 flex flex-col">
-        <div className="flex-1 p-[56px_64px] max-w-[960px]">
+      <main className="flex-1 flex flex-col min-w-0">
+        <div className="flex-1 p-5 sm:p-8 lg:p-[56px_64px] max-w-[960px] w-full mx-auto lg:mx-0">
           {published ? (
             <div className="min-h-[70vh] flex items-center justify-center">
               <div className="max-w-[520px] text-center">
