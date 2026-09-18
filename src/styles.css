@@ -302,17 +302,8 @@ body.dc-body { margin:0; background:#072057; }
   .dc-landing .fx-hero-grid > div:first-child > div:first-child { margin-bottom: 20px !important; }
   .dc-landing [data-cats] { justify-content: center !important; }
   .dc-landing .fx-hero-grid > div:first-child > div:last-child { justify-content: center !important; }
-  .dc-landing .fx-hero-grid > div:last-child {
-    position: relative !important;
-    width: 100% !important;
-    max-width: 620px !important;
-    height: 440px !important;
-    margin: 0 auto !important;
-    padding: 28px 14px 24px !important;
-    box-sizing: border-box !important;
-  }
-  .dc-landing .fx-hero-grid > div:last-child > div:first-child { width: min(260px, 46%) !important; top: 40px !important; right: 14px !important; }
-  .dc-landing .fx-hero-grid > div:last-child > div:last-child { width: min(220px, 40%) !important; }
+  /* Hide the hero photo collage on tablet too — it's shown only on desktop. */
+  .dc-landing .fx-hero-grid > div:last-child { display: none !important; }
   .dc-landing #fishx-root > header > div { padding: 14px 20px !important; gap: 14px !important; }
   .dc-landing #fishx-root > header nav { gap: 18px !important; }
   .dc-landing #fishx-root > header nav a { font-size: 13px !important; }
@@ -320,7 +311,6 @@ body.dc-body { margin:0; background:#072057; }
 
 
 @media (max-width: 640px) {
-  .dc-landing [data-screen-label="Hero"] > div > div:last-child { display: none !important; }
   .dc-landing [data-screen-label="Hero"] > div { grid-template-columns: 1fr !important; }
   .dc-landing [data-screen-label="Hero"] > div > div:first-child { max-width: 100% !important; text-align: center !important; }
   .dc-landing [data-screen-label="Hero"] h1 { text-align: center !important; }
