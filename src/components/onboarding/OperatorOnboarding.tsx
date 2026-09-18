@@ -1003,7 +1003,7 @@ function ProfileStep({
 }) {
   return (
     <div className="bg-[#14202B] border border-[#2DE2F2]/10 rounded-[18px] p-6 max-w-[720px]">
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <label className="block">
           <span className={labelCls}>Business name</span>
           <input
@@ -1148,7 +1148,7 @@ function PayoutsStep({
   if (!validKeys.includes(schedule)) {
     setTimeout(() => setSchedule(config.schedules[0].key), 0);
   }
-  const gridCols = config.flow.length === 3 ? "grid-cols-3" : "grid-cols-2";
+  const gridCols = config.flow.length === 3 ? "grid-cols-1 sm:grid-cols-3" : "grid-cols-1 sm:grid-cols-2";
   return (
     <>
       <div className="bg-[#14202B] border border-[#2DE2F2]/10 rounded-2xl p-[16px_20px] max-w-[720px] mb-4">
@@ -1210,8 +1210,7 @@ function PayoutsStep({
       <div className="bg-[#14202B] border border-[#2DE2F2]/10 rounded-[18px] p-6 max-w-[720px]">
         <div className="text-[11px] font-bold tracking-[0.1em] uppercase text-[#92A0AB] mb-3">Payout schedule</div>
         <div
-          className="grid gap-3"
-          style={{ gridTemplateColumns: `repeat(${config.schedules.length}, minmax(0,1fr))` }}
+          className={`grid gap-3 grid-cols-1 ${config.schedules.length >= 3 ? "sm:grid-cols-3" : "sm:grid-cols-2"}`}
         >
           {config.schedules.map((opt) => {
             const on = opt.key === schedule;
@@ -1280,8 +1279,7 @@ function ListingStep({
       </label>
 
       <div
-        className="grid gap-4 mb-4"
-        style={{ gridTemplateColumns: config.showDuration ? "1fr 1fr 1fr" : "1fr 1fr" }}
+        className={`grid gap-4 mb-4 grid-cols-1 ${"${config.showDuration ? \"sm:grid-cols-3\" : \"sm:grid-cols-2\"}"}`}
       >
         {config.showDuration && (
           <label className="block">
