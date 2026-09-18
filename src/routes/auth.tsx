@@ -324,7 +324,7 @@ function AuthPage() {
         provider,
         options: {
           // Must be a public page; /auth sends signed-in users on to /dashboard.
-          redirectTo: `${window.location.origin}/auth`,
+          redirectTo: `${appOrigin()}/auth`,
           skipBrowserRedirect: inFrame,
           queryParams: provider === "google" ? { prompt: "select_account" } : undefined,
           ...(role ? { data: { intended_role: role } } : {}),

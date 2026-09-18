@@ -5,7 +5,7 @@ import { z } from "zod";
 import confirmTemplate from "../../supabase/email-templates/confirm-signup.html?raw";
 
 const APP_URL =
-  process.env["PUBLIC_APP_URL"] ?? "https://booking.fish-x.com";
+  process.env["PUBLIC_APP_URL"] ?? "https://www.bookfishingtrips.com";
 
 /**
  * Generates a fresh signup-confirmation link with the service role and sends
