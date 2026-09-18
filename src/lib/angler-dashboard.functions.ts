@@ -65,11 +65,20 @@ export const getAnglerDashboard = createServerFn({ method: "GET" })
 
 /** Public: recommended charters for the "picked for you" strip. */
 export const listRecommendedCharters = createServerFn({ method: "GET" }).handler(async () => {
-  const sb = createClient<Database>(
-    process.env.SUPABASE_URL!,
-    process.env.SUPABASE_PUBLISHABLE_KEY!,
-    { auth: { storage: undefined, persistSession: false, autoRefreshToken: false } },
-  );
+  const url = process.env["SUPABASE_URL"];
+  const key = process.env["SUPABASE_PUBLISHABLE_KEY"];
+  if (!url || !key) return [];
+  const sb = createClient<Database>(url, key, {
+    auth: { storage: undefined, persistSession: false, autoRefreshToken: false },
+    global: {
+      fetch: (input, init) => {
+        const h = new Headers(init?.headers);
+        if (key.startsWith("sb_") && h.get("Authorization") === `Bearer ${key}`) h.delete("Authorization");
+        h.set("apikey", key);
+        return fetch(input, { ...init, headers: h });
+      },
+    },
+  });
   const { data, error } = await sb
     .from("bookable_services")
     .select(
@@ -79,6 +88,9 @@ export const listRecommendedCharters = createServerFn({ method: "GET" }).handler
     .in("kind", ["charter_trip", "guided_trip"])
     .order("created_at", { ascending: false })
     .limit(6);
-  if (error) throw new Response(error.message, { status: 500 });
+  if (error) {
+    console.error("listRecommendedCharters failed", error.message);
+    return [];
+  }
   return data ?? [];
 });
