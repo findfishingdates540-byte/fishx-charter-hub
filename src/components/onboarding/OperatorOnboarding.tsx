@@ -1279,7 +1279,7 @@ function ListingStep({
       </label>
 
       <div
-        className={`grid gap-4 mb-4 grid-cols-1 ${"${config.showDuration ? \"sm:grid-cols-3\" : \"sm:grid-cols-2\"}"}`}
+        className={`grid gap-4 mb-4 grid-cols-1 ${config.showDuration ? "sm:grid-cols-3" : "sm:grid-cols-2"}`}
       >
         {config.showDuration && (
           <label className="block">
