@@ -457,7 +457,7 @@ body.dc-body { margin:0; background:#072057; }
   }
 
   /* Sidebar → horizontal scrolling top bar */
-  .fx-authed aside {
+  .fx-authed aside:not(.fx-operator-side):not(.fx-operator-drawer) {
     position: static !important;
     width: 100% !important;
     height: auto !important;
@@ -468,25 +468,25 @@ body.dc-body { margin:0; background:#072057; }
     border-right: 0 !important;
     border-bottom: 1px solid rgba(255,255,255,.08) !important;
   }
-  .fx-authed aside > nav {
+  .fx-authed aside:not(.fx-operator-side):not(.fx-operator-drawer) > nav {
     flex-direction: row !important;
     overflow-x: auto !important;
     -webkit-overflow-scrolling: touch !important;
     gap: 6px !important;
     padding-bottom: 4px !important;
   }
-  .fx-authed aside > nav::-webkit-scrollbar { display: none; }
-  .fx-authed aside > nav > button {
+  .fx-authed aside:not(.fx-operator-side):not(.fx-operator-drawer) > nav::-webkit-scrollbar { display: none; }
+  .fx-authed aside:not(.fx-operator-side):not(.fx-operator-drawer) > nav > button {
     flex: none !important;
     white-space: nowrap !important;
     padding: 8px 12px !important;
     font-size: 13px !important;
   }
-  .fx-authed aside > a:first-child { padding: 4px 6px 6px !important; }
+  .fx-authed aside:not(.fx-operator-side):not(.fx-operator-drawer) > a:first-child { padding: 4px 6px 6px !important; }
   /* Workspace + user chips: hide the label column so only the icon shows */
-  .fx-authed aside > div[style*="border-radius: 13px"] { margin-bottom: 6px !important; padding: 8px 10px !important; }
-  .fx-authed aside > div[style*="margin-top: auto"],
-  .fx-authed aside > div[style*="marginTop"] { margin-top: 0 !important; }
+  .fx-authed aside:not(.fx-operator-side):not(.fx-operator-drawer) > div[style*="border-radius: 13px"] { margin-bottom: 6px !important; padding: 8px 10px !important; }
+  .fx-authed aside:not(.fx-operator-side):not(.fx-operator-drawer) > div[style*="margin-top: auto"],
+  .fx-authed aside:not(.fx-operator-side):not(.fx-operator-drawer) > div[style*="marginTop"] { margin-top: 0 !important; }
 
   /* Sticky header inside main (OperatorShell light header) */
   .fx-authed header[style*="sticky"] {
@@ -682,8 +682,8 @@ body.dc-body { margin:0; background:#072057; }
   .fx-authed main { padding: 14px 10px 32px !important; }
   .fx-authed header[style*="sticky"] { padding: 8px 10px !important; }
   .fx-authed header[style*="sticky"] > div:first-child { padding: 6px 10px !important; }
-  .fx-authed aside { padding: 10px 10px !important; }
-  .fx-authed aside > div:last-child > div[style*="line-height"] { display: none !important; }
+  .fx-authed aside:not(.fx-operator-side):not(.fx-operator-drawer) { padding: 10px 10px !important; }
+  .fx-authed aside:not(.fx-operator-side):not(.fx-operator-drawer) > div:last-child > div[style*="line-height"] { display: none !important; }
 }
 
 /* Messages view — keep the thread list and main area full-bleed on mobile.
@@ -888,6 +888,9 @@ body.dc-body { margin:0; background:#072057; }
   .fx-operator-workspace > svg { width: 14px; color: var(--muted-foreground); }
   .fx-operator-compact-actions { display: flex; align-items: center; gap: 7px; min-width: 0; }
   .fx-operator-compact-actions > :not(.notif-wrap) { display: none !important; }
+  .fx-operator-compact-actions > select { display: block !important; width: min(120px, 24vw); padding: 7px 24px 7px 8px !important; text-overflow: ellipsis; }
+  .fx-operator-identity:has(.fx-operator-compact-actions > select) .fx-operator-workspace { display: none; }
+  .fx-operator-identity:has(.fx-operator-compact-actions > select) { grid-template-columns: auto auto minmax(0, 1fr); }
   .fx-operator-tabs-wrap { position: relative; overflow: hidden; padding: 2px 0 9px; }
   .fx-operator-tabs-wrap::after {
     content: "";

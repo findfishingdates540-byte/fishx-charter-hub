@@ -83,6 +83,21 @@ export function OperatorShell({
     <div
       className="fx-shell"
       style={{
+        ["--serif" as never]: "'Outfit', Georgia, serif",
+        ["--sans" as never]: "'Outfit', system-ui, sans-serif",
+        ["--ink" as never]: "var(--foreground)",
+        ["--navy" as never]: "var(--deep-hull)",
+        ["--paper" as never]: "var(--deep-hull)",
+        ["--card" as never]: "var(--deep-hull-2)",
+        ["--goldtext" as never]: "var(--crisp-cyan)",
+        ["--cyan" as never]: "var(--crisp-cyan)",
+        ["--green" as never]: "var(--sea-foam)",
+        ["--greensoft" as never]: "color-mix(in oklab, var(--sea-foam) 14%, transparent)",
+        ["--ond" as never]: "var(--on-deep)",
+        ["--ondmut" as never]: "var(--on-deep-muted)",
+        ["--tmut" as never]: "var(--muted-foreground)",
+        ["--line" as never]: "var(--border)",
+        ["--lined" as never]: "var(--border)",
         display: "flex",
         minHeight: "100vh",
         background: "#0D161F",
@@ -373,7 +388,7 @@ export function OperatorShell({
 
         {drawerOpen ? (
           <>
-            <button className="fx-operator-scrim" aria-label="Close navigation" onClick={() => setDrawerOpen(false)} />
+            <Button variant="ghost" className="fx-operator-scrim" aria-label="Close navigation" onClick={() => setDrawerOpen(false)} />
             <aside id="operator-navigation-drawer" className="fx-operator-drawer" aria-label="Operator menu">
               <div className="fx-operator-drawer-head">
                 <div className="fx-operator-drawer-avatar">{operatorName.charAt(0).toUpperCase()}</div>
