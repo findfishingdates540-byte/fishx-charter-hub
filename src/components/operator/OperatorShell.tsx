@@ -2,11 +2,13 @@
  * Shared shell for operator dashboards (marina, tackle, gear, apparel, guide).
  * Provides sidebar + top bar + page frame in the Fish-X design system.
  */
-import { ReactNode } from "react";
+import { ReactNode, useEffect, useRef, useState } from "react";
 import { BrandLogo } from "@/components/brand/BrandLogo";
 import { Link } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
+import { Button } from "@/components/ui/button";
+import { LogOut, Menu, Settings, UserRound, X } from "lucide-react";
 
 
 async function signOut() {
@@ -21,6 +23,11 @@ export interface OperatorNavItem {
   icon: ReactNode;
 }
 
+export interface OperatorDockItem {
+  key: string;
+  label: string;
+}
+
 export function OperatorShell({
   workspaceName,
   workspaceKind,
@@ -32,6 +39,7 @@ export function OperatorShell({
   pageTitle,
   pageSub,
   headerRight,
+  dock,
   children,
 }: {
   workspaceName: string;
@@ -44,12 +52,58 @@ export function OperatorShell({
   pageTitle: string;
   pageSub?: string;
   headerRight?: ReactNode;
+  dock?: OperatorDockItem[];
   children: ReactNode;
 }) {
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const tabRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+  const compactDock = (dock ?? nav.slice(0, 3).map(({ key, label }) => ({ key, label }))).slice(0, 3);
+
+  useEffect(() => {
+    if (!window.matchMedia("(max-width: 900px)").matches) return;
+    const tab = tabRefs.current[active];
+    if (!tab) return;
+    tab.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+  }, [active]);
+
+  useEffect(() => {
+    if (!drawerOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const close = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setDrawerOpen(false);
+    };
+    document.addEventListener("keydown", close);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener("keydown", close);
+    };
+  }, [drawerOpen]);
+
+  const choose = (key: string) => {
+    onNav(key);
+    setDrawerOpen(false);
+  };
+
   return (
     <div
       className="fx-shell"
       style={{
+        ["--serif" as never]: "'Outfit', Georgia, serif",
+        ["--sans" as never]: "'Outfit', system-ui, sans-serif",
+        ["--ink" as never]: "var(--foreground)",
+        ["--navy" as never]: "var(--deep-hull)",
+        ["--paper" as never]: "var(--deep-hull)",
+        ["--card" as never]: "var(--deep-hull-2)",
+        ["--goldtext" as never]: "var(--crisp-cyan)",
+        ["--cyan" as never]: "var(--crisp-cyan)",
+        ["--green" as never]: "var(--sea-foam)",
+        ["--greensoft" as never]: "color-mix(in oklab, var(--sea-foam) 14%, transparent)",
+        ["--ond" as never]: "var(--on-deep)",
+        ["--ondmut" as never]: "var(--on-deep-muted)",
+        ["--tmut" as never]: "var(--muted-foreground)",
+        ["--line" as never]: "var(--border)",
+        ["--lined" as never]: "var(--border)",
         display: "flex",
         minHeight: "100vh",
         background: "#0D161F",
@@ -57,9 +111,9 @@ export function OperatorShell({
         fontFamily: "'Outfit', system-ui, sans-serif",
       }}
     >
-      {/* SIDEBAR */}
+      {/* Desktop sidebar */}
       <aside
-        className="fx-side"
+        className="fx-operator-side"
         style={{
           width: 256,
           flex: "none",
@@ -142,13 +196,15 @@ export function OperatorShell({
           </div>
         </div>
 
-        <nav style={{ display: "flex", flexDirection: "column", gap: 3, overflowY: "auto", minHeight: 0, paddingRight: 2 }}>
+        <nav aria-label={`${workspaceKind} dashboard`} style={{ display: "flex", flexDirection: "column", gap: 3, overflowY: "auto", minHeight: 0, paddingRight: 2 }}>
           {nav.map((n) => {
             const isActive = n.key === active;
             return (
-              <button
+              <Button
+                variant="ghost"
                 key={n.key}
                 onClick={() => onNav(n.key)}
+                aria-current={isActive ? "page" : undefined}
                 style={{
                   display: "flex",
                   alignItems: "center",
@@ -185,7 +241,7 @@ export function OperatorShell({
                     {n.badge}
                   </span>
                 )}
-              </button>
+              </Button>
             );
           })}
         </nav>
@@ -257,8 +313,11 @@ export function OperatorShell({
             </div>
             <div style={{ fontSize: 11, color: "#2DE2F2" }}>{operatorRole}</div>
           </div>
-          <button
+          <Button
+            variant="ghost"
+            size="icon"
             title="Sign out"
+            aria-label="Sign out"
             onClick={() => signOut()}
             style={{
               marginLeft: "auto",
@@ -273,14 +332,94 @@ export function OperatorShell({
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7}>
               <path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 17l5-5-5-5M15 12H3" />
             </svg>
-          </button>
+          </Button>
         </div>
       </aside>
 
       {/* MAIN */}
-      <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}>
+      <div className="fx-operator-stage" style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}>
+        <header className="fx-operator-compact" data-operator-header>
+          <div className="fx-operator-identity">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="fx-operator-menu"
+              aria-label={drawerOpen ? "Close navigation" : "Open navigation"}
+              aria-expanded={drawerOpen}
+              aria-controls="operator-navigation-drawer"
+              onClick={() => setDrawerOpen((open) => !open)}
+            >
+              {drawerOpen ? <X /> : <Menu />}
+            </Button>
+            <Link className="fx-operator-brand" to="/dashboard" aria-label="Fish-X dashboard">
+              <BrandLogo size="sm" accent="var(--cyan, #2DE2F2)" />
+            </Link>
+            <div className="fx-operator-workspace" title={workspaceName}>
+              <span>{workspaceName.charAt(0).toUpperCase()}</span>
+              <div>
+                <small>{workspaceKind}</small>
+                <strong>{workspaceName}</strong>
+              </div>
+            </div>
+            <div className="fx-operator-compact-actions">
+              {headerRight}
+              <NotificationBell />
+            </div>
+          </div>
+
+          <div className="fx-operator-tabs-wrap">
+            <nav className="fx-operator-tabs" aria-label="Dashboard sections">
+              {nav.map((item) => {
+                const isActive = item.key === active;
+                return (
+                  <Button
+                    variant="ghost"
+                    key={item.key}
+                    ref={(node) => { tabRefs.current[item.key] = node; }}
+                    className="fx-operator-tab"
+                    data-active={isActive ? "true" : "false"}
+                    aria-current={isActive ? "page" : undefined}
+                    onClick={() => choose(item.key)}
+                  >
+                    <span aria-hidden="true">{item.icon}</span>
+                    <span>{item.label}</span>
+                    {item.badge !== undefined && item.badge !== 0 ? <b>{item.badge}</b> : null}
+                  </Button>
+                );
+              })}
+            </nav>
+          </div>
+        </header>
+
+        {drawerOpen ? (
+          <>
+            <Button variant="ghost" className="fx-operator-scrim" aria-label="Close navigation" onClick={() => setDrawerOpen(false)} />
+            <aside id="operator-navigation-drawer" className="fx-operator-drawer" aria-label="Operator menu">
+              <div className="fx-operator-drawer-head">
+                <div className="fx-operator-drawer-avatar">{operatorName.charAt(0).toUpperCase()}</div>
+                <div><strong>{operatorName}</strong><span>{operatorRole}</span></div>
+                <Button variant="ghost" size="icon" aria-label="Close navigation" onClick={() => setDrawerOpen(false)}><X /></Button>
+              </div>
+              <nav>
+                {nav.map((item) => (
+                  <Button key={item.key} variant="ghost" data-active={item.key === active ? "true" : "false"} onClick={() => choose(item.key)}>
+                    <span aria-hidden="true">{item.icon}</span><span>{item.label}</span>
+                    {item.badge !== undefined && item.badge !== 0 ? <b>{item.badge}</b> : null}
+                  </Button>
+                ))}
+              </nav>
+              <div className="fx-operator-drawer-account">
+                <Link to="/account" onClick={() => setDrawerOpen(false)}><UserRound />Account</Link>
+                <Button variant="ghost" onClick={() => choose("settings")}><Settings />Settings</Button>
+                <Button variant="ghost" onClick={() => signOut()}><LogOut />Sign out</Button>
+              </div>
+            </aside>
+          </>
+        ) : null}
+
         <header
-          className="fx-topbar"
+          className="fx-topbar fx-operator-titlebar"
+          data-operator-header
           style={{
             position: "sticky",
             top: 0,
@@ -326,7 +465,7 @@ export function OperatorShell({
         </header>
 
         <main
-          className="fx-main"
+          className="fx-main fx-operator-main"
           style={{
             flex: 1,
             padding: "30px 34px 48px",
@@ -336,6 +475,21 @@ export function OperatorShell({
         >
           {children}
         </main>
+
+        <nav className="fx-operator-dock" aria-label="Quick navigation">
+          {compactDock.map((item) => {
+            const source = nav.find((entry) => entry.key === item.key);
+            const isActive = active === item.key;
+            return (
+              <Button key={item.key} variant="ghost" data-active={isActive ? "true" : "false"} aria-current={isActive ? "page" : undefined} onClick={() => choose(item.key)}>
+                <span aria-hidden="true">{source?.icon}</span><small>{item.label}</small>
+              </Button>
+            );
+          })}
+          <Button variant="ghost" data-active={active === "settings" ? "true" : "false"} onClick={() => choose("settings")}>
+            <UserRound aria-hidden="true" /><small>Account</small>
+          </Button>
+        </nav>
       </div>
     </div>
   );

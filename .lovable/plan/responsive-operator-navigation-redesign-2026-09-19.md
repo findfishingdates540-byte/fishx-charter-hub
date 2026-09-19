@@ -5,20 +5,18 @@
 The Stitch design solves the current mobile clutter with three distinct navigation layers instead of placing every destination in one crowded row:
 
 1. **Sticky identity row**
-   - A compact menu button, Fish-X wordmark, current workspace, and notification bell share one stable row.
-   - The workspace name truncates rather than pushing controls off-screen.
-   - The row stays visible while the operator scrolls.
-
+  - A compact menu, Fish-X wordmark, current workspace, and notification bell share one stable row.
+  - The workspace name truncates rather than pushing controls off-screen.
+  - The row stays visible while the operator scrolls.
 2. **Independent horizontal work tabs**
-   - All dashboard destinations live in a single, swipeable pill row beneath the identity row.
-   - Every pill has a fixed width, so labels do not compress or wrap.
-   - The scrollbar is hidden, a right-edge fade signals more items, badges remain attached to their labels, and the active tab uses cyan fill.
-   - Selecting an off-screen tab brings it into view.
-
-3. **Four-item bottom dock**
-   - Only the most frequent actions stay fixed at the bottom; the full tab set remains available above and in the menu.
-   - The fourth item opens account/settings rather than crowding the dock with secondary tools.
-   - Content receives enough bottom space that the dock never covers controls.
+  - All dashboard destinations live in a single, swipeable pill row beneath the identity row.
+  - Every pill has a fixed width, so labels do not compress or wrap.
+  - The scrollbar is hidden, a right-edge fade signals more items, badges remain attached to their labels, and the active tab uses cyan fill.
+  - Selecting an off-screen tab brings it into view.
+3. **Four to Five-item bottom dock**
+  - Only the most frequent actions stay fixed at the bottom; the full tab set remains available above and in the menu.
+  - The fourth item opens account/settings rather than crowding the dock with secondary tools.
+  - Content receives enough bottom space that the dock never covers controls.
 
 The visual hierarchy also keeps the page title below navigation, uses a two-column mobile KPI grid where values remain readable, and stacks complex content. The reference’s marina-specific labels, VHF status, and operational copy will not be copied to other business types.
 

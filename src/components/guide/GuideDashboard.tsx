@@ -119,6 +119,7 @@ export function GuideDashboard({
       nav={nav}
       active={active}
       onNav={setActive}
+      dock={[{ key: "overview", label: "Home" }, { key: "trips", label: "Trips" }, { key: "calendar", label: "Calendar" }]}
       pageTitle={(titles[active] ?? titles.overview).t}
       pageSub={(titles[active] ?? titles.overview).s}
     >
