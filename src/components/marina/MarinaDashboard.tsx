@@ -769,6 +769,37 @@ function ReservationTable({ rows }: { rows: Reservation[] }) {
 
 /* --- tiny UI helpers --- */
 
+function Modal({
+  onClose,
+  children,
+}: {
+  onClose: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <div
+      onClick={onClose}
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 90,
+        background: "rgba(6,21,31,.62)",
+        backdropFilter: "blur(4px)",
+        display: "flex",
+        padding: "40px 16px",
+        overflowY: "auto",
+      }}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{ width: "min(760px, 100%)", margin: "auto" }}
+      >
+        {children}
+      </div>
+    </div>
+  );
+}
+
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label style={{ display: "flex", flexDirection: "column", gap: 6 }}>
