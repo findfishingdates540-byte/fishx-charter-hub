@@ -8,7 +8,7 @@ import { Link } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, LogOut, Menu, Settings, UserRound, X } from "lucide-react";
+import { LogOut, Menu, Settings, UserRound, X } from "lucide-react";
 
 
 async function signOut() {
@@ -60,6 +60,7 @@ export function OperatorShell({
   const compactDock = (dock ?? nav.slice(0, 3).map(({ key, label }) => ({ key, label }))).slice(0, 3);
 
   useEffect(() => {
+    if (!window.matchMedia("(max-width: 900px)").matches) return;
     const tab = tabRefs.current[active];
     if (!tab) return;
     tab.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
@@ -354,7 +355,6 @@ export function OperatorShell({
                 <small>{workspaceKind}</small>
                 <strong>{workspaceName}</strong>
               </div>
-              <ChevronDown aria-hidden="true" />
             </div>
             <div className="fx-operator-compact-actions">
               {headerRight}

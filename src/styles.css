@@ -868,7 +868,7 @@ body.dc-body { margin:0; background:#072057; }
   .fx-operator-brand { display: inline-flex; align-items: center; min-width: 0; color: var(--foreground); text-decoration: none; }
   .fx-operator-workspace {
     display: grid;
-    grid-template-columns: 30px minmax(0, 1fr) 14px;
+    grid-template-columns: 30px minmax(0, 1fr);
     align-items: center;
     gap: 7px;
     min-width: 0;
@@ -885,7 +885,6 @@ body.dc-body { margin:0; background:#072057; }
   .fx-operator-workspace > div { min-width: 0; line-height: 1.1; }
   .fx-operator-workspace small { display: block; color: var(--muted-foreground); font-size: 8px; text-transform: uppercase; letter-spacing: .08em; }
   .fx-operator-workspace strong { display: block; overflow: hidden; color: var(--foreground); font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
-  .fx-operator-workspace > svg { width: 14px; color: var(--muted-foreground); }
   .fx-operator-compact-actions { display: flex; align-items: center; gap: 7px; min-width: 0; }
   .fx-operator-compact-actions > :not(.notif-wrap) { display: none !important; }
   .fx-operator-compact-actions > select { display: block !important; width: min(120px, 24vw); padding: 7px 24px 7px 8px !important; text-overflow: ellipsis; }
@@ -934,6 +933,9 @@ body.dc-body { margin:0; background:#072057; }
     backdrop-filter: none !important;
   }
   .fx-operator-titlebar > div:last-child { display: none !important; }
+  .fx-operator-titlebar > div:last-child:has(> :not(.notif-wrap):not(select)) { display: flex !important; flex: 1 1 100%; margin: 7px 0 0 !important; }
+  .fx-operator-titlebar > div:last-child > .notif-wrap,
+  .fx-operator-titlebar > div:last-child > select { display: none !important; }
   .fx-operator-titlebar > div:first-child > div:first-child { font-size: 22px !important; }
   .fx-operator-titlebar > div:first-child > div:last-child { max-width: 42rem; margin-top: 4px !important; line-height: 1.35; }
   .fx-operator-scrim { display: block; position: fixed; inset: 0; z-index: 69; border: 0; background: color-mix(in oklab, var(--deep-hull) 64%, transparent); }
