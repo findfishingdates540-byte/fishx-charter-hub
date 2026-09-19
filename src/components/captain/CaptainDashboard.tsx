@@ -6,11 +6,9 @@
  */
 import { useState } from "react";
 import { MediaImg } from "@/components/media/MediaImg";
-import { BrandLogo } from "@/components/brand/BrandLogo";
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery, useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { supabase } from "@/integrations/supabase/client";
 import { getCaptainDashboard } from "@/lib/captain-dashboard.functions";
 import {
   listCaptainBookings,
@@ -28,6 +26,9 @@ import { FleetPanel } from "@/components/captain/FleetPanel";
 import { ChartersPanel } from "@/components/captain/ChartersPanel";
 import { BlockoutDatesPanel } from "@/components/captain/BlockoutDatesPanel";
 import { CaptainTripCalendar } from "@/components/captain/CaptainTripCalendar";
+import { OperatorShell, type OperatorNavItem } from "@/components/operator/OperatorShell";
+import { Button } from "@/components/ui/button";
+import { Anchor, Banknote, CalendarDays, CalendarX, LayoutDashboard, MessageCircle, Settings, ShipWheel, TicketCheck } from "lucide-react";
 
 
 export const captainDashboardQO = queryOptions({
@@ -40,29 +41,6 @@ type Tab = "overview" | "bookings" | "calendar" | "services" | "blockouts" | "fl
 const money = (cents: number) =>
   `$${(Math.max(0, cents) / 100).toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
 
-const shell: React.CSSProperties = {
-  ["--serif" as never]: "'Outfit',Georgia,serif",
-  ["--sans" as never]: "'Outfit',system-ui,sans-serif",
-  ["--ink" as never]: "#F0F2F5",
-  ["--navy" as never]: "#0D161F",
-  ["--paper" as never]: "#0D161F",
-  ["--card" as never]: "#14202B",
-  ["--goldtext" as never]: "#2DE2F2",
-  ["--cyan" as never]: "#2DE2F2",
-  ["--green" as never]: "#22C55E",
-  ["--greensoft" as never]: "rgba(34,197,94,.14)",
-  ["--ond" as never]: "#F0F2F5",
-  ["--ondmut" as never]: "#92A0AB",
-  ["--tmut" as never]: "#92A0AB",
-  ["--line" as never]: "rgba(255,255,255,.08)",
-  ["--lined" as never]: "rgba(255,255,255,.10)",
-  display: "flex",
-  minHeight: "100vh",
-  background: "var(--paper)",
-  color: "var(--ink)",
-  fontFamily: "var(--sans)",
-};
-
 const TABS: Tab[] = ["overview", "bookings", "calendar", "services", "blockouts", "fleet", "messages", "earnings", "settings"];
 
 export function CaptainDashboard({ initialTab }: { initialTab?: string } = {}) {
@@ -74,14 +52,20 @@ export function CaptainDashboard({ initialTab }: { initialTab?: string } = {}) {
   // Which Settings section to open when arriving from the readiness checklist.
   const [settingsSection, setSettingsSection] = useState<string>("profile");
   const [accepting, setAccepting] = useState(true);
-  const [navOpen, setNavOpen] = useState(false);
-  const navigate = useNavigate();
 
   const biz = data.business;
-  const initial = (data.profile?.display_name || data.profile?.full_name || "C")
-    .trim()
-    .charAt(0)
-    .toUpperCase();
+  const operatorName = data.profile?.display_name ?? data.profile?.full_name ?? "Captain";
+  const nav: OperatorNavItem[] = [
+    { key: "overview", label: "Overview", icon: <LayoutDashboard /> },
+    { key: "bookings", label: "Bookings", icon: <TicketCheck />, badge: data.stats.upcomingCount || undefined },
+    { key: "calendar", label: "Calendar", icon: <CalendarDays /> },
+    { key: "services", label: "Charter Trips", icon: <Anchor /> },
+    { key: "blockouts", label: "Blockout Dates", icon: <CalendarX /> },
+    { key: "fleet", label: "Fleet", icon: <ShipWheel /> },
+    { key: "messages", label: "Messages", icon: <MessageCircle /> },
+    { key: "earnings", label: "Earnings", icon: <Banknote /> },
+    { key: "settings", label: "Settings", icon: <Settings /> },
+  ];
 
   const pageTitle: Record<Tab, string> = {
     overview: `Welcome back, Captain`,
@@ -108,90 +92,36 @@ export function CaptainDashboard({ initialTab }: { initialTab?: string } = {}) {
     settings: "Business & payout settings",
   };
 
-  async function signOut() {
-    await supabase.auth.signOut();
-    navigate({ to: "/", replace: true });
-  }
-
   return (
-    <div className="fx-shell" style={shell}>
-      {/* SIDEBAR */}
-      <aside className={`fx-side${navOpen ? " fx-open" : ""}`} style={{ width: 256, flex: "none", background: "var(--navy)", color: "var(--ond)", display: "flex", flexDirection: "column", padding: "22px 16px", position: "sticky", top: 0, height: "100vh", borderRight: "1px solid rgba(255,255,255,.06)" }}>
-        <div className="fx-side-head" style={{ display: "flex", alignItems: "center", gap: 10, padding: "6px 10px 22px" }}>
-          <BrandLogo size="md" accent="var(--cyan)" color="var(--ond)" />
-          <button
-            type="button"
-            className="fx-side-burger"
-            aria-label={navOpen ? "Close menu" : "Open menu"}
-            aria-expanded={navOpen}
-            onClick={() => setNavOpen((v) => !v)}
-            style={{ marginLeft: "auto", background: "rgba(255,255,255,.06)", border: "1px solid var(--lined)", borderRadius: 10, width: 40, height: 40, display: "grid", placeItems: "center", color: "var(--ink)", cursor: "pointer" }}
-          >
-            {navOpen ? (
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M6 6l12 12M18 6L6 18" /></svg>
-            ) : (
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
-            )}
-          </button>
-        </div>
-        <div className="fx-side-body" style={{ display: "flex", flexDirection: "column", flex: 1, minHeight: 0 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 11, background: "rgba(255,255,255,.04)", border: "1px solid var(--lined)", borderRadius: 13, padding: "11px 12px", marginBottom: 18 }}>
-          <span style={{ width: 34, height: 34, borderRadius: 9, background: "rgba(45,226,242,.14)", display: "grid", placeItems: "center", color: "var(--cyan)", flex: "none", fontFamily: "var(--serif)", fontWeight: 600 }}>
-            {biz?.name.charAt(0).toUpperCase() ?? "C"}
-          </span>
-          <div style={{ lineHeight: 1.2, minWidth: 0 }}>
-            <div style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: ".14em", textTransform: "uppercase", color: "var(--ondmut)" }}>Workspace</div>
-            <div style={{ fontSize: 13.5, fontWeight: 600, color: "#F0F2F5", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-              {biz?.name ?? "No business"}
-            </div>
-          </div>
-        </div>
-        <nav style={{ display: "flex", flexDirection: "column", gap: 3 }}>
-          {(["overview", "bookings", "services", "blockouts", "fleet", "messages", "earnings"] as Tab[]).map((t) => (
-            <NavBtn key={t} label={t === "services" ? "Charter Trips" : t === "blockouts" ? "Blockout Dates" : t === "fleet" ? "Fleet" : cap(t)} active={tab === t} onClick={() => { setTab(t); setNavOpen(false); }} badge={t === "bookings" ? data.stats.upcomingCount : undefined} />
-          ))}
-        </nav>
-        <div style={{ marginTop: 20, paddingTop: 18, borderTop: "1px solid var(--lined)" }}>
-          <div style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: ".14em", textTransform: "uppercase", color: "var(--ondmut)", padding: "0 12px 8px" }}>Account</div>
-          <NavBtn label="Settings" active={tab === "settings"} onClick={() => { setTab("settings"); setNavOpen(false); }} />
-        </div>
-        <div style={{ marginTop: "auto", display: "flex", alignItems: "center", gap: 11, background: "rgba(255,255,255,.04)", border: "1px solid var(--lined)", borderRadius: 13, padding: "10px 12px" }}>
-          <div style={{ width: 38, height: 38, borderRadius: "50%", background: "rgba(45,226,242,.14)", display: "grid", placeItems: "center", color: "var(--cyan)", fontFamily: "var(--serif)", fontWeight: 600 }}>{initial}</div>
-          <div style={{ lineHeight: 1.25, minWidth: 0 }}>
-            <div style={{ fontSize: 13, fontWeight: 600, color: "#F0F2F5" }}>{data.profile?.display_name ?? data.profile?.full_name ?? "Captain"}</div>
-            <div style={{ fontSize: 11, color: "var(--cyan)" }}>{biz?.verified_at ? "★ Verified" : "Pending verification"}</div>
-          </div>
-          <button onClick={signOut} title="Sign out" style={{ marginLeft: "auto", background: "transparent", color: "var(--ondmut)", border: 0, cursor: "pointer", flex: "none" }}>
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7"><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 17l5-5-5-5M15 12H3" /></svg>
-          </button>
-        </div>
-        </div>
-      </aside>
-
-      {/* MAIN */}
-      <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}>
-        <header className="fx-topbar" style={{ position: "sticky", top: 0, zIndex: 20, background: "rgba(13,22,31,.86)", backdropFilter: "saturate(140%) blur(12px)", borderBottom: "1px solid var(--line)", padding: "18px 34px", display: "flex", alignItems: "center", gap: 24 }}>
-          <div style={{ minWidth: 0 }}>
-            <div style={{ fontFamily: "var(--serif)", fontWeight: 600, fontSize: 26, lineHeight: 1.1, color: "var(--ink)" }}>{pageTitle[tab]}</div>
-            <div style={{ fontSize: 13, color: "var(--tmut)", marginTop: 1 }}>{pageSub[tab]}</div>
-          </div>
-          <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 14 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 10, background: "var(--card)", border: "1px solid var(--line)", borderRadius: 30, padding: "5px 6px 5px 14px" }}>
+    <OperatorShell
+      workspaceName={biz?.name ?? "No business"}
+      workspaceKind="Charter"
+      operatorName={operatorName}
+      operatorRole={biz?.verified_at ? "Verified captain" : "Pending verification"}
+      nav={nav}
+      active={tab}
+      onNav={(key) => setTab(key as Tab)}
+      pageTitle={pageTitle[tab]}
+      pageSub={pageSub[tab]}
+      dock={[{ key: "overview", label: "Home" }, { key: "bookings", label: "Bookings" }, { key: "services", label: "Charters" }]}
+      headerRight={
+            <div className="fx-captain-availability" style={{ display: "flex", alignItems: "center", gap: 10, background: "var(--card)", border: "1px solid var(--line)", borderRadius: 30, padding: "5px 6px 5px 14px" }}>
               <span style={{ display: "flex", alignItems: "center", gap: 7 }}>
                 <span style={{ width: 8, height: 8, borderRadius: "50%", background: accepting ? "var(--green)" : "#F87171" }} />
                 <span style={{ fontSize: 12.5, fontWeight: 600, color: "var(--ink)" }}>{accepting ? "Accepting" : "Paused"}</span>
               </span>
-              <button
+              <Button
+                variant="ghost"
                 onClick={() => setAccepting((v) => !v)}
+                aria-label={accepting ? "Pause new bookings" : "Accept new bookings"}
+                aria-pressed={accepting}
                 style={{ position: "relative", width: 40, height: 23, borderRadius: 20, border: 0, cursor: "pointer", background: accepting ? "var(--green)" : "#F87171", padding: 0 }}
               >
                 <span style={{ position: "absolute", top: 2, left: accepting ? 19 : 2, width: 19, height: 19, borderRadius: "50%", background: "#14202B", transition: "left .3s", boxShadow: "0 1px 3px rgba(0,0,0,.3)" }} />
-              </button>
+              </Button>
             </div>
-          </div>
-        </header>
-
-        <main className="fx-main" style={{ flex: 1, padding: "30px 34px 48px", maxWidth: 1180, width: "100%" }}>
+      }
+    >
           {tab === "overview" && (
             <OverviewPanel
               data={data}
@@ -214,42 +144,7 @@ export function CaptainDashboard({ initialTab }: { initialTab?: string } = {}) {
           )}
           {tab === "earnings" && <EarningsPanel businessId={data.business?.id ?? null} />}
           {tab === "settings" && <SettingsPanel data={data} section={settingsSection} />}
-        </main>
-      </div>
-    </div>
-  );
-}
-
-function cap(t: string) {
-  return t.charAt(0).toUpperCase() + t.slice(1);
-}
-
-function NavBtn({ label, active, onClick, badge }: { label: string; active: boolean; onClick: () => void; badge?: number }) {
-  return (
-    <button
-      onClick={onClick}
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: 12,
-        width: "100%",
-        background: active ? "rgba(45,226,242,.12)" : "transparent",
-        border: 0,
-        borderRadius: 11,
-        padding: "11px 12px",
-        cursor: "pointer",
-        fontFamily: "var(--sans)",
-        fontSize: 14,
-        fontWeight: 600,
-        color: active ? "#F0F2F5" : "var(--ondmut)",
-        textAlign: "left",
-      }}
-    >
-      {label}
-      {badge ? (
-        <span style={{ marginLeft: "auto", background: "var(--cyan)", color: "#04121B", fontSize: 11, fontWeight: 700, borderRadius: 20, padding: "1px 8px" }}>{badge}</span>
-      ) : null}
-    </button>
+    </OperatorShell>
   );
 }
 
