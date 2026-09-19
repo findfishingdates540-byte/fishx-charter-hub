@@ -996,8 +996,10 @@ body.dc-body { margin:0; background:#072057; }
 }
 
 @media (max-width: 560px) {
-  .fx-operator-brand { max-width: 66px; overflow: hidden; }
-  .fx-operator-workspace { max-width: 120px; }
+  .fx-operator-brand > span { gap: 7px !important; }
+  .fx-operator-brand > span > span:last-child > span:first-child { font-size: 15px !important; }
+  .fx-operator-brand > span > span:last-child > span:last-child { display: none; }
+  .fx-operator-workspace { max-width: 112px; }
   .fx-operator-main { padding: 14px 10px calc(80px + env(safe-area-inset-bottom)) !important; }
   .fx-operator-main [style*="grid-template-columns: repeat(4"] { gap: 10px !important; }
   .fx-operator-main [style*="grid-template-columns: repeat(4"] > * { padding: 14px !important; min-width: 0; }
