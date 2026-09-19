@@ -187,12 +187,12 @@ export function NotificationCenter() {
                     flexShrink: 0,
                   }}
                 />
-                <span style={{ display: "grid", gap: 3, textAlign: "left" }}>
-                  <span style={{ color: V.ink, fontWeight: unread ? 700 : 600, fontSize: 15 }}>
+                <span style={{ display: "grid", gap: 3, textAlign: "left", minWidth: 0, flex: 1 }}>
+                  <span style={{ color: V.ink, fontWeight: unread ? 700 : 600, fontSize: 15, overflowWrap: "anywhere" }}>
                     {n.title}
                   </span>
                   {n.body && (
-                    <span style={{ color: V.mut, fontSize: 13.5, lineHeight: 1.45 }}>{n.body}</span>
+                    <span style={{ color: V.mut, fontSize: 13.5, lineHeight: 1.45, overflowWrap: "anywhere" }}>{n.body}</span>
                   )}
                   <span style={{ color: "#93a7b7", fontSize: 12 }}>
                     {label(n.category ?? "other")} · {when(n.created_at)}
@@ -205,6 +205,8 @@ export function NotificationCenter() {
               gap: 12,
               alignItems: "flex-start",
               width: "100%",
+              minWidth: 0,
+              boxSizing: "border-box",
               padding: "14px 18px",
               background: unread ? V.cyansoft : "#fff",
               border: "none",

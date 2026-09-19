@@ -580,8 +580,8 @@ body.dc-body { margin:0; background:#072057; }
     display: none !important;
   }
 
-  /* Main content padding */
-  .fx-authed main {
+  /* Main content padding (operator dashboards keep their own bottom-dock clearance) */
+  .fx-authed main:not(.fx-operator-main) {
     padding: 18px 14px 36px !important;
     max-width: 100% !important;
   }
@@ -679,7 +679,7 @@ body.dc-body { margin:0; background:#072057; }
 .fx-profile-menu button:hover { background: rgba(13,34,54,.06); }
 
 @media (max-width: 560px) {
-  .fx-authed main { padding: 14px 10px 32px !important; }
+  .fx-authed main:not(.fx-operator-main) { padding: 14px 10px 32px !important; }
   .fx-authed header[style*="sticky"] { padding: 8px 10px !important; }
   .fx-authed header[style*="sticky"] > div:first-child { padding: 6px 10px !important; }
   .fx-authed aside:not(.fx-operator-side):not(.fx-operator-drawer) { padding: 10px 10px !important; }
