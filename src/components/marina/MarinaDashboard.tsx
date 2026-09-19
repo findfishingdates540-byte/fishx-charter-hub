@@ -469,7 +469,7 @@ function SlipForm({
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(3, 1fr)",
+          gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
           gap: 14,
         }}
       >
@@ -627,7 +627,7 @@ function ReservationForm({
 
   return (
     <Card title="New reservation">
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 14 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 14 }}>
         <Field label="Vessel name">
           <input value={vessel} onChange={(e) => setVessel(e.target.value)} style={inputStyle} />
         </Field>
@@ -792,7 +792,7 @@ function Modal({
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        style={{ width: "min(760px, 100%)", margin: "auto" }}
+        style={{ width: "min(760px, 100%)", margin: "auto", borderRadius: 20, boxShadow: "0 30px 80px -20px rgba(0,0,0,.6)" }}
       >
         {children}
       </div>
