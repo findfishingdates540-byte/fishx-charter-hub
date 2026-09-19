@@ -580,8 +580,8 @@ body.dc-body { margin:0; background:#072057; }
     display: none !important;
   }
 
-  /* Main content padding */
-  .fx-authed main {
+  /* Main content padding (operator dashboards keep their own bottom-dock clearance) */
+  .fx-authed main:not(.fx-operator-main) {
     padding: 18px 14px 36px !important;
     max-width: 100% !important;
   }
