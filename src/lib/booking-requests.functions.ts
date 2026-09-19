@@ -118,7 +118,10 @@ export const listPendingRequests = createServerFn({ method: "GET" })
     const { data: rows, error } = await q
       .order("accept_deadline_at", { ascending: true })
       .limit(50);
-    if (error) throw new Response(error.message, { status: 500 });
+    if (error) {
+      console.error("[booking-requests] listPendingRequests failed", error);
+      return [];
+    }
     return rows ?? [];
   });
 
@@ -151,7 +154,10 @@ export const listOperatorBookings = createServerFn({ method: "GET" })
     const { data: rows, error } = await q
       .order("trip_date", { ascending: data.scope !== "past" })
       .limit(100);
-    if (error) throw new Response(error.message, { status: 500 });
+    if (error) {
+      console.error("[booking-requests] listOperatorBookings failed", error);
+      return [];
+    }
     return rows ?? [];
   });
 

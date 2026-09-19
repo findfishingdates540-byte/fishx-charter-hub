@@ -13,7 +13,10 @@ export const listNotifications = createServerFn({ method: "GET" })
       .select("id,category,title,body,link,severity,read_at,created_at")
       .order("created_at", { ascending: false })
       .limit(30);
-    if (error) throw new Response(error.message, { status: 500 });
+    if (error) {
+      console.error("[notifications] listNotifications failed", error);
+      return { items: [], unread: 0 };
+    }
     const items = data ?? [];
     return { items, unread: items.filter((n) => !n.read_at).length };
   });
