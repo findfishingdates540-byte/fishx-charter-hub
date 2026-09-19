@@ -121,6 +121,7 @@ export function MarinaDashboard({
       nav={nav}
       active={active}
       onNav={setActive}
+      dock={[{ key: "overview", label: "Harbor" }, { key: "slips", label: "Slips" }, { key: "bookings", label: "Bookings" }]}
       pageTitle={(titles[active] ?? titles.overview).t}
       pageSub={(titles[active] ?? titles.overview).s}
       headerRight={

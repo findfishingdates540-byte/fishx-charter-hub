@@ -202,6 +202,7 @@ export function ShopDashboard({
       nav={nav}
       active={active}
       onNav={(key) => navigate({ to: "/dashboard", search: { tab: key, biz: businessId } })}
+      dock={[{ key: "overview", label: "Home" }, { key: "orders", label: "Orders" }, { key: "products", label: "Products" }]}
       pageTitle={(titles[active] ?? titles.overview).t}
       pageSub={(titles[active] ?? titles.overview).s}
       headerRight={workspaces.length > 1 ? (

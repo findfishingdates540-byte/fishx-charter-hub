@@ -31,6 +31,8 @@ function AuthedLayout() {
         '.fx-authed header[style*="sticky"]',
       );
       headers.forEach((header) => {
+        // Operator dashboards provide their own accessible compact navigation.
+        if (header.hasAttribute("data-operator-header")) return;
         // ---- Profile dropdown (Account + Sign out) ----
         const signOutBtn = header.querySelector<HTMLButtonElement>(
           'button[title="Sign out"]',
