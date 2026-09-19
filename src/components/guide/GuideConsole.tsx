@@ -84,7 +84,7 @@ export function GuideAvailabilityCalendar({ slots }: { slots: any[] }) {
           </span>
         }
       >
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 6 }}>
+        <div className="fx-calendar-grid fx-calendar-grid-detailed" style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 6 }}>
           {DAY_LABELS.map((d) => (
             <div key={d} style={{ fontSize: 11, color: "#92A0AB", textAlign: "center", padding: "4px 0" }}>{d}</div>
           ))}

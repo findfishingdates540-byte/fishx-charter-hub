@@ -127,7 +127,7 @@ export function BookingCalendar({
           </span>
         }
       >
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 6 }}>
+        <div className="fx-calendar-grid fx-calendar-grid-detailed" style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 6 }}>
           {DAY_LABELS.map((d) => (
             <div key={d} style={{ fontSize: 11, letterSpacing: ".08em", textTransform: "uppercase", color: "#92A0AB", textAlign: "center", paddingBottom: 6 }}>
               {d}
