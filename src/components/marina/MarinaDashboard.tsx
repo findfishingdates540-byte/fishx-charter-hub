@@ -600,6 +600,7 @@ function ReservationForm({
   slips,
   onSave,
   saving,
+  onCancel,
 }: {
   slips: Slip[];
   onSave: (v: {
@@ -612,6 +613,7 @@ function ReservationForm({
     status: "pending" | "confirmed" | "checked_in" | "checked_out" | "cancelled";
   }) => void;
   saving: boolean;
+  onCancel: () => void;
 }) {
   const [vessel, setVessel] = useState("");
   const [captain, setCaptain] = useState("");
@@ -661,7 +663,7 @@ function ReservationForm({
           </select>
         </Field>
       </div>
-      <div style={{ marginTop: 18 }}>
+      <div style={{ display: "flex", gap: 10, marginTop: 18 }}>
         <button
           disabled={saving || !vessel || !arrive || !depart}
           onClick={() =>
@@ -678,6 +680,9 @@ function ReservationForm({
           style={btnPrimary}
         >
           {saving ? "Saving…" : "Save reservation"}
+        </button>
+        <button onClick={onCancel} style={btnGhost}>
+          Cancel
         </button>
       </div>
     </Card>
