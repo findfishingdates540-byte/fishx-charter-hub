@@ -398,25 +398,32 @@ function Slips({ businessId, data }: { businessId: string; data: any }) {
       <DockBuilder businessId={businessId} slips={data.slips as Slip[]} />
 
       {showForm && (
-        <SlipForm
-          initial={editing ?? undefined}
-          onCancel={() => {
+        <Modal
+          onClose={() => {
             setShowForm(false);
             setEditing(null);
           }}
-          onSave={(v) =>
-            upsertM.mutate({
-              data: { ...v, businessId, id: editing?.id },
-            })
-          }
-          onDelete={
-            editing
-              ? () =>
-                  deleteM.mutate({ data: { id: editing.id, businessId } })
-              : undefined
-          }
-          saving={upsertM.isPending}
-        />
+        >
+          <SlipForm
+            initial={editing ?? undefined}
+            onCancel={() => {
+              setShowForm(false);
+              setEditing(null);
+            }}
+            onSave={(v) =>
+              upsertM.mutate({
+                data: { ...v, businessId, id: editing?.id },
+              })
+            }
+            onDelete={
+              editing
+                ? () =>
+                    deleteM.mutate({ data: { id: editing.id, businessId } })
+                : undefined
+            }
+            saving={upsertM.isPending}
+          />
+        </Modal>
       )}
     </div>
   );
@@ -564,8 +571,8 @@ function Reservations({
         <button onClick={() => setView("list")} style={view === "list" ? btnPrimary : btnGhost}>
           List
         </button>
-        <button onClick={() => setShowForm((v) => !v)} style={{ ...btnGhost, marginLeft: "auto" }}>
-          {showForm ? "Close" : "+ New reservation"}
+        <button onClick={() => setShowForm(true)} style={{ ...btnGhost, marginLeft: "auto" }}>
+          + New reservation
         </button>
       </div>
       {view === "calendar" ? (
@@ -576,11 +583,14 @@ function Reservations({
         </Card>
       )}
       {showForm && (
-        <ReservationForm
-          slips={data.slips}
-          saving={upsertM.isPending}
-          onSave={(v) => upsertM.mutate({ data: { ...v, businessId } })}
-        />
+        <Modal onClose={() => setShowForm(false)}>
+          <ReservationForm
+            slips={data.slips}
+            saving={upsertM.isPending}
+            onSave={(v) => upsertM.mutate({ data: { ...v, businessId } })}
+            onCancel={() => setShowForm(false)}
+          />
+        </Modal>
       )}
     </div>
   );
