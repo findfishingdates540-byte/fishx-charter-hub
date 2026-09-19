@@ -829,6 +829,12 @@ body.dc-body { margin:0; background:#072057; }
 .fx-operator-drawer,
 .fx-operator-scrim { display: none; }
 
+.fx-operator-side > nav > button,
+.fx-operator-drawer nav button {
+  justify-content: flex-start;
+  text-align: left;
+}
+
 .fx-operator-side button:focus-visible,
 .fx-operator-compact button:focus-visible,
 .fx-operator-drawer button:focus-visible,
