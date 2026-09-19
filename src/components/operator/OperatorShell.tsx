@@ -474,6 +474,7 @@ export function OperatorShell({
           }}
         >
           {children}
+          <div className="fx-operator-dock-clearance" aria-hidden="true" />
         </main>
 
         <nav className="fx-operator-dock" aria-label="Quick navigation">
