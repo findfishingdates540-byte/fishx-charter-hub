@@ -398,25 +398,32 @@ function Slips({ businessId, data }: { businessId: string; data: any }) {
       <DockBuilder businessId={businessId} slips={data.slips as Slip[]} />
 
       {showForm && (
-        <SlipForm
-          initial={editing ?? undefined}
-          onCancel={() => {
+        <Modal
+          onClose={() => {
             setShowForm(false);
             setEditing(null);
           }}
-          onSave={(v) =>
-            upsertM.mutate({
-              data: { ...v, businessId, id: editing?.id },
-            })
-          }
-          onDelete={
-            editing
-              ? () =>
-                  deleteM.mutate({ data: { id: editing.id, businessId } })
-              : undefined
-          }
-          saving={upsertM.isPending}
-        />
+        >
+          <SlipForm
+            initial={editing ?? undefined}
+            onCancel={() => {
+              setShowForm(false);
+              setEditing(null);
+            }}
+            onSave={(v) =>
+              upsertM.mutate({
+                data: { ...v, businessId, id: editing?.id },
+              })
+            }
+            onDelete={
+              editing
+                ? () =>
+                    deleteM.mutate({ data: { id: editing.id, businessId } })
+                : undefined
+            }
+            saving={upsertM.isPending}
+          />
+        </Modal>
       )}
     </div>
   );
@@ -462,7 +469,7 @@ function SlipForm({
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(3, 1fr)",
+          gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
           gap: 14,
         }}
       >
@@ -564,8 +571,8 @@ function Reservations({
         <button onClick={() => setView("list")} style={view === "list" ? btnPrimary : btnGhost}>
           List
         </button>
-        <button onClick={() => setShowForm((v) => !v)} style={{ ...btnGhost, marginLeft: "auto" }}>
-          {showForm ? "Close" : "+ New reservation"}
+        <button onClick={() => setShowForm(true)} style={{ ...btnGhost, marginLeft: "auto" }}>
+          + New reservation
         </button>
       </div>
       {view === "calendar" ? (
@@ -576,11 +583,14 @@ function Reservations({
         </Card>
       )}
       {showForm && (
-        <ReservationForm
-          slips={data.slips}
-          saving={upsertM.isPending}
-          onSave={(v) => upsertM.mutate({ data: { ...v, businessId } })}
-        />
+        <Modal onClose={() => setShowForm(false)}>
+          <ReservationForm
+            slips={data.slips}
+            saving={upsertM.isPending}
+            onSave={(v) => upsertM.mutate({ data: { ...v, businessId } })}
+            onCancel={() => setShowForm(false)}
+          />
+        </Modal>
       )}
     </div>
   );
@@ -590,6 +600,7 @@ function ReservationForm({
   slips,
   onSave,
   saving,
+  onCancel,
 }: {
   slips: Slip[];
   onSave: (v: {
@@ -602,6 +613,7 @@ function ReservationForm({
     status: "pending" | "confirmed" | "checked_in" | "checked_out" | "cancelled";
   }) => void;
   saving: boolean;
+  onCancel: () => void;
 }) {
   const [vessel, setVessel] = useState("");
   const [captain, setCaptain] = useState("");
@@ -615,7 +627,7 @@ function ReservationForm({
 
   return (
     <Card title="New reservation">
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 14 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 14 }}>
         <Field label="Vessel name">
           <input value={vessel} onChange={(e) => setVessel(e.target.value)} style={inputStyle} />
         </Field>
@@ -651,7 +663,7 @@ function ReservationForm({
           </select>
         </Field>
       </div>
-      <div style={{ marginTop: 18 }}>
+      <div style={{ display: "flex", gap: 10, marginTop: 18 }}>
         <button
           disabled={saving || !vessel || !arrive || !depart}
           onClick={() =>
@@ -668,6 +680,9 @@ function ReservationForm({
           style={btnPrimary}
         >
           {saving ? "Saving…" : "Save reservation"}
+        </button>
+        <button onClick={onCancel} style={btnGhost}>
+          Cancel
         </button>
       </div>
     </Card>
@@ -753,6 +768,37 @@ function ReservationTable({ rows }: { rows: Reservation[] }) {
 }
 
 /* --- tiny UI helpers --- */
+
+function Modal({
+  onClose,
+  children,
+}: {
+  onClose: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <div
+      onClick={onClose}
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 90,
+        background: "rgba(6,21,31,.62)",
+        backdropFilter: "blur(4px)",
+        display: "flex",
+        padding: "40px 16px",
+        overflowY: "auto",
+      }}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{ width: "min(760px, 100%)", margin: "auto", borderRadius: 20, boxShadow: "0 30px 80px -20px rgba(0,0,0,.6)" }}
+      >
+        {children}
+      </div>
+    </div>
+  );
+}
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
