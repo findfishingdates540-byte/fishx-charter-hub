@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useNavigate } from "@tanstack/react-router";
 import { cachedMediaUrl } from "@/lib/media-url";
 import {
   useSuspenseQuery,
