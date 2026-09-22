@@ -44,6 +44,8 @@ import { Route as ApiPublicFishxWebhookRouteImport } from './routes/api/public/f
 import { Route as ApiPublicStripeWebhookRouteImport } from './routes/api/public/stripe-webhook'
 import { Route as AuthenticatedCaptainChartersNewRouteImport } from './routes/_authenticated/captain.charters.new'
 import { Route as AuthenticatedCaptainPackagesPackageIdRouteImport } from './routes/_authenticated/captain.packages.$packageId'
+import { Route as AuthenticatedMarinaReservationsReservationIdRouteImport } from './routes/_authenticated/marina.reservations.$reservationId'
+import { Route as AuthenticatedMarinaSlipsSlipIdRouteImport } from './routes/_authenticated/marina.slips.$slipId'
 import { Route as AuthenticatedShopProductsNewRouteImport } from './routes/_authenticated/shop.products.new'
 import { Route as ApiPublicAvatarsSplatRouteImport } from './routes/api/public/avatars/$'
 import { Route as ApiPublicHooksBookingTimersRouteImport } from './routes/api/public/hooks/booking-timers'
@@ -237,6 +239,18 @@ const AuthenticatedCaptainPackagesPackageIdRoute =
     path: '/captain/packages/$packageId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedMarinaReservationsReservationIdRoute =
+  AuthenticatedMarinaReservationsReservationIdRouteImport.update({
+    id: '/marina/reservations/$reservationId',
+    path: '/marina/reservations/$reservationId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedMarinaSlipsSlipIdRoute =
+  AuthenticatedMarinaSlipsSlipIdRouteImport.update({
+    id: '/marina/slips/$slipId',
+    path: '/marina/slips/$slipId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedShopProductsNewRoute =
   AuthenticatedShopProductsNewRouteImport.update({
     id: '/shop/products/new',
@@ -336,6 +350,8 @@ export interface FileRoutesByFullPath {
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/captain/charters/new': typeof AuthenticatedCaptainChartersNewRoute
   '/captain/packages/$packageId': typeof AuthenticatedCaptainPackagesPackageIdRoute
+  '/marina/reservations/$reservationId': typeof AuthenticatedMarinaReservationsReservationIdRoute
+  '/marina/slips/$slipId': typeof AuthenticatedMarinaSlipsSlipIdRoute
   '/shop/products/new': typeof AuthenticatedShopProductsNewRoute
   '/api/public/avatars/$': typeof ApiPublicAvatarsSplatRoute
   '/api/public/hooks/booking-timers': typeof ApiPublicHooksBookingTimersRoute
@@ -383,6 +399,8 @@ export interface FileRoutesByTo {
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/captain/charters/new': typeof AuthenticatedCaptainChartersNewRoute
   '/captain/packages/$packageId': typeof AuthenticatedCaptainPackagesPackageIdRoute
+  '/marina/reservations/$reservationId': typeof AuthenticatedMarinaReservationsReservationIdRoute
+  '/marina/slips/$slipId': typeof AuthenticatedMarinaSlipsSlipIdRoute
   '/shop/products/new': typeof AuthenticatedShopProductsNewRoute
   '/api/public/avatars/$': typeof ApiPublicAvatarsSplatRoute
   '/api/public/hooks/booking-timers': typeof ApiPublicHooksBookingTimersRoute
@@ -432,6 +450,8 @@ export interface FileRoutesById {
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/_authenticated/captain/charters/new': typeof AuthenticatedCaptainChartersNewRoute
   '/_authenticated/captain/packages/$packageId': typeof AuthenticatedCaptainPackagesPackageIdRoute
+  '/_authenticated/marina/reservations/$reservationId': typeof AuthenticatedMarinaReservationsReservationIdRoute
+  '/_authenticated/marina/slips/$slipId': typeof AuthenticatedMarinaSlipsSlipIdRoute
   '/_authenticated/shop/products/new': typeof AuthenticatedShopProductsNewRoute
   '/api/public/avatars/$': typeof ApiPublicAvatarsSplatRoute
   '/api/public/hooks/booking-timers': typeof ApiPublicHooksBookingTimersRoute
@@ -481,6 +501,8 @@ export interface FileRouteTypes {
     | '/api/public/stripe-webhook'
     | '/captain/charters/new'
     | '/captain/packages/$packageId'
+    | '/marina/reservations/$reservationId'
+    | '/marina/slips/$slipId'
     | '/shop/products/new'
     | '/api/public/avatars/$'
     | '/api/public/hooks/booking-timers'
@@ -528,6 +550,8 @@ export interface FileRouteTypes {
     | '/api/public/stripe-webhook'
     | '/captain/charters/new'
     | '/captain/packages/$packageId'
+    | '/marina/reservations/$reservationId'
+    | '/marina/slips/$slipId'
     | '/shop/products/new'
     | '/api/public/avatars/$'
     | '/api/public/hooks/booking-timers'
@@ -576,6 +600,8 @@ export interface FileRouteTypes {
     | '/api/public/stripe-webhook'
     | '/_authenticated/captain/charters/new'
     | '/_authenticated/captain/packages/$packageId'
+    | '/_authenticated/marina/reservations/$reservationId'
+    | '/_authenticated/marina/slips/$slipId'
     | '/_authenticated/shop/products/new'
     | '/api/public/avatars/$'
     | '/api/public/hooks/booking-timers'
@@ -868,6 +894,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCaptainPackagesPackageIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/marina/reservations/$reservationId': {
+      id: '/_authenticated/marina/reservations/$reservationId'
+      path: '/marina/reservations/$reservationId'
+      fullPath: '/marina/reservations/$reservationId'
+      preLoaderRoute: typeof AuthenticatedMarinaReservationsReservationIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/marina/slips/$slipId': {
+      id: '/_authenticated/marina/slips/$slipId'
+      path: '/marina/slips/$slipId'
+      fullPath: '/marina/slips/$slipId'
+      preLoaderRoute: typeof AuthenticatedMarinaSlipsSlipIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/shop/products/new': {
       id: '/_authenticated/shop/products/new'
       path: '/shop/products/new'
@@ -963,6 +1003,8 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedTripsDetailRoute: typeof AuthenticatedTripsDetailRoute
   AuthenticatedCaptainChartersNewRoute: typeof AuthenticatedCaptainChartersNewRoute
   AuthenticatedCaptainPackagesPackageIdRoute: typeof AuthenticatedCaptainPackagesPackageIdRoute
+  AuthenticatedMarinaReservationsReservationIdRoute: typeof AuthenticatedMarinaReservationsReservationIdRoute
+  AuthenticatedMarinaSlipsSlipIdRoute: typeof AuthenticatedMarinaSlipsSlipIdRoute
   AuthenticatedShopProductsNewRoute: typeof AuthenticatedShopProductsNewRoute
   AuthenticatedCaptainChartersCharterIdEditRoute: typeof AuthenticatedCaptainChartersCharterIdEditRoute
   AuthenticatedShopProductsProductIdEditRoute: typeof AuthenticatedShopProductsProductIdEditRoute
@@ -984,6 +1026,9 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCaptainChartersNewRoute: AuthenticatedCaptainChartersNewRoute,
   AuthenticatedCaptainPackagesPackageIdRoute:
     AuthenticatedCaptainPackagesPackageIdRoute,
+  AuthenticatedMarinaReservationsReservationIdRoute:
+    AuthenticatedMarinaReservationsReservationIdRoute,
+  AuthenticatedMarinaSlipsSlipIdRoute: AuthenticatedMarinaSlipsSlipIdRoute,
   AuthenticatedShopProductsNewRoute: AuthenticatedShopProductsNewRoute,
   AuthenticatedCaptainChartersCharterIdEditRoute:
     AuthenticatedCaptainChartersCharterIdEditRoute,
