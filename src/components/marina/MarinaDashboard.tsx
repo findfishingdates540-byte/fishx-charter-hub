@@ -263,6 +263,7 @@ function Overview({ businessId: _b, data }: { businessId: string; data: any }) {
 
 function Slips({ businessId, data }: { businessId: string; data: any }) {
   const qc = useQueryClient();
+  const navigate = useNavigate();
   const upsertFn = useServerFn(upsertSlip);
   const deleteFn = useServerFn(deleteSlip);
   const publishFn = useServerFn(publishSlipForBooking);
