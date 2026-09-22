@@ -214,7 +214,11 @@ export function OperatorProfile({
         : services,
     [isTripStorefront, services],
   );
-  const [selectedServiceId, setSelectedServiceId] = useState<string | null>(storefrontServices[0]?.id ?? null);
+  const [selectedServiceId, setSelectedServiceId] = useState<string | null>(
+    (initialServiceId && storefrontServices.some((s) => s.id === initialServiceId)
+      ? initialServiceId
+      : storefrontServices[0]?.id) ?? null,
+  );
   const [openCharterKey, setOpenCharterKey] = useState<string>("");
   const selected = useMemo(
     () => storefrontServices.find((s) => s.id === selectedServiceId) ?? storefrontServices[0],
