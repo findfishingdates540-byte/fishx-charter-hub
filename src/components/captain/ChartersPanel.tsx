@@ -9,7 +9,7 @@ import { useEffect, useState } from "react";
 import { MediaImg } from "@/components/media/MediaImg";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import {
   listCaptainCharters,
   upsertCaptainCharter,
@@ -713,6 +713,16 @@ function CharterRowItem({
         >
           {c.is_published ? "Live" : "Draft"}
         </button>
+        <Link
+          to="/charters/$charterId"
+          params={{ charterId: c.id }}
+          target="_blank"
+          rel="noopener noreferrer"
+          title="Open the public charter page in a new tab"
+          style={{ ...ghostBtn, textDecoration: "none", display: "inline-flex", alignItems: "center" }}
+        >
+          Preview ↗
+        </Link>
         <button style={ghostBtn} onClick={onEdit}>
           Edit
         </button>
