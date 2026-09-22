@@ -58,10 +58,12 @@ type Slot = {
 
 export function GuideDashboard({
   businessId,
+  businessSlug,
   workspaceName,
   operatorName,
 }: {
   businessId: string;
+  businessSlug?: string | null;
   workspaceName: string;
   operatorName: string;
 }) {
