@@ -132,7 +132,7 @@ export function MarinaDashboard({
       operatorRole="Harbormaster"
       nav={nav}
       active={active}
-      onNav={setActive}
+      onNav={(key) => navigate({ to: "/dashboard", search: { tab: key, biz: businessId } })}
       dock={[{ key: "overview", label: "Harbor" }, { key: "slips", label: "Slips" }, { key: "bookings", label: "Bookings" }]}
       pageTitle={(titles[active] ?? titles.overview).t}
       pageSub={(titles[active] ?? titles.overview).s}
