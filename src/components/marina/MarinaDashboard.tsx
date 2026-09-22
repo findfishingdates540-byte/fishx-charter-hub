@@ -610,13 +610,15 @@ function Reservations({
   );
 }
 
-function ReservationForm({
+export function ReservationForm({
   slips,
+  initial,
   onSave,
   saving,
   onCancel,
 }: {
   slips: Slip[];
+  initial?: Reservation & { slip_id?: string | null };
   onSave: (v: {
     vesselName: string;
     captainName: string;
@@ -629,18 +631,20 @@ function ReservationForm({
   saving: boolean;
   onCancel: () => void;
 }) {
-  const [vessel, setVessel] = useState("");
-  const [captain, setCaptain] = useState("");
-  const [arrive, setArrive] = useState("");
-  const [depart, setDepart] = useState("");
-  const [total, setTotal] = useState("");
-  const [slipId, setSlipId] = useState<string>("");
+  const [vessel, setVessel] = useState(initial?.vessel_name ?? "");
+  const [captain, setCaptain] = useState(initial?.captain_name ?? "");
+  const [arrive, setArrive] = useState(initial?.arrive_date?.slice(0, 10) ?? "");
+  const [depart, setDepart] = useState(initial?.depart_date?.slice(0, 10) ?? "");
+  const [total, setTotal] = useState(
+    initial?.total_cents != null ? String(initial.total_cents / 100) : "",
+  );
+  const [slipId, setSlipId] = useState<string>(initial?.slip_id ?? "");
   const [status, setStatus] = useState<
     "pending" | "confirmed" | "checked_in" | "checked_out" | "cancelled"
-  >("pending");
+  >((initial?.status as any) ?? "pending");
 
   return (
-    <Card title="New reservation">
+    <Card title={initial ? "Edit reservation" : "New reservation"}>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 14 }}>
         <Field label="Vessel name">
           <input value={vessel} onChange={(e) => setVessel(e.target.value)} style={inputStyle} />
