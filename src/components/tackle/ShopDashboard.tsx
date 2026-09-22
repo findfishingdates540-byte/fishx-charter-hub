@@ -469,6 +469,8 @@ function Products({
                 </span>
                 <StatusPill label={p.is_published ? "Live" : "Draft"} tone={p.is_published ? "green" : "muted"} />
               </button>
+              <PreviewLink productId={p.id} />
+              </div>
             ))}
           </div>
         )}
