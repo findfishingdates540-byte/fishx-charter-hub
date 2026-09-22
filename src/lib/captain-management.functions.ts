@@ -72,6 +72,10 @@ export const upsertCaptainService = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const businessId = await pickBusinessId(context.supabase, context.userId);
     if (!businessId) throw new Response("No business found", { status: 400 });
+    {
+      const { assertCanPublish } = await import("./listing-publish-guard.server");
+      await assertCanPublish(context.supabase, businessId, data.is_published);
+    }
 
     let inheritedHero: string | null = null;
     // If a charter_id was provided, ensure that charter exists under this business
@@ -125,6 +129,10 @@ export const toggleServicePublished = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const businessId = await pickBusinessId(context.supabase, context.userId);
     if (!businessId) throw new Response("No business", { status: 400 });
+    {
+      const { assertCanPublish } = await import("./listing-publish-guard.server");
+      await assertCanPublish(context.supabase, businessId, data.is_published);
+    }
     const { error } = await context.supabase
       .from("bookable_services")
       .update({ is_published: data.is_published })

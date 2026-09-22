@@ -25,6 +25,7 @@ import {
 import { Card } from "@/components/operator/OperatorShell";
 import { PayoutsConnect } from "@/components/operator/PayoutsConnect";
 import { ImageUpload } from "@/components/business/ImageUpload";
+import { toast } from "sonner";
 
 const NOTIF_CATEGORIES: Array<{ key: string; label: string; hint: string }> = [
   { key: "booking", label: "Bookings", hint: "New requests, confirmations, cancellations." },
@@ -169,6 +170,7 @@ function VisibilityCard({
   const m = useMutation({
     mutationFn: (v: boolean) => toggle({ data: { businessId: business.id, isPublished: v } }),
     onSuccess: onDone,
+    onError: (e: any) => toast.error(e?.message || "We couldn't update your storefront."),
   });
 
   return (

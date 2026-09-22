@@ -18,6 +18,7 @@ import { input, btn } from "@/components/business/BusinessSettings";
 import { AvailabilityCalendar } from "@/components/business/AvailabilityCalendar";
 import { AddonsManager } from "@/components/business/AddonsManager";
 import { ImageUpload } from "@/components/business/ImageUpload";
+import { toast } from "sonner";
 
 export type ServiceKindKey =
   | "charter_trip"
@@ -130,10 +131,12 @@ export function ServicesManager({
       invalidate();
       setEditing(null);
     },
+    onError: (e: any) => toast.error(e?.message || "We couldn't save that listing."),
   });
   const mPublish = useMutation({
     mutationFn: (v: { id: string; isPublished: boolean }) => publish({ data: { businessId, ...v } }),
     onSuccess: invalidate,
+    onError: (e: any) => toast.error(e?.message || "We couldn't change that listing."),
   });
   const mDelete = useMutation({
     mutationFn: (id: string) => remove({ data: { businessId, id } }),

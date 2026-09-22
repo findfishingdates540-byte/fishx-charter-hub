@@ -152,6 +152,8 @@ export const bulkSetProductsPublished = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => z.object({ businessId: z.string().uuid(), productIds: z.array(z.string().uuid()).min(1).max(100), isPublished: z.boolean() }).parse(input))
   .handler(async ({ data, context }) => {
     await assertMember(context, data.businessId, "manager");
+    const { assertCanPublish } = await import("./listing-publish-guard.server");
+    await assertCanPublish(context.supabase, data.businessId, data.isPublished);
     const { error } = await context.supabase.from("inventory_products").update({ is_published: data.isPublished }).eq("business_id", data.businessId).in("id", data.productIds);
     if (error) throw new Error(error.message);
     return { ok: true as const };

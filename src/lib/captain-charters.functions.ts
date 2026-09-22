@@ -98,6 +98,10 @@ export const upsertCaptainCharter = createServerFn({ method: "POST" })
       throw new Error("We couldn't find your business account — finish onboarding first.");
 
     const { id, ...rest } = data;
+    {
+      const { assertCanPublish } = await import("./listing-publish-guard.server");
+      await assertCanPublish(context.supabase, businessId, data.is_published);
+    }
     const { toStoredMediaPath, toStoredMediaPaths } = await import("./media-urls.server");
 
     // Only write the fields this request actually sent, so a small change

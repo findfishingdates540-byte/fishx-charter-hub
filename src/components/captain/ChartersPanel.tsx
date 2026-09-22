@@ -26,6 +26,7 @@ import { listCaptainBoats } from "@/lib/captain-fleet.functions";
 import { ImageUpload } from "@/components/business/ImageUpload";
 import { DepartureTimesEditor, type DepartureRow } from "@/components/captain/DepartureTimesEditor";
 import { DEFAULT_HERO } from "@/lib/platform-photos";
+import { toast } from "sonner";
 
 type PackageRow = {
   id: string;
@@ -663,6 +664,7 @@ function CharterRowItem({
       qc.invalidateQueries({ queryKey: ["captain-charters"] });
       qc.invalidateQueries({ queryKey: ["captain-dashboard"] });
     },
+    onError: (e: any) => toast.error(e?.message || "We couldn't change that package."),
   });
 
   const packages = c.packages ?? [];
