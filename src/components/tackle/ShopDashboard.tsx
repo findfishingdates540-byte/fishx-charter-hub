@@ -24,6 +24,7 @@ import {
   Card,
   StatusPill,
   money,
+  PreviewLink,
 } from "@/components/operator/OperatorShell";
 import { PaymentsDashboard } from "@/components/operator/PaymentsDashboard";
 import { BusinessSettings } from "@/components/business/BusinessSettings";
@@ -115,6 +116,7 @@ const KIND_COPY: Record<
 
 export function ShopDashboard({
   businessId,
+  businessSlug,
   workspaceName,
   operatorName,
   categoryKey,
@@ -122,6 +124,7 @@ export function ShopDashboard({
   workspaces = [],
 }: {
   businessId: string;
+  businessSlug?: string | null;
   workspaceName: string;
   operatorName: string;
   categoryKey: string;
@@ -205,6 +208,7 @@ export function ShopDashboard({
       dock={[{ key: "overview", label: "Home" }, { key: "orders", label: "Orders" }, { key: "products", label: "Products" }]}
       pageTitle={(titles[active] ?? titles.overview).t}
       pageSub={(titles[active] ?? titles.overview).s}
+      previewSlug={businessSlug}
       headerRight={workspaces.length > 1 ? (
         <select
           aria-label="Current store"
@@ -217,12 +221,16 @@ export function ShopDashboard({
       ) : undefined}
     >
       {active === "overview" && <Overview data={data} />}
-      {active === "products" && <Products data={data} businessId={businessId} />}
+      {active === "products" && (
+        <Products data={data} businessId={businessId} businessSlug={businessSlug} />
+      )}
       {active === "orders" && <Orders businessId={businessId} data={data} />}
       {active === "customers" && <MerchantCustomers businessId={businessId} />}
       {active === "analytics" && <MerchantAnalytics businessId={businessId} />}
       {active === "discounts" && <MerchantDiscounts businessId={businessId} />}
-      {active === "online-store" && <MerchantOnlineStore businessId={businessId} />}
+      {active === "online-store" && (
+        <MerchantOnlineStore businessId={businessId} slug={businessSlug ?? undefined} />
+      )}
       {active === "bookings" && <Bookings businessId={businessId} />}
       {active === "wholesale" && (
         <WholesalePanel businessId={businessId} products={data.products} />
@@ -323,7 +331,15 @@ function Overview({ data }: { data: any }) {
   );
 }
 
-function Products({ data, businessId }: { data: any; businessId: string }) {
+function Products({
+  data,
+  businessId,
+  businessSlug,
+}: {
+  data: any;
+  businessId: string;
+  businessSlug?: string | null;
+}) {
   const navigate = useNavigate();
 
   return (
@@ -364,8 +380,16 @@ function Products({ data, businessId }: { data: any; businessId: string }) {
               <span>Live</span>
             </div>
             {data.products.map((p: Product) => (
-              <button
+              <div
                 key={p.id}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 10,
+                  borderBottom: "1px solid rgba(255,255,255,.05)",
+                }}
+              >
+              <button
                 onClick={() =>
                   navigate({
                     to: "/shop/products/$productId/edit",
@@ -378,12 +402,12 @@ function Products({ data, businessId }: { data: any; businessId: string }) {
                   gridTemplateColumns: "1.8fr .8fr .8fr .8fr .6fr",
                   gap: 16,
                   padding: "14px 4px",
-                  borderBottom: "1px solid rgba(255,255,255,.05)",
                   alignItems: "center",
                   background: "transparent",
                   border: 0,
                   borderTop: 0,
-                  width: "100%",
+                  flex: 1,
+                  minWidth: 0,
                   textAlign: "left",
                   cursor: "pointer",
                   fontFamily: "inherit",
@@ -445,6 +469,8 @@ function Products({ data, businessId }: { data: any; businessId: string }) {
                 </span>
                 <StatusPill label={p.is_published ? "Live" : "Draft"} tone={p.is_published ? "green" : "muted"} />
               </button>
+              <PreviewLink productId={p.id} />
+              </div>
             ))}
           </div>
         )}

@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useNavigate } from "@tanstack/react-router";
 import { cachedMediaUrl } from "@/lib/media-url";
 import {
   useSuspenseQuery,
@@ -58,16 +59,40 @@ type Slot = {
 
 export function GuideDashboard({
   businessId,
+  businessSlug,
   workspaceName,
   operatorName,
+  initialTab,
 }: {
   businessId: string;
+  businessSlug?: string | null;
   workspaceName: string;
   operatorName: string;
+  initialTab?: string;
 }) {
   const { data } = useSuspenseQuery(overviewQO(businessId));
+  const navigate = useNavigate();
   const [settingsSection, setSettingsSection] = useState<string>("profile");
-  const [active, setActive] = useState("overview");
+  const GUIDE_TABS = [
+    "overview",
+    "trips",
+    "calendar",
+    "guides",
+    "slots",
+    "guests",
+    "requests",
+    "listings",
+    "messages",
+    "payouts",
+    "settings",
+  ];
+  const [active, setActive] = useState(
+    initialTab && GUIDE_TABS.includes(initialTab) ? initialTab : "overview",
+  );
+  useEffect(() => {
+    setActive(initialTab && GUIDE_TABS.includes(initialTab) ? initialTab : "overview");
+  }, [initialTab]);
+
 
   const nav: OperatorNavItem[] = [
     { key: "overview", label: "Overview", icon: <BoxIcon /> },
@@ -118,10 +143,11 @@ export function GuideDashboard({
       operatorRole="Owner · Verified outfitter"
       nav={nav}
       active={active}
-      onNav={setActive}
+      onNav={(key) => navigate({ to: "/dashboard", search: { tab: key, biz: businessId } })}
       dock={[{ key: "overview", label: "Home" }, { key: "trips", label: "Trips" }, { key: "calendar", label: "Calendar" }]}
       pageTitle={(titles[active] ?? titles.overview).t}
       pageSub={(titles[active] ?? titles.overview).s}
+      previewSlug={businessSlug}
     >
       {active === "overview" && (
         <>
@@ -165,6 +191,7 @@ export function GuideDashboard({
       {active === "listings" && (
         <ServicesManager
           businessId={businessId}
+          businessSlug={businessSlug}
           kinds={["guided_trip", "charter_trip", "workshop", "rental", "lodging", "other"]}
           eyebrow="Listings"
           title="Guided trips & clinics"

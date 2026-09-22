@@ -17,6 +17,9 @@ const profileQO = (slug: string) =>
   });
 
 export const Route = createFileRoute("/b/$slug")({
+  // ?service=<id> deep-links to a single listing, used by operator previews.
+  validateSearch: (search: Record<string, unknown>): { service?: string } =>
+    typeof search.service === "string" ? { service: search.service } : {},
   loader: async ({ context, params }) => {
     return await context.queryClient.ensureQueryData(profileQO(params.slug));
   },
@@ -60,8 +63,9 @@ export const Route = createFileRoute("/b/$slug")({
 
 function BusinessPage() {
   const { slug } = Route.useParams();
+  const { service } = Route.useSearch();
   const { data } = useSuspenseQuery(profileQO(slug));
   const variant: "captain" | "guide" =
     data.business.category_key === "guide_service" ? "guide" : "captain";
-  return <OperatorProfile {...data} variant={variant} />;
+  return <OperatorProfile {...data} variant={variant} initialServiceId={service ?? null} />;
 }

@@ -166,6 +166,8 @@ type Props = {
   products?: Product[];
   slips?: Slip[];
   posts?: Post[];
+  /** Deep-link to one listing (operator "Preview" buttons pass ?service=<id>). */
+  initialServiceId?: string | null;
 };
 
 const fmtPrice = (cents: number) =>
@@ -200,6 +202,7 @@ export function OperatorProfile({
   products = [],
   slips = [],
   posts = [],
+  initialServiceId = null,
 }: Props) {
   const isTripStorefront = b.category_key === "charter" || b.category_key === "guide_service";
   const storefrontServices = useMemo(
@@ -211,7 +214,11 @@ export function OperatorProfile({
         : services,
     [isTripStorefront, services],
   );
-  const [selectedServiceId, setSelectedServiceId] = useState<string | null>(storefrontServices[0]?.id ?? null);
+  const [selectedServiceId, setSelectedServiceId] = useState<string | null>(
+    (initialServiceId && storefrontServices.some((s) => s.id === initialServiceId)
+      ? initialServiceId
+      : storefrontServices[0]?.id) ?? null,
+  );
   const [openCharterKey, setOpenCharterKey] = useState<string>("");
   const selected = useMemo(
     () => storefrontServices.find((s) => s.id === selectedServiceId) ?? storefrontServices[0],

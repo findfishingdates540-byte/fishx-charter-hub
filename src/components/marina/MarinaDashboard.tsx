@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { Link, useNavigate } from "@tanstack/react-router";
 import {
   useSuspenseQuery,
   useMutation,
@@ -51,6 +52,7 @@ type Slip = {
 
 type Reservation = {
   id: string;
+  slip_id?: string | null;
   vessel_name: string;
   captain_name: string | null;
   arrive_date: string;
@@ -60,7 +62,7 @@ type Reservation = {
   slip: { slip_number: string } | null;
 };
 
-const overviewQO = (businessId: string) =>
+export const marinaOverviewQO = (businessId: string) =>
   queryOptions({
     queryKey: ["marina-overview", businessId],
     queryFn: () => getMarinaOverview({ data: { businessId } }),
@@ -82,16 +84,27 @@ const NAV: OperatorNavItem[] = [
 
 export function MarinaDashboard({
   businessId,
+  businessSlug,
   workspaceName,
   operatorName,
+  initialTab,
 }: {
   businessId: string;
+  businessSlug?: string | null;
   workspaceName: string;
   operatorName: string;
+  initialTab?: string;
 }) {
-  const { data } = useSuspenseQuery(overviewQO(businessId));
+  const { data } = useSuspenseQuery(marinaOverviewQO(businessId));
+  const navigate = useNavigate();
   const [settingsSection, setSettingsSection] = useState<string>("profile");
-  const [active, setActive] = useState("overview");
+  const MARINA_TABS = NAV.map((n) => n.key);
+  const [active, setActive] = useState(
+    initialTab && MARINA_TABS.includes(initialTab) ? initialTab : "overview",
+  );
+  useEffect(() => {
+    setActive(initialTab && MARINA_TABS.includes(initialTab) ? initialTab : "overview");
+  }, [initialTab]);
   const pending = data.reservations.filter((r: Reservation) => r.status === "pending").length;
 
   const nav = NAV.map((n) =>
@@ -120,10 +133,11 @@ export function MarinaDashboard({
       operatorRole="Harbormaster"
       nav={nav}
       active={active}
-      onNav={setActive}
+      onNav={(key) => navigate({ to: "/dashboard", search: { tab: key, biz: businessId } })}
       dock={[{ key: "overview", label: "Harbor" }, { key: "slips", label: "Slips" }, { key: "bookings", label: "Bookings" }]}
       pageTitle={(titles[active] ?? titles.overview).t}
       pageSub={(titles[active] ?? titles.overview).s}
+      previewSlug={businessSlug}
       headerRight={
         <div
           style={{
@@ -186,6 +200,7 @@ export function MarinaDashboard({
       {active === "listings" && (
         <ServicesManager
           businessId={businessId}
+          businessSlug={businessSlug}
           kinds={["slip_rental", "lodging", "workshop", "rental", "charter_trip", "other"]}
           eyebrow="Listings"
           title="Bookable listings"
@@ -248,6 +263,7 @@ function Overview({ businessId: _b, data }: { businessId: string; data: any }) {
 
 function Slips({ businessId, data }: { businessId: string; data: any }) {
   const qc = useQueryClient();
+  const navigate = useNavigate();
   const upsertFn = useServerFn(upsertSlip);
   const deleteFn = useServerFn(deleteSlip);
   const publishFn = useServerFn(publishSlipForBooking);
@@ -311,10 +327,13 @@ function Slips({ businessId, data }: { businessId: string; data: any }) {
               return (
                 <button
                   key={s.id}
-                  onClick={() => {
-                    setEditing(s);
-                    setShowForm(true);
-                  }}
+                  onClick={() =>
+                    navigate({
+                      to: "/marina/slips/$slipId",
+                      params: { slipId: s.id },
+                      search: { biz: businessId },
+                    })
+                  }
                   title={`Slip ${s.slip_number} · ${s.status}`}
                   style={{
                     aspectRatio: "1 / 1",
@@ -373,17 +392,31 @@ function Slips({ businessId, data }: { businessId: string; data: any }) {
                     {s.is_bookable ? " · Bookable online" : ""}
                   </div>
                 </div>
-                <button
-                  style={s.is_bookable ? btnGhost : btnPrimary}
-                  disabled={publishM.isPending || !s.nightly_rate_cents}
-                  onClick={() =>
-                    publishM.mutate({
-                      data: { businessId, slipId: s.id, enabled: !s.is_bookable },
-                    })
-                  }
-                >
-                  {s.is_bookable ? "Unpublish" : "Publish for booking"}
-                </button>
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+                  <button
+                    style={btnGhost}
+                    onClick={() =>
+                      navigate({
+                        to: "/marina/slips/$slipId",
+                        params: { slipId: s.id },
+                        search: { biz: businessId },
+                      })
+                    }
+                  >
+                    Open
+                  </button>
+                  <button
+                    style={s.is_bookable ? btnGhost : btnPrimary}
+                    disabled={publishM.isPending || !s.nightly_rate_cents}
+                    onClick={() =>
+                      publishM.mutate({
+                        data: { businessId, slipId: s.id, enabled: !s.is_bookable },
+                      })
+                    }
+                  >
+                    {s.is_bookable ? "Unpublish" : "Publish for booking"}
+                  </button>
+                </div>
               </div>
             ))}
           </div>
@@ -429,7 +462,7 @@ function Slips({ businessId, data }: { businessId: string; data: any }) {
   );
 }
 
-function SlipForm({
+export function SlipForm({
   initial,
   onCancel,
   onSave,
@@ -579,7 +612,7 @@ function Reservations({
         <ReservationCalendar rows={data.reservations} />
       ) : (
         <Card title="All reservations">
-          <ReservationTable rows={data.reservations} />
+          <ReservationTable rows={data.reservations} businessId={businessId} />
         </Card>
       )}
       {showForm && (
@@ -596,13 +629,15 @@ function Reservations({
   );
 }
 
-function ReservationForm({
+export function ReservationForm({
   slips,
+  initial,
   onSave,
   saving,
   onCancel,
 }: {
   slips: Slip[];
+  initial?: Reservation & { slip_id?: string | null };
   onSave: (v: {
     vesselName: string;
     captainName: string;
@@ -615,18 +650,20 @@ function ReservationForm({
   saving: boolean;
   onCancel: () => void;
 }) {
-  const [vessel, setVessel] = useState("");
-  const [captain, setCaptain] = useState("");
-  const [arrive, setArrive] = useState("");
-  const [depart, setDepart] = useState("");
-  const [total, setTotal] = useState("");
-  const [slipId, setSlipId] = useState<string>("");
+  const [vessel, setVessel] = useState(initial?.vessel_name ?? "");
+  const [captain, setCaptain] = useState(initial?.captain_name ?? "");
+  const [arrive, setArrive] = useState(initial?.arrive_date?.slice(0, 10) ?? "");
+  const [depart, setDepart] = useState(initial?.depart_date?.slice(0, 10) ?? "");
+  const [total, setTotal] = useState(
+    initial?.total_cents != null ? String(initial.total_cents / 100) : "",
+  );
+  const [slipId, setSlipId] = useState<string>(initial?.slip_id ?? "");
   const [status, setStatus] = useState<
     "pending" | "confirmed" | "checked_in" | "checked_out" | "cancelled"
-  >("pending");
+  >((initial?.status as any) ?? "pending");
 
   return (
-    <Card title="New reservation">
+    <Card title={initial ? "Edit reservation" : "New reservation"}>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 14 }}>
         <Field label="Vessel name">
           <input value={vessel} onChange={(e) => setVessel(e.target.value)} style={inputStyle} />
@@ -689,7 +726,13 @@ function ReservationForm({
   );
 }
 
-function ReservationTable({ rows }: { rows: Reservation[] }) {
+function ReservationTable({
+  rows,
+  businessId,
+}: {
+  rows: Reservation[];
+  businessId?: string;
+}) {
   if (!rows.length) return <Empty label="No reservations yet." />;
   const toneFor = (s: string) =>
     s === "confirmed"
@@ -706,7 +749,7 @@ function ReservationTable({ rows }: { rows: Reservation[] }) {
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "1.5fr 1fr .8fr .8fr auto",
+          gridTemplateColumns: "1.5fr 1fr .8fr .8fr auto auto",
           gap: 16,
           padding: "10px 4px 12px",
           fontSize: 11,
@@ -722,13 +765,14 @@ function ReservationTable({ rows }: { rows: Reservation[] }) {
         <span>Slip</span>
         <span>Amount</span>
         <span>Status</span>
+        <span />
       </div>
       {rows.map((r) => (
         <div
           key={r.id}
           style={{
             display: "grid",
-            gridTemplateColumns: "1.5fr 1fr .8fr .8fr auto",
+            gridTemplateColumns: "1.5fr 1fr .8fr .8fr auto auto",
             gap: 16,
             padding: "14px 4px",
             borderBottom: "1px solid rgba(255,255,255,.05)",
@@ -761,6 +805,24 @@ function ReservationTable({ rows }: { rows: Reservation[] }) {
             {money(r.total_cents)}
           </span>
           <StatusPill label={r.status.replace("_", " ")} tone={toneFor(r.status) as any} />
+          {businessId ? (
+            <Link
+              to="/marina/reservations/$reservationId"
+              params={{ reservationId: r.id }}
+              search={{ biz: businessId }}
+              style={{
+                color: "#2DE2F2",
+                fontSize: 12.5,
+                fontWeight: 700,
+                textDecoration: "none",
+                whiteSpace: "nowrap",
+              }}
+            >
+              Open ↗
+            </Link>
+          ) : (
+            <span />
+          )}
         </div>
       ))}
     </div>

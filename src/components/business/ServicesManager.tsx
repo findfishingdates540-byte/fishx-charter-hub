@@ -13,7 +13,7 @@ import {
   setBusinessServicePublished,
   deleteBusinessService,
 } from "@/lib/business-listings.functions";
-import { Card, money } from "@/components/operator/OperatorShell";
+import { Card, money, PreviewLink } from "@/components/operator/OperatorShell";
 import { input, btn } from "@/components/business/BusinessSettings";
 import { AvailabilityCalendar } from "@/components/business/AvailabilityCalendar";
 import { AddonsManager } from "@/components/business/AddonsManager";
@@ -74,12 +74,14 @@ const emptyDraft = (kind: ServiceKindKey): Draft => ({
 
 export function ServicesManager({
   businessId,
+  businessSlug,
   kinds,
   eyebrow = "Listings",
   title = "Your listings",
   emptyText = "No listings yet — publish your first one so anglers can book.",
 }: {
   businessId: string;
+  businessSlug?: string | null;
   kinds: ServiceKindKey[];
   eyebrow?: string;
   title?: string;
@@ -245,6 +247,7 @@ export function ServicesManager({
             >
               Add-ons
             </button>
+            <PreviewLink slug={businessSlug} serviceId={s.id} />
             <button style={btn("ghost")} onClick={() => setEditing(toDraft(s))}>
               Edit
             </button>

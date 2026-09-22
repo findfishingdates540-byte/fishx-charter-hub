@@ -273,7 +273,7 @@ function Dashboard() {
 
     {
       const biz = pickPrimaryBusiness(businesses, primaryRole, requestedBusinessId) as
-        | { id: string; name: string; category_key: string }
+        | { id: string; name: string; slug?: string | null; category_key: string }
         | undefined;
       if (!biz) return <AnglerDashboard />;
 
@@ -287,8 +287,10 @@ function Dashboard() {
         return (
           <MarinaDashboard
             businessId={biz.id}
+            businessSlug={biz.slug ?? null}
             workspaceName={biz.name}
             operatorName={operatorName}
+            initialTab={tab}
           />
         );
       if (
@@ -300,6 +302,7 @@ function Dashboard() {
         return (
           <ShopDashboard
             businessId={biz.id}
+            businessSlug={biz.slug ?? null}
             workspaceName={biz.name}
             operatorName={operatorName}
             categoryKey={key}
@@ -313,8 +316,10 @@ function Dashboard() {
         return (
           <GuideDashboard
             businessId={biz.id}
+            businessSlug={biz.slug ?? null}
             workspaceName={biz.name}
             operatorName={operatorName}
+            initialTab={tab}
           />
         );
       return <DashboardFrame src="/dashboards/captain.html" title="Operator dashboard" />;
