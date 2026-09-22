@@ -35,15 +35,18 @@ export interface OperatorDockItem {
 export function PreviewLink({
   slug,
   serviceId,
+  productId,
   label = "Preview",
   tone = "ghost",
 }: {
   slug?: string | null;
   serviceId?: string | null;
+  /** Shop products preview on the public marketplace page instead. */
+  productId?: string | null;
   label?: string;
   tone?: "ghost" | "solid";
 }) {
-  if (!slug) return null;
+  if (!slug && !productId) return null;
   const base = {
     display: "inline-flex",
     alignItems: "center",
