@@ -392,17 +392,31 @@ function Slips({ businessId, data }: { businessId: string; data: any }) {
                     {s.is_bookable ? " · Bookable online" : ""}
                   </div>
                 </div>
-                <button
-                  style={s.is_bookable ? btnGhost : btnPrimary}
-                  disabled={publishM.isPending || !s.nightly_rate_cents}
-                  onClick={() =>
-                    publishM.mutate({
-                      data: { businessId, slipId: s.id, enabled: !s.is_bookable },
-                    })
-                  }
-                >
-                  {s.is_bookable ? "Unpublish" : "Publish for booking"}
-                </button>
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+                  <button
+                    style={btnGhost}
+                    onClick={() =>
+                      navigate({
+                        to: "/marina/slips/$slipId",
+                        params: { slipId: s.id },
+                        search: { biz: businessId },
+                      })
+                    }
+                  >
+                    Open
+                  </button>
+                  <button
+                    style={s.is_bookable ? btnGhost : btnPrimary}
+                    disabled={publishM.isPending || !s.nightly_rate_cents}
+                    onClick={() =>
+                      publishM.mutate({
+                        data: { businessId, slipId: s.id, enabled: !s.is_bookable },
+                      })
+                    }
+                  >
+                    {s.is_bookable ? "Unpublish" : "Publish for booking"}
+                  </button>
+                </div>
               </div>
             ))}
           </div>
