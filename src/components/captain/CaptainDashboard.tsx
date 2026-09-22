@@ -4,9 +4,9 @@
  * captain-management server functions (bookings list, services CRUD,
  * earnings, messages).
  */
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { MediaImg } from "@/components/media/MediaImg";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery, useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { getCaptainDashboard } from "@/lib/captain-dashboard.functions";
@@ -49,6 +49,10 @@ export function CaptainDashboard({ initialTab }: { initialTab?: string } = {}) {
   const [tab, setTab] = useState<Tab>(
     TABS.includes(initialTab as Tab) ? (initialTab as Tab) : "overview",
   );
+  const navigate = useNavigate();
+  useEffect(() => {
+    setTab(TABS.includes(initialTab as Tab) ? (initialTab as Tab) : "overview");
+  }, [initialTab]);
   // Which Settings section to open when arriving from the readiness checklist.
   const [settingsSection, setSettingsSection] = useState<string>("profile");
   const [accepting, setAccepting] = useState(true);
@@ -100,7 +104,7 @@ export function CaptainDashboard({ initialTab }: { initialTab?: string } = {}) {
       operatorRole={biz?.verified_at ? "Verified captain" : "Pending verification"}
       nav={nav}
       active={tab}
-      onNav={(key) => setTab(key as Tab)}
+      onNav={(key) => navigate({ to: "/captain/$section", params: { section: key } })}
       pageTitle={pageTitle[tab]}
       pageSub={pageSub[tab]}
       dock={[{ key: "overview", label: "Home" }, { key: "bookings", label: "Bookings" }, { key: "services", label: "Charters" }]}

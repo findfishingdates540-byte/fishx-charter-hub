@@ -204,7 +204,7 @@ export function ShopDashboard({
       operatorRole={copy.brand}
       nav={nav}
       active={active}
-      onNav={(key) => navigate({ to: "/dashboard", search: { tab: key, biz: businessId } })}
+      onNav={(key) => navigate({ to: "/shop/$section", params: { section: key }, search: { biz: businessId } })}
       dock={[{ key: "overview", label: "Home" }, { key: "orders", label: "Orders" }, { key: "products", label: "Products" }]}
       pageTitle={(titles[active] ?? titles.overview).t}
       pageSub={(titles[active] ?? titles.overview).s}
@@ -213,7 +213,7 @@ export function ShopDashboard({
         <select
           aria-label="Current store"
           value={businessId}
-          onChange={(event) => navigate({ to: "/dashboard", search: { tab: active, biz: event.target.value } })}
+          onChange={(event) => navigate({ to: "/shop/$section", params: { section: active }, search: { biz: event.target.value } })}
           style={{ maxWidth: 220, border: "1px solid rgba(255,255,255,.12)", borderRadius: 8, padding: "8px 10px", background: "#14202B", color: "#F0F2F5", fontFamily: "inherit" }}
         >
           {workspaces.map((workspace) => <option key={workspace.id} value={workspace.id}>{workspace.name}</option>)}
