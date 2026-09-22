@@ -115,6 +115,7 @@ const KIND_COPY: Record<
 
 export function ShopDashboard({
   businessId,
+  businessSlug,
   workspaceName,
   operatorName,
   categoryKey,
@@ -122,6 +123,7 @@ export function ShopDashboard({
   workspaces = [],
 }: {
   businessId: string;
+  businessSlug?: string | null;
   workspaceName: string;
   operatorName: string;
   categoryKey: string;
