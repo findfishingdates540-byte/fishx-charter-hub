@@ -287,6 +287,7 @@ function Dashboard() {
         return (
           <MarinaDashboard
             businessId={biz.id}
+            businessSlug={biz.slug ?? null}
             workspaceName={biz.name}
             operatorName={operatorName}
           />
@@ -300,6 +301,7 @@ function Dashboard() {
         return (
           <ShopDashboard
             businessId={biz.id}
+            businessSlug={biz.slug ?? null}
             workspaceName={biz.name}
             operatorName={operatorName}
             categoryKey={key}
@@ -313,6 +315,7 @@ function Dashboard() {
         return (
           <GuideDashboard
             businessId={biz.id}
+            businessSlug={biz.slug ?? null}
             workspaceName={biz.name}
             operatorName={operatorName}
           />
