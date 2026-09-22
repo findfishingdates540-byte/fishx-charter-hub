@@ -52,6 +52,7 @@ type Slip = {
 
 type Reservation = {
   id: string;
+  slip_id?: string | null;
   vessel_name: string;
   captain_name: string | null;
   arrive_date: string;

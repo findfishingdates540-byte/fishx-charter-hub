@@ -35,7 +35,7 @@ export const getMarinaOverview = createServerFn({ method: "GET" })
       supabase
         .from("marina_reservations")
         .select(
-          "id, vessel_name, captain_name, arrive_date, depart_date, total_cents, status, slip:marina_slips(slip_number)",
+          "id, vessel_name, captain_name, arrive_date, depart_date, total_cents, status, slip_id, slip:marina_slips(slip_number)",
         )
         .eq("business_id", data.businessId)
         .order("arrive_date", { ascending: false })
