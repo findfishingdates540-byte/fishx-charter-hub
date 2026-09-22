@@ -136,6 +136,7 @@ export function MarinaDashboard({
       dock={[{ key: "overview", label: "Harbor" }, { key: "slips", label: "Slips" }, { key: "bookings", label: "Bookings" }]}
       pageTitle={(titles[active] ?? titles.overview).t}
       pageSub={(titles[active] ?? titles.overview).s}
+      previewSlug={businessSlug}
       headerRight={
         <div
           style={{
@@ -198,6 +199,7 @@ export function MarinaDashboard({
       {active === "listings" && (
         <ServicesManager
           businessId={businessId}
+          businessSlug={businessSlug}
           kinds={["slip_rental", "lodging", "workshop", "rental", "charter_trip", "other"]}
           eyebrow="Listings"
           title="Bookable listings"
