@@ -207,6 +207,7 @@ export function ShopDashboard({
       dock={[{ key: "overview", label: "Home" }, { key: "orders", label: "Orders" }, { key: "products", label: "Products" }]}
       pageTitle={(titles[active] ?? titles.overview).t}
       pageSub={(titles[active] ?? titles.overview).s}
+      previewSlug={businessSlug}
       headerRight={workspaces.length > 1 ? (
         <select
           aria-label="Current store"
@@ -219,12 +220,16 @@ export function ShopDashboard({
       ) : undefined}
     >
       {active === "overview" && <Overview data={data} />}
-      {active === "products" && <Products data={data} businessId={businessId} />}
+      {active === "products" && (
+        <Products data={data} businessId={businessId} businessSlug={businessSlug} />
+      )}
       {active === "orders" && <Orders businessId={businessId} data={data} />}
       {active === "customers" && <MerchantCustomers businessId={businessId} />}
       {active === "analytics" && <MerchantAnalytics businessId={businessId} />}
       {active === "discounts" && <MerchantDiscounts businessId={businessId} />}
-      {active === "online-store" && <MerchantOnlineStore businessId={businessId} />}
+      {active === "online-store" && (
+        <MerchantOnlineStore businessId={businessId} slug={businessSlug ?? undefined} />
+      )}
       {active === "bookings" && <Bookings businessId={businessId} />}
       {active === "wholesale" && (
         <WholesalePanel businessId={businessId} products={data.products} />
