@@ -62,15 +62,37 @@ export function GuideDashboard({
   businessSlug,
   workspaceName,
   operatorName,
+  initialTab,
 }: {
   businessId: string;
   businessSlug?: string | null;
   workspaceName: string;
   operatorName: string;
+  initialTab?: string;
 }) {
   const { data } = useSuspenseQuery(overviewQO(businessId));
+  const navigate = useNavigate();
   const [settingsSection, setSettingsSection] = useState<string>("profile");
-  const [active, setActive] = useState("overview");
+  const GUIDE_TABS = [
+    "overview",
+    "trips",
+    "calendar",
+    "guides",
+    "slots",
+    "guests",
+    "requests",
+    "listings",
+    "messages",
+    "payouts",
+    "settings",
+  ];
+  const [active, setActive] = useState(
+    initialTab && GUIDE_TABS.includes(initialTab) ? initialTab : "overview",
+  );
+  useEffect(() => {
+    setActive(initialTab && GUIDE_TABS.includes(initialTab) ? initialTab : "overview");
+  }, [initialTab]);
+
 
   const nav: OperatorNavItem[] = [
     { key: "overview", label: "Overview", icon: <BoxIcon /> },
