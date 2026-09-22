@@ -726,7 +726,13 @@ export function ReservationForm({
   );
 }
 
-function ReservationTable({ rows }: { rows: Reservation[] }) {
+function ReservationTable({
+  rows,
+  businessId,
+}: {
+  rows: Reservation[];
+  businessId?: string;
+}) {
   if (!rows.length) return <Empty label="No reservations yet." />;
   const toneFor = (s: string) =>
     s === "confirmed"
