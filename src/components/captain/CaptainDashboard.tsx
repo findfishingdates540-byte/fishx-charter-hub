@@ -104,7 +104,7 @@ export function CaptainDashboard({ initialTab }: { initialTab?: string } = {}) {
       operatorRole={biz?.verified_at ? "Verified captain" : "Pending verification"}
       nav={nav}
       active={tab}
-      onNav={(key) => setTab(key as Tab)}
+      onNav={(key) => navigate({ to: "/captain/$section", params: { section: key } })}
       pageTitle={pageTitle[tab]}
       pageSub={pageSub[tab]}
       dock={[{ key: "overview", label: "Home" }, { key: "bookings", label: "Bookings" }, { key: "services", label: "Charters" }]}
