@@ -44,7 +44,7 @@ export function ReadinessGate({
     onSuccess: (res: any) => {
       if (res && res.ok === false) {
         toast.error("Finish setup before going live", {
-          description: "Connect payouts and add an upcoming date or an in-stock product first.",
+          description: "Connect payouts, get verified, and add an upcoming date or an in-stock product first.",
         });
       }
       qc.invalidateQueries({ queryKey: ["operator-readiness"] });
