@@ -327,10 +327,13 @@ function Slips({ businessId, data }: { businessId: string; data: any }) {
               return (
                 <button
                   key={s.id}
-                  onClick={() => {
-                    setEditing(s);
-                    setShowForm(true);
-                  }}
+                  onClick={() =>
+                    navigate({
+                      to: "/marina/slips/$slipId",
+                      params: { slipId: s.id },
+                      search: { biz: businessId },
+                    })
+                  }
                   title={`Slip ${s.slip_number} · ${s.status}`}
                   style={{
                     aspectRatio: "1 / 1",
