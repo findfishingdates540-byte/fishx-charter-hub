@@ -28,6 +28,53 @@ export interface OperatorDockItem {
   label: string;
 }
 
+/**
+ * "Preview" link — opens the public Fish-X page exactly as anglers see it.
+ * Passing a serviceId deep-links to that single listing on the page.
+ */
+export function PreviewLink({
+  slug,
+  serviceId,
+  label = "Preview",
+  tone = "ghost",
+}: {
+  slug?: string | null;
+  serviceId?: string | null;
+  label?: string;
+  tone?: "ghost" | "solid";
+}) {
+  if (!slug) return null;
+  const base = {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: 6,
+    borderRadius: 999,
+    padding: "7px 13px",
+    fontSize: 12.5,
+    fontWeight: 700,
+    fontFamily: "'Outfit', system-ui, sans-serif",
+    textDecoration: "none",
+    whiteSpace: "nowrap" as const,
+  };
+  const style =
+    tone === "solid"
+      ? { ...base, background: "#2DE2F2", color: "#04121B", border: "1px solid #2DE2F2" }
+      : { ...base, background: "rgba(45,226,242,.10)", color: "#2DE2F2", border: "1px solid rgba(45,226,242,.35)" };
+  return (
+    <Link
+      to="/b/$slug"
+      params={{ slug }}
+      search={serviceId ? { service: serviceId } : {}}
+      target="_blank"
+      rel="noopener noreferrer"
+      title="Open the public page in a new tab"
+      style={style}
+    >
+      {label} ↗
+    </Link>
+  );
+}
+
 export function OperatorShell({
   workspaceName,
   workspaceKind,
@@ -39,6 +86,7 @@ export function OperatorShell({
   pageTitle,
   pageSub,
   headerRight,
+  previewSlug,
   dock,
   children,
 }: {
@@ -52,6 +100,7 @@ export function OperatorShell({
   pageTitle: string;
   pageSub?: string;
   headerRight?: ReactNode;
+  previewSlug?: string | null;
   dock?: OperatorDockItem[];
   children: ReactNode;
 }) {
