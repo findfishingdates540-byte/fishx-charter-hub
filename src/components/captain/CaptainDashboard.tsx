@@ -4,7 +4,7 @@
  * captain-management server functions (bookings list, services CRUD,
  * earnings, messages).
  */
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { MediaImg } from "@/components/media/MediaImg";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery, useQuery } from "@tanstack/react-query";
