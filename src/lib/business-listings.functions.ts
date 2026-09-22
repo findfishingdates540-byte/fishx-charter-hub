@@ -68,6 +68,10 @@ export const upsertBusinessService = createServerFn({ method: "POST" })
   .inputValidator((i: unknown) => serviceInput.parse(i))
   .handler(async ({ data, context }) => {
     await assertManager(context.supabase, context.userId, data.businessId);
+    {
+      const { assertCanPublish } = await import("./listing-publish-guard.server");
+      await assertCanPublish(context.supabase, data.businessId, data.is_published);
+    }
     const { businessId, id, ...rest } = data;
     const payload: any = { ...rest, kind: rest.kind as ServiceKind, business_id: businessId };
     const { data: row, error } = id
@@ -96,6 +100,10 @@ export const setBusinessServicePublished = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     await assertManager(context.supabase, context.userId, data.businessId);
+    {
+      const { assertCanPublish } = await import("./listing-publish-guard.server");
+      await assertCanPublish(context.supabase, data.businessId, data.isPublished);
+    }
     const { data: row, error } = await context.supabase
       .from("bookable_services")
       .update({ is_published: data.isPublished })

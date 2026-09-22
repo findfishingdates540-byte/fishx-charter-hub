@@ -122,6 +122,10 @@ export const upsertProduct = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     await assertMember(context, data.businessId);
+    {
+      const { assertCanPublish } = await import("./listing-publish-guard.server");
+      await assertCanPublish(context.supabase, data.businessId, data.isPublished);
+    }
 
     // Tags live in the product `metadata` blob; merge so nothing else is lost.
     let metadata: any;
