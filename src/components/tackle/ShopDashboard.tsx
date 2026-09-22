@@ -24,6 +24,7 @@ import {
   Card,
   StatusPill,
   money,
+  PreviewLink,
 } from "@/components/operator/OperatorShell";
 import { PaymentsDashboard } from "@/components/operator/PaymentsDashboard";
 import { BusinessSettings } from "@/components/business/BusinessSettings";
@@ -330,7 +331,15 @@ function Overview({ data }: { data: any }) {
   );
 }
 
-function Products({ data, businessId }: { data: any; businessId: string }) {
+function Products({
+  data,
+  businessId,
+  businessSlug,
+}: {
+  data: any;
+  businessId: string;
+  businessSlug?: string | null;
+}) {
   const navigate = useNavigate();
 
   return (
