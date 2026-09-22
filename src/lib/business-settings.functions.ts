@@ -175,6 +175,10 @@ export const setBusinessPublished = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     await assertMember(context.supabase, context.userId, data.businessId);
+    {
+      const { assertCanPublish } = await import("./listing-publish-guard.server");
+      await assertCanPublish(context.supabase, data.businessId, data.isPublished);
+    }
     const { error } = await context.supabase
       .from("businesses")
       .update({ is_published: data.isPublished })
