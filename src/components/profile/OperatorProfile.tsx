@@ -166,6 +166,8 @@ type Props = {
   products?: Product[];
   slips?: Slip[];
   posts?: Post[];
+  /** Deep-link to one listing (operator "Preview" buttons pass ?service=<id>). */
+  initialServiceId?: string | null;
 };
 
 const fmtPrice = (cents: number) =>
