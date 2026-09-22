@@ -772,7 +772,7 @@ function ReservationTable({
           key={r.id}
           style={{
             display: "grid",
-            gridTemplateColumns: "1.5fr 1fr .8fr .8fr auto",
+            gridTemplateColumns: "1.5fr 1fr .8fr .8fr auto auto",
             gap: 16,
             padding: "14px 4px",
             borderBottom: "1px solid rgba(255,255,255,.05)",
@@ -805,6 +805,24 @@ function ReservationTable({
             {money(r.total_cents)}
           </span>
           <StatusPill label={r.status.replace("_", " ")} tone={toneFor(r.status) as any} />
+          {businessId ? (
+            <Link
+              to="/marina/reservations/$reservationId"
+              params={{ reservationId: r.id }}
+              search={{ biz: businessId }}
+              style={{
+                color: "#2DE2F2",
+                fontSize: 12.5,
+                fontWeight: 700,
+                textDecoration: "none",
+                whiteSpace: "nowrap",
+              }}
+            >
+              Open ↗
+            </Link>
+          ) : (
+            <span />
+          )}
         </div>
       ))}
     </div>
