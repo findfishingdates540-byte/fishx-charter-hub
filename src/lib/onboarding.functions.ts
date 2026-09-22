@@ -285,6 +285,12 @@ export const publishListing = createServerFn({ method: "POST" })
     const isRetail = RETAIL_CATEGORIES.has(biz.category_key);
     let resultRow: any;
 
+    // Nothing goes live until payouts and business details are in place; the
+    // listing is still created so the operator can finish setup.
+    const { publishBlockers } = await import("./listing-publish-guard.server");
+    const blockers = await publishBlockers(context.supabase, businessId);
+    const canPublish = blockers.length === 0;
+
     if (isRetail) {
       // Retail verticals publish an inventory product, not a bookable service.
       // `capacity` acts as stock on hand and `includes` are product tags.
