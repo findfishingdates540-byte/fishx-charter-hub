@@ -94,7 +94,7 @@ export function MarinaDashboard({
   operatorName: string;
   initialTab?: string;
 }) {
-  const { data } = useSuspenseQuery(overviewQO(businessId));
+  const { data } = useSuspenseQuery(marinaOverviewQO(businessId));
   const navigate = useNavigate();
   const [settingsSection, setSettingsSection] = useState<string>("profile");
   const MARINA_TABS = NAV.map((n) => n.key);
