@@ -30,7 +30,7 @@ function SlipDetailPage() {
   const upsertFn = useServerFn(upsertSlip);
   const deleteFn = useServerFn(deleteSlip);
 
-  const back = () => navigate({ to: "/dashboard", search: { tab: "slips", biz } });
+  const back = () => navigate({ to: "/marina/$section", params: { section: "slips" }, search: { biz } });
 
   const upsertM = useMutation({
     mutationFn: upsertFn,
@@ -53,8 +53,9 @@ function SlipDetailPage() {
     <div style={{ background: "#0D161F", minHeight: "100vh", padding: "28px 16px" }}>
       <div style={{ maxWidth: 760, margin: "0 auto", display: "grid", gap: 16 }}>
         <Link
-          to="/dashboard"
-          search={{ tab: "slips", biz }}
+          to="/marina/$section"
+          params={{ section: "slips" }}
+          search={{ biz }}
           style={{ color: "#2DE2F2", fontSize: 13.5, fontWeight: 700, textDecoration: "none" }}
         >
           ← Back to slips

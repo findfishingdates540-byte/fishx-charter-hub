@@ -29,7 +29,7 @@ function ReservationDetailPage() {
   const { data } = useSuspenseQuery(marinaOverviewQO(biz));
   const upsertFn = useServerFn(upsertReservation);
 
-  const back = () => navigate({ to: "/dashboard", search: { tab: "reservations", biz } });
+  const back = () => navigate({ to: "/marina/$section", params: { section: "reservations" }, search: { biz } });
 
   const upsertM = useMutation({
     mutationFn: upsertFn,
@@ -45,8 +45,9 @@ function ReservationDetailPage() {
     <div style={{ background: "#0D161F", minHeight: "100vh", padding: "28px 16px" }}>
       <div style={{ maxWidth: 760, margin: "0 auto", display: "grid", gap: 16 }}>
         <Link
-          to="/dashboard"
-          search={{ tab: "reservations", biz }}
+          to="/marina/$section"
+          params={{ section: "reservations" }}
+          search={{ biz }}
           style={{ color: "#2DE2F2", fontSize: 13.5, fontWeight: 700, textDecoration: "none" }}
         >
           ← Back to reservations
