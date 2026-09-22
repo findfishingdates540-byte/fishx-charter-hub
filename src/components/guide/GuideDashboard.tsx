@@ -124,6 +124,7 @@ export function GuideDashboard({
       dock={[{ key: "overview", label: "Home" }, { key: "trips", label: "Trips" }, { key: "calendar", label: "Calendar" }]}
       pageTitle={(titles[active] ?? titles.overview).t}
       pageSub={(titles[active] ?? titles.overview).s}
+      previewSlug={businessSlug}
     >
       {active === "overview" && (
         <>
@@ -167,6 +168,7 @@ export function GuideDashboard({
       {active === "listings" && (
         <ServicesManager
           businessId={businessId}
+          businessSlug={businessSlug}
           kinds={["guided_trip", "charter_trip", "workshop", "rental", "lodging", "other"]}
           eyebrow="Listings"
           title="Guided trips & clinics"
