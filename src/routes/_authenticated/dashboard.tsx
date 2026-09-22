@@ -273,7 +273,7 @@ function Dashboard() {
 
     {
       const biz = pickPrimaryBusiness(businesses, primaryRole, requestedBusinessId) as
-        | { id: string; name: string; category_key: string }
+        | { id: string; name: string; slug?: string | null; category_key: string }
         | undefined;
       if (!biz) return <AnglerDashboard />;
 
