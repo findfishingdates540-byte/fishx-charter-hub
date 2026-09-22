@@ -63,10 +63,24 @@ export function PreviewLink({
     tone === "solid"
       ? { ...base, background: "#2DE2F2", color: "#04121B", border: "1px solid #2DE2F2" }
       : { ...base, background: "rgba(45,226,242,.10)", color: "#2DE2F2", border: "1px solid rgba(45,226,242,.35)" };
+  if (productId) {
+    return (
+      <Link
+        to="/marketplace/$productId"
+        params={{ productId }}
+        target="_blank"
+        rel="noopener noreferrer"
+        title="Open the public product page in a new tab"
+        style={style}
+      >
+        {label} ↗
+      </Link>
+    );
+  }
   return (
     <Link
       to="/b/$slug"
-      params={{ slug }}
+      params={{ slug: slug as string }}
       search={serviceId ? { service: serviceId } : {}}
       target="_blank"
       rel="noopener noreferrer"
