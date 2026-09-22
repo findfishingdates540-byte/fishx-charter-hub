@@ -612,7 +612,7 @@ function Reservations({
         <ReservationCalendar rows={data.reservations} />
       ) : (
         <Card title="All reservations">
-          <ReservationTable rows={data.reservations} />
+          <ReservationTable rows={data.reservations} businessId={businessId} />
         </Card>
       )}
       {showForm && (
