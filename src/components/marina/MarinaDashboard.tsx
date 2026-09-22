@@ -83,16 +83,27 @@ const NAV: OperatorNavItem[] = [
 
 export function MarinaDashboard({
   businessId,
+  businessSlug,
   workspaceName,
   operatorName,
+  initialTab,
 }: {
   businessId: string;
+  businessSlug?: string | null;
   workspaceName: string;
   operatorName: string;
+  initialTab?: string;
 }) {
   const { data } = useSuspenseQuery(overviewQO(businessId));
+  const navigate = useNavigate();
   const [settingsSection, setSettingsSection] = useState<string>("profile");
-  const [active, setActive] = useState("overview");
+  const MARINA_TABS = NAV.map((n) => n.key);
+  const [active, setActive] = useState(
+    initialTab && MARINA_TABS.includes(initialTab) ? initialTab : "overview",
+  );
+  useEffect(() => {
+    setActive(initialTab && MARINA_TABS.includes(initialTab) ? initialTab : "overview");
+  }, [initialTab]);
   const pending = data.reservations.filter((r: Reservation) => r.status === "pending").length;
 
   const nav = NAV.map((n) =>
