@@ -6,7 +6,7 @@
  */
 import { useState } from "react";
 import { MediaImg } from "@/components/media/MediaImg";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery, useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { getCaptainDashboard } from "@/lib/captain-dashboard.functions";
@@ -49,6 +49,10 @@ export function CaptainDashboard({ initialTab }: { initialTab?: string } = {}) {
   const [tab, setTab] = useState<Tab>(
     TABS.includes(initialTab as Tab) ? (initialTab as Tab) : "overview",
   );
+  const navigate = useNavigate();
+  useEffect(() => {
+    setTab(TABS.includes(initialTab as Tab) ? (initialTab as Tab) : "overview");
+  }, [initialTab]);
   // Which Settings section to open when arriving from the readiness checklist.
   const [settingsSection, setSettingsSection] = useState<string>("profile");
   const [accepting, setAccepting] = useState(true);
