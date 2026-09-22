@@ -215,6 +215,8 @@ export const setStorefrontLive = createServerFn({ method: "POST" })
     if (data.live) {
       const missing: string[] = [];
       if (!(biz.charges_enabled && biz.payouts_enabled)) missing.push("payouts");
+      if (!biz.verified_at) missing.push("verification");
+
       const { data: svc } = await context.supabase
         .from("bookable_services")
         .select("id")
