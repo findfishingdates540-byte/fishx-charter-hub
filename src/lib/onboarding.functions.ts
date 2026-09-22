@@ -301,7 +301,7 @@ export const publishListing = createServerFn({ method: "POST" })
         stock_qty: data.capacity,
         category: data.includes[0] ?? null,
         metadata: { tags: data.includes },
-        is_published: true,
+        is_published: canPublish,
       };
 
       const { data: existing } = await context.supabase
@@ -343,7 +343,7 @@ export const publishListing = createServerFn({ method: "POST" })
         capacity: data.capacity,
         base_price_cents: data.basePriceCents,
         includes: data.includes,
-        is_published: true,
+        is_published: canPublish,
       };
 
       const svc = existing?.id
@@ -358,9 +358,9 @@ export const publishListing = createServerFn({ method: "POST" })
 
     const { error: bErr } = await context.supabase
       .from("businesses")
-      .update({ is_published: true, onboarding_completed_at: new Date().toISOString() })
+      .update({ is_published: canPublish, onboarding_completed_at: new Date().toISOString() })
       .eq("id", businessId);
     if (bErr) throw new Response(bErr.message, { status: 400 });
 
-    return { service: resultRow, businessId };
+    return { service: resultRow, businessId, published: canPublish, blockers };
   });
