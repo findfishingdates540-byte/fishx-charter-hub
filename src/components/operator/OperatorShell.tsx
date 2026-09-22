@@ -411,6 +411,7 @@ export function OperatorShell({
               </div>
             </div>
             <div className="fx-operator-compact-actions">
+              <PreviewLink slug={previewSlug} />
               {headerRight}
               <NotificationBell />
             </div>
@@ -507,6 +508,7 @@ export function OperatorShell({
               gap: 14,
             }}
           >
+            <PreviewLink slug={previewSlug} label="Preview public page" />
             {headerRight}
             <NotificationBell />
           </div>
