@@ -74,12 +74,14 @@ const emptyDraft = (kind: ServiceKindKey): Draft => ({
 
 export function ServicesManager({
   businessId,
+  businessSlug,
   kinds,
   eyebrow = "Listings",
   title = "Your listings",
   emptyText = "No listings yet — publish your first one so anglers can book.",
 }: {
   businessId: string;
+  businessSlug?: string | null;
   kinds: ServiceKindKey[];
   eyebrow?: string;
   title?: string;
