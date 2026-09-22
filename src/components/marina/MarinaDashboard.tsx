@@ -61,7 +61,7 @@ type Reservation = {
   slip: { slip_number: string } | null;
 };
 
-const overviewQO = (businessId: string) =>
+export const marinaOverviewQO = (businessId: string) =>
   queryOptions({
     queryKey: ["marina-overview", businessId],
     queryFn: () => getMarinaOverview({ data: { businessId } }),
@@ -443,7 +443,7 @@ function Slips({ businessId, data }: { businessId: string; data: any }) {
   );
 }
 
-function SlipForm({
+export function SlipForm({
   initial,
   onCancel,
   onSave,
