@@ -380,8 +380,16 @@ function Products({
               <span>Live</span>
             </div>
             {data.products.map((p: Product) => (
-              <button
+              <div
                 key={p.id}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 10,
+                  borderBottom: "1px solid rgba(255,255,255,.05)",
+                }}
+              >
+              <button
                 onClick={() =>
                   navigate({
                     to: "/shop/products/$productId/edit",
