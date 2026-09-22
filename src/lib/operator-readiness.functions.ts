@@ -140,11 +140,12 @@ export const getOperatorReadiness = createServerFn({ method: "GET" })
         label: "Verification",
         detail: biz.verified_at
           ? "Verified operator badge active."
-          : "Submit documents to earn the verified badge and rank higher.",
+          : "Submit your documents — listings stay private until our team approves them.",
         done: Boolean(biz.verified_at),
-        blocking: false,
+        blocking: true,
         navKey: "verification",
       },
+
     ];
 
     const blockers = items.filter((i) => i.blocking && !i.done);
