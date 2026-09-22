@@ -765,6 +765,7 @@ function ReservationTable({
         <span>Slip</span>
         <span>Amount</span>
         <span>Status</span>
+        <span />
       </div>
       {rows.map((r) => (
         <div
