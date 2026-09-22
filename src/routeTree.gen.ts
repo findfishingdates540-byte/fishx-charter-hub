@@ -39,7 +39,10 @@ import { Route as MarketplaceIndexRouteImport } from './routes/marketplace.index
 import { Route as MarketplaceProductIdRouteImport } from './routes/marketplace.$productId'
 import { Route as ServicesSearchRouteImport } from './routes/services.search'
 import { Route as AuthenticatedBookingsDetailRouteImport } from './routes/_authenticated/bookings.detail'
+import { Route as AuthenticatedCaptainSectionRouteImport } from './routes/_authenticated/captain.$section'
+import { Route as AuthenticatedGuideSectionRouteImport } from './routes/_authenticated/guide.$section'
 import { Route as AuthenticatedMarinaSectionRouteImport } from './routes/_authenticated/marina.$section'
+import { Route as AuthenticatedShopSectionRouteImport } from './routes/_authenticated/shop.$section'
 import { Route as AuthenticatedTripsDetailRouteImport } from './routes/_authenticated/trips.detail'
 import { Route as ApiPublicFishxWebhookRouteImport } from './routes/api/public/fishx-webhook'
 import { Route as ApiPublicStripeWebhookRouteImport } from './routes/api/public/stripe-webhook'
@@ -212,10 +215,28 @@ const AuthenticatedBookingsDetailRoute =
     path: '/bookings/detail',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedCaptainSectionRoute =
+  AuthenticatedCaptainSectionRouteImport.update({
+    id: '/captain/$section',
+    path: '/captain/$section',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedGuideSectionRoute =
+  AuthenticatedGuideSectionRouteImport.update({
+    id: '/guide/$section',
+    path: '/guide/$section',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedMarinaSectionRoute =
   AuthenticatedMarinaSectionRouteImport.update({
     id: '/marina/$section',
     path: '/marina/$section',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedShopSectionRoute =
+  AuthenticatedShopSectionRouteImport.update({
+    id: '/shop/$section',
+    path: '/shop/$section',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedTripsDetailRoute =
@@ -352,7 +373,10 @@ export interface FileRoutesByFullPath {
   '/charters/': typeof ChartersIndexRoute
   '/marketplace/': typeof MarketplaceIndexRoute
   '/bookings/detail': typeof AuthenticatedBookingsDetailRoute
+  '/captain/$section': typeof AuthenticatedCaptainSectionRoute
+  '/guide/$section': typeof AuthenticatedGuideSectionRoute
   '/marina/$section': typeof AuthenticatedMarinaSectionRoute
+  '/shop/$section': typeof AuthenticatedShopSectionRoute
   '/trips/detail': typeof AuthenticatedTripsDetailRoute
   '/api/public/fishx-webhook': typeof ApiPublicFishxWebhookRoute
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
@@ -402,7 +426,10 @@ export interface FileRoutesByTo {
   '/charters': typeof ChartersIndexRoute
   '/marketplace': typeof MarketplaceIndexRoute
   '/bookings/detail': typeof AuthenticatedBookingsDetailRoute
+  '/captain/$section': typeof AuthenticatedCaptainSectionRoute
+  '/guide/$section': typeof AuthenticatedGuideSectionRoute
   '/marina/$section': typeof AuthenticatedMarinaSectionRoute
+  '/shop/$section': typeof AuthenticatedShopSectionRoute
   '/trips/detail': typeof AuthenticatedTripsDetailRoute
   '/api/public/fishx-webhook': typeof ApiPublicFishxWebhookRoute
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
@@ -454,7 +481,10 @@ export interface FileRoutesById {
   '/charters/': typeof ChartersIndexRoute
   '/marketplace/': typeof MarketplaceIndexRoute
   '/_authenticated/bookings/detail': typeof AuthenticatedBookingsDetailRoute
+  '/_authenticated/captain/$section': typeof AuthenticatedCaptainSectionRoute
+  '/_authenticated/guide/$section': typeof AuthenticatedGuideSectionRoute
   '/_authenticated/marina/$section': typeof AuthenticatedMarinaSectionRoute
+  '/_authenticated/shop/$section': typeof AuthenticatedShopSectionRoute
   '/_authenticated/trips/detail': typeof AuthenticatedTripsDetailRoute
   '/api/public/fishx-webhook': typeof ApiPublicFishxWebhookRoute
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
@@ -506,7 +536,10 @@ export interface FileRouteTypes {
     | '/charters/'
     | '/marketplace/'
     | '/bookings/detail'
+    | '/captain/$section'
+    | '/guide/$section'
     | '/marina/$section'
+    | '/shop/$section'
     | '/trips/detail'
     | '/api/public/fishx-webhook'
     | '/api/public/stripe-webhook'
@@ -556,7 +589,10 @@ export interface FileRouteTypes {
     | '/charters'
     | '/marketplace'
     | '/bookings/detail'
+    | '/captain/$section'
+    | '/guide/$section'
     | '/marina/$section'
+    | '/shop/$section'
     | '/trips/detail'
     | '/api/public/fishx-webhook'
     | '/api/public/stripe-webhook'
@@ -607,7 +643,10 @@ export interface FileRouteTypes {
     | '/charters/'
     | '/marketplace/'
     | '/_authenticated/bookings/detail'
+    | '/_authenticated/captain/$section'
+    | '/_authenticated/guide/$section'
     | '/_authenticated/marina/$section'
+    | '/_authenticated/shop/$section'
     | '/_authenticated/trips/detail'
     | '/api/public/fishx-webhook'
     | '/api/public/stripe-webhook'
@@ -872,11 +911,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedBookingsDetailRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/captain/$section': {
+      id: '/_authenticated/captain/$section'
+      path: '/captain/$section'
+      fullPath: '/captain/$section'
+      preLoaderRoute: typeof AuthenticatedCaptainSectionRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/guide/$section': {
+      id: '/_authenticated/guide/$section'
+      path: '/guide/$section'
+      fullPath: '/guide/$section'
+      preLoaderRoute: typeof AuthenticatedGuideSectionRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/marina/$section': {
       id: '/_authenticated/marina/$section'
       path: '/marina/$section'
       fullPath: '/marina/$section'
       preLoaderRoute: typeof AuthenticatedMarinaSectionRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/shop/$section': {
+      id: '/_authenticated/shop/$section'
+      path: '/shop/$section'
+      fullPath: '/shop/$section'
+      preLoaderRoute: typeof AuthenticatedShopSectionRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/trips/detail': {
@@ -1020,7 +1080,10 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedReviewRoute: typeof AuthenticatedReviewRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedBookingsDetailRoute: typeof AuthenticatedBookingsDetailRoute
+  AuthenticatedCaptainSectionRoute: typeof AuthenticatedCaptainSectionRoute
+  AuthenticatedGuideSectionRoute: typeof AuthenticatedGuideSectionRoute
   AuthenticatedMarinaSectionRoute: typeof AuthenticatedMarinaSectionRoute
+  AuthenticatedShopSectionRoute: typeof AuthenticatedShopSectionRoute
   AuthenticatedTripsDetailRoute: typeof AuthenticatedTripsDetailRoute
   AuthenticatedCaptainChartersNewRoute: typeof AuthenticatedCaptainChartersNewRoute
   AuthenticatedCaptainPackagesPackageIdRoute: typeof AuthenticatedCaptainPackagesPackageIdRoute
@@ -1043,7 +1106,10 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedReviewRoute: AuthenticatedReviewRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedBookingsDetailRoute: AuthenticatedBookingsDetailRoute,
+  AuthenticatedCaptainSectionRoute: AuthenticatedCaptainSectionRoute,
+  AuthenticatedGuideSectionRoute: AuthenticatedGuideSectionRoute,
   AuthenticatedMarinaSectionRoute: AuthenticatedMarinaSectionRoute,
+  AuthenticatedShopSectionRoute: AuthenticatedShopSectionRoute,
   AuthenticatedTripsDetailRoute: AuthenticatedTripsDetailRoute,
   AuthenticatedCaptainChartersNewRoute: AuthenticatedCaptainChartersNewRoute,
   AuthenticatedCaptainPackagesPackageIdRoute:

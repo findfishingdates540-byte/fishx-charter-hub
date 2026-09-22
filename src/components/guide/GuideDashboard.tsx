@@ -143,7 +143,7 @@ export function GuideDashboard({
       operatorRole="Owner · Verified outfitter"
       nav={nav}
       active={active}
-      onNav={(key) => navigate({ to: "/dashboard", search: { tab: key, biz: businessId } })}
+      onNav={(key) => navigate({ to: "/guide/$section", params: { section: key }, search: { biz: businessId } })}
       dock={[{ key: "overview", label: "Home" }, { key: "trips", label: "Trips" }, { key: "calendar", label: "Calendar" }]}
       pageTitle={(titles[active] ?? titles.overview).t}
       pageSub={(titles[active] ?? titles.overview).s}
