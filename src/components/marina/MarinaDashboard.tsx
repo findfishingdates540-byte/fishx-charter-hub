@@ -749,7 +749,7 @@ function ReservationTable({
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "1.5fr 1fr .8fr .8fr auto",
+          gridTemplateColumns: "1.5fr 1fr .8fr .8fr auto auto",
           gap: 16,
           padding: "10px 4px 12px",
           fontSize: 11,
