@@ -290,6 +290,7 @@ function Dashboard() {
             businessSlug={biz.slug ?? null}
             workspaceName={biz.name}
             operatorName={operatorName}
+            initialTab={tab}
           />
         );
       if (
@@ -318,6 +319,7 @@ function Dashboard() {
             businessSlug={biz.slug ?? null}
             workspaceName={biz.name}
             operatorName={operatorName}
+            initialTab={tab}
           />
         );
       return <DashboardFrame src="/dashboards/captain.html" title="Operator dashboard" />;
