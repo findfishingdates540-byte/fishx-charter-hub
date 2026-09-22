@@ -13,7 +13,7 @@ import {
   setBusinessServicePublished,
   deleteBusinessService,
 } from "@/lib/business-listings.functions";
-import { Card, money } from "@/components/operator/OperatorShell";
+import { Card, money, PreviewLink } from "@/components/operator/OperatorShell";
 import { input, btn } from "@/components/business/BusinessSettings";
 import { AvailabilityCalendar } from "@/components/business/AvailabilityCalendar";
 import { AddonsManager } from "@/components/business/AddonsManager";
@@ -247,6 +247,7 @@ export function ServicesManager({
             >
               Add-ons
             </button>
+            <PreviewLink slug={businessSlug} serviceId={s.id} />
             <button style={btn("ghost")} onClick={() => setEditing(toDraft(s))}>
               Edit
             </button>
