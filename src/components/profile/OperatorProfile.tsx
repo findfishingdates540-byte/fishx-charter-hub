@@ -202,6 +202,7 @@ export function OperatorProfile({
   products = [],
   slips = [],
   posts = [],
+  initialServiceId = null,
 }: Props) {
   const isTripStorefront = b.category_key === "charter" || b.category_key === "guide_service";
   const storefrontServices = useMemo(
