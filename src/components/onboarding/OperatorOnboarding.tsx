@@ -514,6 +514,9 @@ export function OperatorOnboarding() {
   const [payoutSchedule, setPayoutSchedule] = useState<PayoutScheduleKey>("weekly");
   const [stripeConnected, setStripeConnected] = useState(false);
   const [published, setPublished] = useState(false);
+  // What the server actually decided on publish — it may save the listing as a
+  // draft when setup (payouts, verification, details) is still incomplete.
+  const [publishResult, setPublishResult] = useState<{ published: boolean; blockers: string[] } | null>(null);
 
   // Reflect real Stripe Connect state (also after returning from Stripe).
   useEffect(() => {
@@ -677,8 +680,9 @@ export function OperatorOnboarding() {
         },
       });
     },
-    onSuccess: () => {
+    onSuccess: (res: { published: boolean; blockers: string[] }) => {
       setPublished(true);
+      setPublishResult(res);
       qc.invalidateQueries({ queryKey: ["onboarding"] });
     },
     onError: (e: any) => showToast(e?.message ?? "Publish failed"),
