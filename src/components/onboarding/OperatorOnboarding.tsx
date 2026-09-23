@@ -923,7 +923,13 @@ export function OperatorOnboarding() {
                   }
                   uploaded={uploaded}
                   onUpload={handleUpload}
-                  alreadySubmitted={!!data?.verification}
+                  alreadySubmitted={!!verification && !verificationRejected}
+                  rejected={verificationRejected}
+                  rejectionReason={verification?.rejection_reason ?? verification?.notes ?? null}
+                  decidedAt={verification?.decided_at ?? null}
+                  onResubmit={() => resubmitM.mutate()}
+                  resubmitting={resubmitM.isPending}
+                  hasNewUploads={Object.values(uploaded).some(Boolean)}
                 />
               )}
               {step === 2 && (
