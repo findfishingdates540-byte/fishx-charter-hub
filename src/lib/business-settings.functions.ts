@@ -32,8 +32,15 @@ export const getBusinessSettings = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .inputValidator((i: { businessId: string }) => z.object({ businessId: z.string().uuid() }).parse(i))
   .handler(async ({ data, context }) => {
-    const { supabase, userId } = context;
+    const { supabase, userId, claims } = context;
     const myRole = await assertMember(supabase, userId, data.businessId, ["owner", "manager", "staff"]);
+
+    // The sign-in email lives on the account (auth), not the business profile.
+    let accountEmail: string | null = (claims as any)?.email ?? null;
+    if (!accountEmail) {
+      const { data: userData } = await supabase.auth.getUser();
+      accountEmail = userData?.user?.email ?? null;
+    }
 
     const [bizRes, memRes, catRes] = await Promise.all([
       supabase.from("businesses").select("*").eq("id", data.businessId).maybeSingle(),
@@ -68,6 +75,7 @@ export const getBusinessSettings = createServerFn({ method: "GET" })
       myRole,
       categories: catRes.data ?? [],
       viewerId: userId,
+      accountEmail,
     };
   });
 

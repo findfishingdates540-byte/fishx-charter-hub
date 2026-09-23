@@ -108,6 +108,24 @@ export function BusinessSettings({
         >
           {data.business.name}
         </div>
+        {data.accountEmail ? (
+          <div
+            style={{
+              padding: "0 13px 10px",
+              display: "grid",
+              gap: 3,
+              borderBottom: "1px solid rgba(255,255,255,.08)",
+              marginBottom: 6,
+            }}
+          >
+            <span style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: ".12em", textTransform: "uppercase", color: "#5E7183" }}>
+              Signed in as
+            </span>
+            <span style={{ fontSize: 12.5, fontWeight: 600, color: "#E8F2F6", overflowWrap: "anywhere" }}>
+              {data.accountEmail}
+            </span>
+          </div>
+        ) : null}
         {OP_SECTIONS.map((it) => {
           const on = active === it.key;
           return (
