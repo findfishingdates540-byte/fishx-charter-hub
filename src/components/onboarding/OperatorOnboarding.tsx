@@ -635,12 +635,34 @@ export function OperatorOnboarding() {
     onError: (e: any) => showToast(e?.message ?? "Failed to save"),
   });
 
+  const verification = (data?.verification ?? null) as
+    | { id: string; status: string; doc_urls?: string[] | null; rejection_reason?: string | null; notes?: string | null; decided_at?: string | null }
+    | null;
+  const verificationRejected = verification?.status === "rejected";
+
+  // Documents were turned down: the operator uploads corrected files and
+  // resubmits, which opens a fresh review for our team.
+  const resubmitM = useMutation({
+    mutationFn: async () => {
+      const docPaths = Object.values(uploaded).filter(Boolean) as string[];
+      if (!docPaths.length) throw new Error("Upload your corrected documents first.");
+      return submitVer({ data: { docPaths } });
+    },
+    onSuccess: () => {
+      setUploaded({});
+      qc.invalidateQueries({ queryKey: ["onboarding"] });
+      showToast("Documents resubmitted for review");
+    },
+    onError: (e: any) => showToast(e?.message ?? "Could not resubmit your documents"),
+  });
+
   const publishM = useMutation({
     mutationFn: async () => {
       const docPaths = Object.values(uploaded).filter(Boolean) as string[];
-      if (docPaths.length > 0 && !data?.verification) {
+      if (docPaths.length > 0 && (!verification || verificationRejected)) {
         await submitVer({ data: { docPaths } });
       }
+
       await savePayout({ data: { schedule: payoutSchedule, stripeConnected } });
       return publish({
         data: {
