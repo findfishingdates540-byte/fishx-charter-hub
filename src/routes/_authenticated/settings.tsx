@@ -3,9 +3,9 @@ import { SettingsPage } from "@/components/settings/SettingsPage";
 
 export const Route = createFileRoute("/_authenticated/settings")({
   validateSearch: (search: Record<string, unknown>) => ({
-    section: typeof search.section === "string" ? search.section : "",
-    biz: typeof search.biz === "string" ? search.biz : "",
-    setting: typeof search.setting === "string" ? search.setting : "",
+    ...(typeof search.section === "string" ? { section: search.section } : {}),
+    ...(typeof search.biz === "string" ? { biz: search.biz } : {}),
+    ...(typeof search.setting === "string" ? { setting: search.setting } : {}),
   }),
   head: () => ({
     meta: [

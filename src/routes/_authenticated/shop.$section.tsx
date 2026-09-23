@@ -34,7 +34,7 @@ export const SHOP_SECTIONS = [
 export const Route = createFileRoute("/_authenticated/shop/$section")({
   validateSearch: (search: Record<string, unknown>) => ({
     biz: typeof search.biz === "string" ? search.biz : "",
-    setting: typeof search.setting === "string" ? search.setting : "",
+    ...(typeof search.setting === "string" ? { setting: search.setting } : {}),
   }),
   head: () => ({
     meta: [

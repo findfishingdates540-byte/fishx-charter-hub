@@ -56,7 +56,7 @@ function usePhoneLayout() {
 export function SettingsPage({
   search,
 }: {
-  search: { section: string; biz: string; setting: string };
+  search: { section?: string; biz?: string; setting?: string };
 }) {
   const fetchBiz = useServerFn(getMyBusinesses);
   const navigate = useNavigate({ from: "/settings" });

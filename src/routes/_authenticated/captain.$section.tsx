@@ -19,7 +19,7 @@ export const CAPTAIN_SECTIONS = [
 
 export const Route = createFileRoute("/_authenticated/captain/$section")({
   validateSearch: (search: Record<string, unknown>) => ({
-    setting: typeof search.setting === "string" ? search.setting : "",
+    ...(typeof search.setting === "string" ? { setting: search.setting } : {}),
   }),
   head: () => ({
     meta: [
