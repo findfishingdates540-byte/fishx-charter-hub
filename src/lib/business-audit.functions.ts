@@ -21,7 +21,7 @@ export type BusinessAuditEvent = {
   note: string | null;
   actor_id: string | null;
   actorName: string | null;
-  meta_json: Record<string, unknown>;
+  meta_json: Record<string, string | number | boolean | null>;
   created_at: string;
 };
 
