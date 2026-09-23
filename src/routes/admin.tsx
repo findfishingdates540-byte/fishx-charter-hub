@@ -143,6 +143,10 @@ function AdminConsole() {
     staleTime: 15_000,
   });
   const [tab, setTab] = useState<Tab>("operators");
+  const [rejecting, setRejecting] = useState<string | null>(null);
+  const [rejectReason, setRejectReason] = useState("");
+  const [rejectError, setRejectError] = useState<string | null>(null);
+  const [historyFor, setHistoryFor] = useState<string | null>(null);
 
   const fetchRecon = useServerFn(getPayoutReconciliation);
   const rerunRecon = useServerFn(runPayoutReconciliation);
