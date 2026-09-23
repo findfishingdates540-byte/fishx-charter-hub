@@ -610,6 +610,56 @@ export type Database = {
           },
         ]
       }
+      business_audit_events: {
+        Row: {
+          actor_id: string | null
+          area: string
+          business_id: string
+          created_at: string
+          event_type: string
+          field: string | null
+          id: string
+          meta_json: Json
+          new_value: string | null
+          note: string | null
+          previous_value: string | null
+        }
+        Insert: {
+          actor_id?: string | null
+          area: string
+          business_id: string
+          created_at?: string
+          event_type: string
+          field?: string | null
+          id?: string
+          meta_json?: Json
+          new_value?: string | null
+          note?: string | null
+          previous_value?: string | null
+        }
+        Update: {
+          actor_id?: string | null
+          area?: string
+          business_id?: string
+          created_at?: string
+          event_type?: string
+          field?: string | null
+          id?: string
+          meta_json?: Json
+          new_value?: string | null
+          note?: string | null
+          previous_value?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_audit_events_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       business_blockouts: {
         Row: {
           business_id: string
@@ -3334,6 +3384,7 @@ export type Database = {
           doc_urls: string[]
           id: string
           notes: string | null
+          rejection_reason: string | null
           reviewer_id: string | null
           status: string
           submitted_by: string
@@ -3346,6 +3397,7 @@ export type Database = {
           doc_urls?: string[]
           id?: string
           notes?: string | null
+          rejection_reason?: string | null
           reviewer_id?: string | null
           status?: string
           submitted_by: string
@@ -3358,6 +3410,7 @@ export type Database = {
           doc_urls?: string[]
           id?: string
           notes?: string | null
+          rejection_reason?: string | null
           reviewer_id?: string | null
           status?: string
           submitted_by?: string
@@ -3507,6 +3560,20 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      log_business_audit: {
+        Args: {
+          _actor: string
+          _area: string
+          _business_id: string
+          _event_type: string
+          _field: string
+          _meta?: Json
+          _new: string
+          _note: string
+          _previous: string
+        }
+        Returns: undefined
       }
       log_listing_event: {
         Args: {
