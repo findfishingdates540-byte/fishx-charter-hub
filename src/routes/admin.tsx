@@ -163,8 +163,15 @@ function AdminConsole() {
   const refresh = () => qc.invalidateQueries({ queryKey: ["admin-overview"] });
 
   const decideMut = useMutation({
-    mutationFn: (v: { requestId: string; approve: boolean }) => decide({ data: v }),
-    onSuccess: refresh,
+    mutationFn: (v: { requestId: string; approve: boolean; note?: string }) => decide({ data: v }),
+    onSuccess: () => {
+      setRejecting(null);
+      setRejectReason("");
+      setRejectError(null);
+      refresh();
+    },
+    onError: (e: unknown) =>
+      setRejectError(e instanceof Error ? e.message : "That decision could not be saved."),
   });
   const resolveMut = useMutation({
     mutationFn: (v: { disputeId: string; note: string; outcome: "resolved" | "rejected" }) =>
