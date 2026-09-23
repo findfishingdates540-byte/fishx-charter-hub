@@ -22,6 +22,7 @@ import {
   AdminBookings,
   AdminAudit,
 } from "@/components/admin/AdminManagement";
+import { AdminHistory, BusinessHistory } from "@/components/admin/BusinessHistory";
 import { AdminPayments } from "@/components/admin/AdminPayments";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -107,6 +108,7 @@ const day = (s?: string | null) => (s ? new Date(s).toLocaleDateString() : "—"
 type Tab =
   | "operators"
   | "verifications"
+  | "history"
   | "members"
   | "listings"
   | "bookings"
@@ -120,6 +122,7 @@ type Tab =
 const TABS: Array<[Tab, string]> = [
   ["operators", "Operators"],
   ["verifications", "Documents"],
+  ["history", "History"],
   ["members", "Members"],
   ["listings", "Listings"],
   ["bookings", "Bookings"],
