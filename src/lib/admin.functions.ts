@@ -92,9 +92,8 @@ export const decideVerification = createServerFn({ method: "POST" })
         approve: z.boolean(),
         note: z.string().max(1000).optional(),
       })
-      .parse(i)
-      // A rejection must always tell the operator what to fix.
-      .valueOf(),
+      .parse(i),
+
   )
   .handler(async ({ data, context }) => {
     await assertAdmin(context.supabase, context.userId);
