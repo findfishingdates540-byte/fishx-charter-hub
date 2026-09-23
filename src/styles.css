@@ -1051,6 +1051,17 @@ body.dc-body { margin:0; background:#072057; }
   }
 }
 
+@media (min-width: 768px) and (max-width: 900px) {
+  .fx-operator-main .fx-settings {
+    grid-template-columns: 220px minmax(0, 1fr) !important;
+    align-items: start !important;
+  }
+  .fx-operator-main .fx-settings > nav {
+    position: sticky !important;
+    top: 16px !important;
+  }
+}
+
 @media (max-width: 560px) {
   .fx-operator-brand > span { gap: 7px !important; }
   .fx-operator-brand > span > span:last-child > span:first-child { font-size: 15px !important; }
