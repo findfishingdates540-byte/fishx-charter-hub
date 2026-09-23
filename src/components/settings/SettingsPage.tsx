@@ -7,8 +7,8 @@
  *  - One section per business the signed-in user belongs to (operators),
  *    rendering the shared BusinessSettings screen.
  */
-import { Suspense, useState } from "react";
-import { Link } from "@tanstack/react-router";
+import { Suspense, useEffect, useState } from "react";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { getMyBusinesses } from "@/lib/my-businesses.functions";
@@ -39,14 +39,32 @@ const V = {
   lined: "rgba(255,255,255,.12)",
 };
 
-export function SettingsPage() {
+const ACCOUNT_SECTIONS = ["personal", "security", "orders", "wishlist", "sellers", "notifications"];
+
+function usePhoneLayout() {
+  const [phone, setPhone] = useState(false);
+  useEffect(() => {
+    const query = window.matchMedia("(max-width: 767px)");
+    const sync = () => setPhone(query.matches);
+    sync();
+    query.addEventListener("change", sync);
+    return () => query.removeEventListener("change", sync);
+  }, []);
+  return phone;
+}
+
+export function SettingsPage({
+  search,
+}: {
+  search: { section: string; biz: string; setting: string };
+}) {
   const fetchBiz = useServerFn(getMyBusinesses);
+  const navigate = useNavigate({ from: "/settings" });
+  const phone = usePhoneLayout();
   const { data: memberships = [] } = useQuery({
     queryKey: ["my-businesses"],
     queryFn: () => fetchBiz(),
   });
-
-  const [active, setActive] = useState<string>("personal");
 
   const items = [
     { key: "personal", label: "Personal details", hint: "Name, photo, contact" },
@@ -62,7 +80,55 @@ export function SettingsPage() {
     })),
   ];
 
-  const activeBiz = active.startsWith("biz:") ? active.slice(4) : null;
+  const requestedBiz = memberships.some((m: any) => m.business.id === search.biz) ? search.biz : "";
+  const active = requestedBiz
+    ? `biz:${requestedBiz}`
+    : ACCOUNT_SECTIONS.includes(search.section)
+      ? search.section
+      : "personal";
+  const activeBiz = requestedBiz || null;
+  const hasPhoneSelection = Boolean(search.section || search.biz);
+
+  const selectItem = (key: string) => {
+    if (key.startsWith("biz:")) {
+      navigate({ search: { section: "business", biz: key.slice(4), setting: "" } });
+      return;
+    }
+    navigate({ search: { section: key, biz: "", setting: "" } });
+  };
+
+  const backToList = () => navigate({ search: { section: "", biz: "", setting: "" } });
+
+  const content = (
+    <>
+      {active === "personal" && (
+        <Suspense fallback={<Muted>Loading your details…</Muted>}>
+          <SectionHead title="Personal details" sub="How you appear to captains, vendors and guides." />
+          <AnglerAccount embedded />
+        </Suspense>
+      )}
+      {active === "security" && <><SectionHead title="Sign-in & security" sub="Change your password or sign out of this device." /><SecurityCard /></>}
+      {active === "orders" && <><SectionHead title="My orders" sub="Every marketplace purchase, its status and tracking." /><MyOrdersSection /></>}
+      {active === "wishlist" && <><SectionHead title="Saved items" sub="Gear you hearted in the marketplace." /><WishlistSection /></>}
+      {active === "sellers" && <><SectionHead title="Followed sellers" sub="Shops, marinas and brands you keep an eye on." /><FollowedSellersSection /></>}
+      {active === "notifications" && <><SectionHead title="Notifications" sub="Choose what Fish-X emails you about and what stays in-app." /><AnglerNotifications /></>}
+      {activeBiz && (
+        <>
+          {!phone && <SectionHead title={items.find((i) => i.key === active)?.label ?? "Business"} sub="Storefront profile, hours, team, notifications and payouts." />}
+          {phone && !search.setting && (
+            <MobileBackBar title={items.find((i) => i.key === active)?.label ?? "Business"} onBack={backToList} />
+          )}
+          <BusinessSettings
+            businessId={activeBiz}
+            initialSection={search.setting || undefined}
+            onSectionChange={(setting) =>
+              navigate({ search: { section: "business", biz: activeBiz, setting: setting ?? "" } })
+            }
+          />
+        </>
+      )}
+    </>
+  );
 
   return (
     <div className="fx-shell" style={{ minHeight: "100vh", background: V.paper, color: V.ink, fontFamily: V.sans }}>
@@ -128,6 +194,7 @@ export function SettingsPage() {
         }}
       >
         <nav
+          className={phone && hasPhoneSelection ? "fx-settings-nav-hidden" : undefined}
           style={{
             background: V.card,
             border: `1px solid ${V.line}`,
@@ -144,7 +211,7 @@ export function SettingsPage() {
             return (
               <button
                 key={it.key}
-                onClick={() => setActive(it.key)}
+                onClick={() => selectItem(it.key)}
                 style={{
                   textAlign: "left",
                   border: 0,
@@ -164,60 +231,22 @@ export function SettingsPage() {
           })}
         </nav>
 
-        <section style={{ minWidth: 0 }}>
-          {active === "personal" && (
-            <Suspense fallback={<Muted>Loading your details…</Muted>}>
-              <SectionHead title="Personal details" sub="How you appear to captains, vendors and guides." />
-              <AnglerAccount embedded />
-            </Suspense>
+        <section className={phone && !hasPhoneSelection ? "fx-settings-content-hidden" : undefined} style={{ minWidth: 0 }}>
+          {phone && hasPhoneSelection && !activeBiz && (
+            <MobileBackBar title={items.find((i) => i.key === active)?.label ?? "Settings"} onBack={backToList} />
           )}
-
-          {active === "security" && (
-            <>
-              <SectionHead title="Sign-in & security" sub="Change your password or sign out of this device." />
-              <SecurityCard />
-            </>
-          )}
-
-          {active === "orders" && (
-            <>
-              <SectionHead title="My orders" sub="Every marketplace purchase, its status and tracking." />
-              <MyOrdersSection />
-            </>
-          )}
-
-          {active === "wishlist" && (
-            <>
-              <SectionHead title="Saved items" sub="Gear you hearted in the marketplace." />
-              <WishlistSection />
-            </>
-          )}
-
-          {active === "sellers" && (
-            <>
-              <SectionHead title="Followed sellers" sub="Shops, marinas and brands you keep an eye on." />
-              <FollowedSellersSection />
-            </>
-          )}
-
-          {active === "notifications" && (
-            <>
-              <SectionHead title="Notifications" sub="Choose what Fish-X emails you about and what stays in-app." />
-              <AnglerNotifications />
-            </>
-          )}
-
-          {activeBiz && (
-            <>
-              <SectionHead
-                title={items.find((i) => i.key === active)?.label ?? "Business"}
-                sub="Storefront profile, hours, team, notifications and payouts."
-              />
-              <BusinessSettings businessId={activeBiz} />
-            </>
-          )}
+          {content}
         </section>
       </main>
+    </div>
+  );
+}
+
+function MobileBackBar({ title, onBack }: { title: string; onBack: () => void }) {
+  return (
+    <div className="fx-settings-backbar">
+      <button type="button" onClick={onBack} aria-label="Back to settings">←</button>
+      <span>{title}</span>
     </div>
   );
 }

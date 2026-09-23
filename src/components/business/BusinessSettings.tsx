@@ -59,9 +59,11 @@ function usePhoneLayout() {
 export function BusinessSettings({
   businessId,
   initialSection,
+  onSectionChange,
 }: {
   businessId: string;
   initialSection?: string;
+  onSectionChange?: (section?: string) => void;
 }) {
   const qc = useQueryClient();
   const fetchSettings = useServerFn(getBusinessSettings);
@@ -81,15 +83,6 @@ export function BusinessSettings({
       setOpenOnPhone(true);
     }
   }, [initialSection]);
-
-  // Hardware/browser back closes the section screen instead of leaving the page.
-  useEffect(() => {
-    if (!phone || !openOnPhone || typeof window === "undefined") return;
-    window.history.pushState({ fxSettingsSection: true }, "");
-    const onPop = () => setOpenOnPhone(false);
-    window.addEventListener("popstate", onPop);
-    return () => window.removeEventListener("popstate", onPop);
-  }, [phone, openOnPhone]);
 
   // Hide the operator bottom dock while a section screen is open.
   const dockHidden = phone && openOnPhone;
@@ -134,14 +127,12 @@ export function BusinessSettings({
   const openSection = (key: string) => {
     setActive(key);
     setOpenOnPhone(true);
+    onSectionChange?.(key);
   };
 
   const closeSection = () => {
-    if (typeof window !== "undefined" && window.history.state?.fxSettingsSection) {
-      window.history.back();
-    } else {
-      setOpenOnPhone(false);
-    }
+    setOpenOnPhone(false);
+    onSectionChange?.(undefined);
   };
 
   /* ---------------------------- phone: drill-in ---------------------------- */
@@ -309,7 +300,7 @@ export function BusinessSettings({
         {OP_SECTIONS.map((it) => {
           const on = active === it.key;
           return (
-            <button
+              <button
               key={it.key}
               onClick={() => setActive(it.key)}
               style={{
