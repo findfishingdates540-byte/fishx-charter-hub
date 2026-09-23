@@ -851,42 +851,89 @@ export function OperatorOnboarding() {
         <div className="flex-1 p-5 sm:p-8 lg:p-[56px_64px] max-w-[960px] w-full mx-auto lg:mx-0">
           {published ? (
             <div className="min-h-[70vh] flex items-center justify-center">
-              <div className="max-w-[520px] text-center">
-                <div
-                  className="w-[82px] h-[82px] rounded-full bg-[rgba(34,197,94,0.14)] grid place-items-center text-[#22C55E] mx-auto mb-[22px] text-[36px]"
-                >
-                  ✓
-                </div>
-                <div className="text-[11px] font-bold tracking-[0.16em] uppercase text-[#2DE2F2]">
-                  You're live on Fish-X
-                </div>
-                <h1
-                  className="font-semibold text-[38px] leading-[1.05] my-[10px] text-[#F0F2F5]"
-                  style={{ fontFamily: "'Outfit',Georgia,serif" }}
-                >
-                  Your listing is published.
-                </h1>
-                <p className="text-[15.5px] leading-[1.55] text-[#92A0AB] mb-[26px]">
-                  Anglers can now find and book <b className="text-[#F0F2F5]">{listing.title}</b>. Payments arrive
-                  protected in escrow — released to you after every trip.
-                </p>
-                <div className="flex gap-3 justify-center flex-wrap">
-                  <button
-                    onClick={() => navigate({ to: "/dashboard" })}
-                    className="bg-[#1C2936] text-white rounded-xl px-6 py-3.5 text-[13px] font-bold tracking-[0.03em]"
+              {publishResult && !publishResult.published ? (
+                (() => {
+                  const blockerCopy: Record<string, string> = {
+                    payouts: "Connect payouts (Stripe) so anglers can pay you.",
+                    verification: "Wait for our team to approve your verification documents.",
+                    details: "Add your business details — a city and a phone or email.",
+                  };
+                  const blockers = (publishResult.blockers ?? []).map((b) => blockerCopy[b] ?? "Finish your setup steps in the dashboard.");
+                  return (
+                    <div className="max-w-[520px] text-center">
+                      <div className="w-[82px] h-[82px] rounded-full bg-[rgba(45,226,242,0.10)] grid place-items-center text-[#2DE2F2] mx-auto mb-[22px] text-[36px]">
+                        ◎
+                      </div>
+                      <div className="text-[11px] font-bold tracking-[0.16em] uppercase text-[#2DE2F2]">
+                        Your listing is saved
+                      </div>
+                      <h1
+                        className="font-semibold text-[38px] leading-[1.05] my-[10px] text-[#F0F2F5]"
+                        style={{ fontFamily: "'Outfit',Georgia,serif" }}
+                      >
+                        A few steps to go live.
+                      </h1>
+                      <p className="text-[15.5px] leading-[1.55] text-[#92A0AB] mb-[18px]">
+                        <b className="text-[#F0F2F5]">{listing.title}</b> is safely saved as a draft. It goes live to
+                        anglers — bookable and taking payments — once you finish these:
+                      </p>
+                      <ul className="text-left text-[14px] leading-[1.6] text-[#92A0AB] mb-[26px] inline-block">
+                        {blockers.map((msg, i) => (
+                          <li key={i} className="mb-1.5">
+                            <span className="text-[#2DE2F2] mr-2">→</span>
+                            {msg}
+                          </li>
+                        ))}
+                      </ul>
+                      <div className="flex gap-3 justify-center flex-wrap">
+                        <button
+                          onClick={() => navigate({ to: "/dashboard" })}
+                          className="bg-[#2DE2F2] text-[#0D161F] rounded-xl px-6 py-3.5 text-[13px] font-bold tracking-[0.03em]"
+                        >
+                          Finish setup in dashboard
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })()
+              ) : (
+                <div className="max-w-[520px] text-center">
+                  <div
+                    className="w-[82px] h-[82px] rounded-full bg-[rgba(34,197,94,0.14)] grid place-items-center text-[#22C55E] mx-auto mb-[22px] text-[36px]"
                   >
-                    Go to dashboard
-                  </button>
-                  {data?.business?.slug && (
-                    <a
-                      href={`/b/${data.business.slug}`}
-                      className="border border-[#2DE2F2]/10 text-[#2DE2F2] rounded-xl px-6 py-3.5 text-[13px] font-semibold"
+                    ✓
+                  </div>
+                  <div className="text-[11px] font-bold tracking-[0.16em] uppercase text-[#2DE2F2]">
+                    You're live on Fish-X
+                  </div>
+                  <h1
+                    className="font-semibold text-[38px] leading-[1.05] my-[10px] text-[#F0F2F5]"
+                    style={{ fontFamily: "'Outfit',Georgia,serif" }}
+                  >
+                    Your listing is published.
+                  </h1>
+                  <p className="text-[15.5px] leading-[1.55] text-[#92A0AB] mb-[26px]">
+                    Anglers can now find and book <b className="text-[#F0F2F5]">{listing.title}</b>. Payments arrive
+                    protected in escrow — released to you after every trip.
+                  </p>
+                  <div className="flex gap-3 justify-center flex-wrap">
+                    <button
+                      onClick={() => navigate({ to: "/dashboard" })}
+                      className="bg-[#1C2936] text-white rounded-xl px-6 py-3.5 text-[13px] font-bold tracking-[0.03em]"
                     >
-                      View live listing
-                    </a>
-                  )}
+                      Go to dashboard
+                    </button>
+                    {data?.business?.slug && (
+                      <a
+                        href={`/b/${data.business.slug}`}
+                        className="border border-[#2DE2F2]/10 text-[#2DE2F2] rounded-xl px-6 py-3.5 text-[13px] font-semibold"
+                      >
+                        View live listing
+                      </a>
+                    )}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           ) : (
             <>
