@@ -83,7 +83,7 @@ export function SettingsPage({
   const requestedBiz = memberships.some((m: any) => m.business.id === search.biz) ? search.biz : "";
   const active = requestedBiz
     ? `biz:${requestedBiz}`
-    : ACCOUNT_SECTIONS.includes(search.section)
+    : search.section && ACCOUNT_SECTIONS.includes(search.section)
       ? search.section
       : "personal";
   const activeBiz = requestedBiz || null;
