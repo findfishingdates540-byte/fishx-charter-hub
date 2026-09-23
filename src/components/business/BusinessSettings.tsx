@@ -60,25 +60,29 @@ export function BusinessSettings({
   businessId,
   initialSection,
   onSectionChange,
+  extraSections = [],
 }: {
   businessId: string;
   initialSection?: string;
   onSectionChange?: (section?: string, replace?: boolean) => void;
+  extraSections?: Array<{ key: string; label: string; hint: string; content: React.ReactNode }>;
 }) {
   const qc = useQueryClient();
   const fetchSettings = useServerFn(getBusinessSettings);
   const phone = usePhoneLayout();
+  const sections = [...OP_SECTIONS, ...extraSections.map(({ key, label, hint }) => ({ key, label, hint }))];
+  const isSection = (value?: string) => Boolean(value && sections.some((section) => section.key === value));
   const [active, setActive] = useState<string>(
-    initialSection && OP_SECTIONS.some((s) => s.key === initialSection) ? initialSection : "profile",
+    isSection(initialSection) ? (initialSection as string) : "profile",
   );
   // On phones the menu is a list; a section only opens when tapped (or deep-linked).
   const [openOnPhone, setOpenOnPhone] = useState<boolean>(
-    Boolean(initialSection && OP_SECTIONS.some((s) => s.key === initialSection)),
+    isSection(initialSection),
   );
 
   // Deep links from the readiness checklist ("Fix →") open the matching section.
   useEffect(() => {
-    if (initialSection && OP_SECTIONS.some((s) => s.key === initialSection)) {
+    if (isSection(initialSection)) {
       setActive(initialSection);
       setOpenOnPhone(true);
       return;
@@ -104,7 +108,7 @@ export function BusinessSettings({
   if (!data) return null;
 
   const canEdit = data.myRole === "owner" || data.myRole === "manager";
-  const current = OP_SECTIONS.find((s) => s.key === active);
+  const current = sections.find((s) => s.key === active);
 
   const body = (
     <>
@@ -123,6 +127,7 @@ export function BusinessSettings({
           <PayoutsConnect businessId={businessId} />
         </Card>
       )}
+      {extraSections.find((section) => section.key === active)?.content}
     </>
   );
 
@@ -213,7 +218,7 @@ export function BusinessSettings({
             overflow: "hidden",
           }}
         >
-          {OP_SECTIONS.map((it, i) => (
+          {sections.map((it, i) => (
             <button
               key={it.key}
               type="button"
@@ -299,7 +304,7 @@ export function BusinessSettings({
             </span>
           </div>
         ) : null}
-        {OP_SECTIONS.map((it) => {
+        {sections.map((it) => {
           const on = active === it.key;
           return (
               <button

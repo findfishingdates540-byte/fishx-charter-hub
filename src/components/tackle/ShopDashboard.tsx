@@ -1109,10 +1109,19 @@ function ShippingSettingsCard({ businessId }: { businessId: string }) {
 
 function Settings({ businessId, initialSection, onSectionChange }: { businessId: string; initialSection?: string; onSectionChange: (section?: string, replace?: boolean) => void }) {
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
-      <ShippingSettingsCard businessId={businessId} />
-      <BusinessSettings businessId={businessId} initialSection={initialSection} onSectionChange={onSectionChange} />
-    </div>
+    <BusinessSettings
+      businessId={businessId}
+      initialSection={initialSection}
+      onSectionChange={onSectionChange}
+      extraSections={[
+        {
+          key: "shipping",
+          label: "Shipping",
+          hint: "Rates, thresholds and policy",
+          content: <ShippingSettingsCard businessId={businessId} />,
+        },
+      ]}
+    />
   );
 }
 
