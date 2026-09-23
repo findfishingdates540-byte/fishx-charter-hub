@@ -1005,6 +1005,8 @@ body.dc-body { margin:0; background:#072057; }
     flex: 0 0 auto;
     pointer-events: none;
   }
+  body.fx-hide-dock .fx-operator-dock { display: none; }
+  body.fx-hide-dock .fx-operator-dock-clearance { display: none; }
   .fx-operator-main [style*="grid-template-columns"] { grid-template-columns: minmax(0, 1fr) !important; }
   .fx-operator-main [style*="display: flex"] { flex-wrap: wrap; }
   .fx-operator-main [style*="grid-template-columns: repeat(4"] { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }

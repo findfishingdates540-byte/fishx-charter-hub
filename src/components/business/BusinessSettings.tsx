@@ -43,6 +43,19 @@ const OP_SECTIONS: Array<{ key: string; label: string; hint: string }> = [
   { key: "payouts", label: "Payouts", hint: "Bank details & Stripe status" },
 ];
 
+function usePhoneLayout() {
+  const [phone, setPhone] = useState(false);
+  useEffect(() => {
+    if (typeof window === "undefined" || !window.matchMedia) return;
+    const mq = window.matchMedia("(max-width: 900px)");
+    const sync = () => setPhone(mq.matches);
+    sync();
+    mq.addEventListener("change", sync);
+    return () => mq.removeEventListener("change", sync);
+  }, []);
+  return phone;
+}
+
 export function BusinessSettings({
   businessId,
   initialSection,
@@ -52,16 +65,39 @@ export function BusinessSettings({
 }) {
   const qc = useQueryClient();
   const fetchSettings = useServerFn(getBusinessSettings);
+  const phone = usePhoneLayout();
   const [active, setActive] = useState<string>(
     initialSection && OP_SECTIONS.some((s) => s.key === initialSection) ? initialSection : "profile",
+  );
+  // On phones the menu is a list; a section only opens when tapped (or deep-linked).
+  const [openOnPhone, setOpenOnPhone] = useState<boolean>(
+    Boolean(initialSection && OP_SECTIONS.some((s) => s.key === initialSection)),
   );
 
   // Deep links from the readiness checklist ("Fix →") open the matching section.
   useEffect(() => {
     if (initialSection && OP_SECTIONS.some((s) => s.key === initialSection)) {
       setActive(initialSection);
+      setOpenOnPhone(true);
     }
   }, [initialSection]);
+
+  // Hardware/browser back closes the section screen instead of leaving the page.
+  useEffect(() => {
+    if (!phone || !openOnPhone || typeof window === "undefined") return;
+    window.history.pushState({ fxSettingsSection: true }, "");
+    const onPop = () => setOpenOnPhone(false);
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
+  }, [phone, openOnPhone]);
+
+  // Hide the operator bottom dock while a section screen is open.
+  const dockHidden = phone && openOnPhone;
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    document.body.classList.toggle("fx-hide-dock", dockHidden);
+    return () => document.body.classList.remove("fx-hide-dock");
+  }, [dockHidden]);
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["business-settings", businessId],
@@ -73,7 +109,151 @@ export function BusinessSettings({
   if (!data) return null;
 
   const canEdit = data.myRole === "owner" || data.myRole === "manager";
+  const current = OP_SECTIONS.find((s) => s.key === active);
 
+  const body = (
+    <>
+      {active === "profile" && <ProfileCard business={data.business} canEdit={canEdit} />}
+      {active === "visibility" && (
+        <VisibilityCard
+          business={data.business}
+          canEdit={canEdit}
+          onDone={() => qc.invalidateQueries({ queryKey: ["business-settings", businessId] })}
+        />
+      )}
+      {active === "team" && <TeamCard businessId={businessId} team={data.team} myRole={data.myRole} />}
+      {active === "notifications" && <NotificationsCard />}
+      {active === "payouts" && (
+        <Card eyebrow="Money" title="Payouts">
+          <PayoutsConnect businessId={businessId} />
+        </Card>
+      )}
+    </>
+  );
+
+  const openSection = (key: string) => {
+    setActive(key);
+    setOpenOnPhone(true);
+  };
+
+  const closeSection = () => {
+    if (typeof window !== "undefined" && window.history.state?.fxSettingsSection) {
+      window.history.back();
+    } else {
+      setOpenOnPhone(false);
+    }
+  };
+
+  /* ---------------------------- phone: drill-in ---------------------------- */
+  if (phone) {
+    if (openOnPhone) {
+      return (
+        <div style={{ display: "grid", gap: 16, minWidth: 0 }}>
+          <div
+            style={{
+              position: "sticky",
+              top: 0,
+              zIndex: 6,
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
+              padding: "10px 2px",
+              background: "#0D161F",
+            }}
+          >
+            <button
+              type="button"
+              onClick={closeSection}
+              aria-label="Back to settings"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                width: 36,
+                height: 36,
+                borderRadius: 11,
+                border: "1px solid rgba(255,255,255,.1)",
+                background: "#14202B",
+                color: "#E8F2F6",
+                cursor: "pointer",
+                font: "inherit",
+                fontSize: 17,
+              }}
+            >
+              ←
+            </button>
+            <span style={{ fontSize: 17, fontWeight: 800, color: "#F0F2F5", minWidth: 0, overflowWrap: "anywhere" }}>
+              {current?.label ?? "Settings"}
+            </span>
+          </div>
+          <div style={{ display: "grid", gap: 18, minWidth: 0 }}>{body}</div>
+        </div>
+      );
+    }
+
+    return (
+      <div style={{ display: "grid", gap: 14, minWidth: 0 }}>
+        <div
+          style={{
+            background: "#14202B",
+            border: "1px solid rgba(255,255,255,.08)",
+            borderRadius: 16,
+            padding: "14px 15px",
+            display: "grid",
+            gap: 4,
+          }}
+        >
+          <span style={{ fontSize: 15, fontWeight: 800, color: "#F0F2F5", overflowWrap: "anywhere" }}>
+            {data.business.name}
+          </span>
+          {data.accountEmail ? (
+            <span style={{ fontSize: 12.5, color: "#92A0AB", overflowWrap: "anywhere" }}>
+              Signed in as {data.accountEmail}
+            </span>
+          ) : null}
+        </div>
+        <div
+          style={{
+            background: "#14202B",
+            border: "1px solid rgba(255,255,255,.08)",
+            borderRadius: 16,
+            overflow: "hidden",
+          }}
+        >
+          {OP_SECTIONS.map((it, i) => (
+            <button
+              key={it.key}
+              type="button"
+              onClick={() => openSection(it.key)}
+              style={{
+                width: "100%",
+                display: "flex",
+                alignItems: "center",
+                gap: 12,
+                textAlign: "left",
+                border: 0,
+                borderTop: i === 0 ? "none" : "1px solid rgba(255,255,255,.07)",
+                background: "transparent",
+                padding: "15px 15px",
+                cursor: "pointer",
+                font: "inherit",
+              }}
+            >
+              <span style={{ display: "grid", gap: 3, minWidth: 0, flex: 1 }}>
+                <span style={{ fontSize: 15, fontWeight: 700, color: "#F0F2F5" }}>{it.label}</span>
+                <span style={{ fontSize: 12.5, color: "#92A0AB", overflowWrap: "anywhere" }}>{it.hint}</span>
+              </span>
+              <span aria-hidden="true" style={{ color: "#5E7183", fontSize: 18, flex: "0 0 auto" }}>
+                ›
+              </span>
+            </button>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  /* --------------------------- desktop / tablet --------------------------- */
   return (
     <div
       className="fx-settings"
@@ -151,23 +331,7 @@ export function BusinessSettings({
         })}
       </nav>
 
-      <section style={{ minWidth: 0, display: "grid", gap: 20 }}>
-        {active === "profile" && <ProfileCard business={data.business} canEdit={canEdit} />}
-        {active === "visibility" && (
-          <VisibilityCard
-            business={data.business}
-            canEdit={canEdit}
-            onDone={() => qc.invalidateQueries({ queryKey: ["business-settings", businessId] })}
-          />
-        )}
-        {active === "team" && <TeamCard businessId={businessId} team={data.team} myRole={data.myRole} />}
-        {active === "notifications" && <NotificationsCard />}
-        {active === "payouts" && (
-          <Card eyebrow="Money" title="Payouts">
-            <PayoutsConnect businessId={businessId} />
-          </Card>
-        )}
-      </section>
+      <section style={{ minWidth: 0, display: "grid", gap: 20 }}>{body}</section>
     </div>
   );
 }
