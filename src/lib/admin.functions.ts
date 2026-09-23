@@ -37,7 +37,7 @@ export const getAdminOverview = createServerFn({ method: "GET" })
     const [verifs, payouts, disputes, businesses] = await Promise.all([
       supabaseAdmin
         .from("verification_requests")
-        .select("id,business_id,status,notes,doc_urls,created_at,decided_at")
+        .select("id,business_id,status,notes,rejection_reason,reviewer_id,doc_urls,created_at,decided_at")
         .order("created_at", { ascending: false })
         .limit(200),
       supabaseAdmin
