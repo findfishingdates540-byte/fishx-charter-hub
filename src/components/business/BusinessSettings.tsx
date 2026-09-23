@@ -83,7 +83,7 @@ export function BusinessSettings({
   // Deep links from the readiness checklist ("Fix →") open the matching section.
   useEffect(() => {
     if (isSection(initialSection)) {
-      setActive(initialSection);
+      setActive(initialSection as string);
       setOpenOnPhone(true);
       return;
     }
