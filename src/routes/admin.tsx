@@ -253,31 +253,111 @@ function AdminConsole() {
       {tab === "activity" && <AdminAudit />}
 
 
+      {tab === "history" && <AdminHistory businesses={data.businesses as any} />}
+
       {tab === "verifications" && (
         <div style={{ display: "grid", gap: 12 }}>
           {data.verifications.length === 0 && <div style={{ ...card, color: T.mut }}>No verification requests yet.</div>}
           {data.verifications.map((v: any) => (
-            <div key={v.id} style={{ ...card, display: "flex", gap: 14, flexWrap: "wrap", alignItems: "center", justifyContent: "space-between" }}>
-              <div style={{ minWidth: 220 }}>
-                <div style={{ fontWeight: 700 }}>{v.business?.name ?? "Unknown business"}</div>
-                <div style={{ color: T.mut, fontSize: 13 }}>
-                  {v.business?.category_key ?? "—"} · submitted {day(v.created_at)} · {v.doc_urls?.length ?? 0} document(s)
+            <div key={v.id} style={{ ...card, display: "grid", gap: 12 }}>
+              <div style={{ display: "flex", gap: 14, flexWrap: "wrap", alignItems: "center", justifyContent: "space-between" }}>
+                <div style={{ minWidth: 220 }}>
+                  <div style={{ fontWeight: 700 }}>{v.business?.name ?? "Unknown business"}</div>
+                  <div style={{ color: T.mut, fontSize: 13 }}>
+                    {v.business?.category_key ?? "—"} · submitted {day(v.created_at)} · {v.doc_urls?.length ?? 0} document(s)
+                  </div>
+                  {v.status === "rejected" && (v.rejection_reason || v.notes) && (
+                    <div style={{ color: "#F87171", fontSize: 13, marginTop: 4, overflowWrap: "anywhere" }}>
+                      Rejected {day(v.decided_at)}: {v.rejection_reason || v.notes}
+                    </div>
+                  )}
+                  {v.status !== "rejected" && v.notes && (
+                    <div style={{ color: T.mut, fontSize: 13, marginTop: 4 }}>{v.notes}</div>
+                  )}
                 </div>
-                {v.notes && <div style={{ color: T.mut, fontSize: 13, marginTop: 4 }}>{v.notes}</div>}
+                <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+                  <span style={{ fontSize: 12, color: T.mut, textTransform: "uppercase", letterSpacing: ".08em" }}>{v.status}</span>
+                  {v.status === "pending" && (
+                    <>
+                      <button
+                        style={btn}
+                        disabled={decideMut.isPending}
+                        onClick={() => decideMut.mutate({ requestId: v.id, approve: true })}
+                      >
+                        Approve
+                      </button>
+                      <button
+                        style={ghost}
+                        disabled={decideMut.isPending}
+                        onClick={() => {
+                          setRejectError(null);
+                          setRejectReason("");
+                          setRejecting(rejecting === v.id ? null : v.id);
+                        }}
+                      >
+                        Reject
+                      </button>
+                    </>
+                  )}
+                  {v.business_id && (
+                    <button
+                      style={ghost}
+                      onClick={() => setHistoryFor(historyFor === v.business_id ? null : v.business_id)}
+                    >
+                      {historyFor === v.business_id ? "Hide history" : "History"}
+                    </button>
+                  )}
+                </div>
               </div>
-              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                <span style={{ fontSize: 12, color: T.mut, textTransform: "uppercase", letterSpacing: ".08em" }}>{v.status}</span>
-                {v.status === "pending" && (
-                  <>
-                    <button style={btn} disabled={decideMut.isPending} onClick={() => decideMut.mutate({ requestId: v.id, approve: true })}>Approve</button>
-                    <button style={ghost} disabled={decideMut.isPending} onClick={() => decideMut.mutate({ requestId: v.id, approve: false })}>Reject</button>
-                  </>
-                )}
-              </div>
+
+              {rejecting === v.id && (
+                <div style={{ borderTop: `1px solid ${T.line}`, paddingTop: 12, display: "grid", gap: 8 }}>
+                  <label style={{ fontSize: 13, color: T.mut }}>
+                    Why can&rsquo;t these documents be approved? The operator sees this and resubmits.
+                  </label>
+                  <textarea
+                    value={rejectReason}
+                    onChange={(e) => setRejectReason(e.target.value)}
+                    rows={3}
+                    placeholder="e.g. The insurance certificate expired in March — please upload the current one."
+                    style={{
+                      background: T.bg,
+                      color: T.ink,
+                      border: `1px solid ${T.line}`,
+                      borderRadius: 10,
+                      padding: "10px 12px",
+                      fontSize: 13.5,
+                      fontFamily: "inherit",
+                      resize: "vertical",
+                    }}
+                  />
+                  {rejectError && <div style={{ color: "#F87171", fontSize: 13 }}>{rejectError}</div>}
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <button
+                      style={{ ...btn, background: "#F87171" }}
+                      disabled={decideMut.isPending || rejectReason.trim().length < 10}
+                      onClick={() =>
+                        decideMut.mutate({ requestId: v.id, approve: false, note: rejectReason.trim() })
+                      }
+                    >
+                      {decideMut.isPending ? "Sending…" : "Reject with reason"}
+                    </button>
+                    <button style={ghost} onClick={() => setRejecting(null)}>Cancel</button>
+                  </div>
+                  {rejectReason.trim().length < 10 && (
+                    <div style={{ color: T.mut, fontSize: 12 }}>A reason of at least 10 characters is required.</div>
+                  )}
+                </div>
+              )}
+
+              {historyFor === v.business_id && (
+                <BusinessHistory businessId={v.business_id} title="Readiness history" />
+              )}
             </div>
           ))}
         </div>
       )}
+
 
       {tab === "calendar" && <AdminTripCalendar />}
 
