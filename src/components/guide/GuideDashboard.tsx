@@ -213,7 +213,7 @@ export function GuideDashboard({
         </MessagesFullScreen>
       )}
       {active === "settings" && (
-        <BusinessSettings businessId={businessId} initialSection={initialSetting} onSectionChange={(setting) => navigate({ to: "/guide/$section", params: { section: "settings" }, search: { biz: businessId, setting: setting ?? "" } })} />
+        <BusinessSettings businessId={businessId} initialSection={initialSetting} onSectionChange={(setting, replace) => navigate({ to: "/guide/$section", params: { section: "settings" }, search: { biz: businessId, setting: setting ?? "" }, replace })} />
       )}
     </OperatorShell>
   );

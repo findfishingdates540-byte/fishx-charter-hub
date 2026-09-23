@@ -47,7 +47,7 @@ function usePhoneLayout() {
   const [phone, setPhone] = useState(false);
   useEffect(() => {
     if (typeof window === "undefined" || !window.matchMedia) return;
-    const mq = window.matchMedia("(max-width: 900px)");
+    const mq = window.matchMedia("(max-width: 767px)");
     const sync = () => setPhone(mq.matches);
     sync();
     mq.addEventListener("change", sync);
@@ -63,7 +63,7 @@ export function BusinessSettings({
 }: {
   businessId: string;
   initialSection?: string;
-  onSectionChange?: (section?: string) => void;
+  onSectionChange?: (section?: string, replace?: boolean) => void;
 }) {
   const qc = useQueryClient();
   const fetchSettings = useServerFn(getBusinessSettings);
@@ -134,7 +134,7 @@ export function BusinessSettings({
 
   const closeSection = () => {
     setOpenOnPhone(false);
-    onSectionChange?.(undefined);
+    onSectionChange?.(undefined, true);
   };
 
   /* ---------------------------- phone: drill-in ---------------------------- */

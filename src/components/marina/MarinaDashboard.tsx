@@ -228,7 +228,7 @@ export function MarinaDashboard({
         </MessagesFullScreen>
       )}
       {active === "settings" && (
-        <BusinessSettings businessId={businessId} initialSection={initialSetting} onSectionChange={(setting) => navigate({ to: "/marina/$section", params: { section: "settings" }, search: { biz: businessId, setting: setting ?? "" } })} />
+        <BusinessSettings businessId={businessId} initialSection={initialSetting} onSectionChange={(setting, replace) => navigate({ to: "/marina/$section", params: { section: "settings" }, search: { biz: businessId, setting: setting ?? "" }, replace })} />
       )}
     </OperatorShell>
   );

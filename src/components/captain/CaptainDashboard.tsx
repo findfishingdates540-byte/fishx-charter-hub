@@ -145,7 +145,7 @@ export function CaptainDashboard({ initialTab, initialSetting }: { initialTab?: 
             </MessagesFullScreen>
           )}
           {tab === "earnings" && <EarningsPanel businessId={data.business?.id ?? null} />}
-          {tab === "settings" && <SettingsPanel data={data} section={initialSetting} onSectionChange={(setting) => navigate({ to: "/captain/$section", params: { section: "settings" }, search: { setting: setting ?? "" } })} />}
+          {tab === "settings" && <SettingsPanel data={data} section={initialSetting} onSectionChange={(setting, replace) => navigate({ to: "/captain/$section", params: { section: "settings" }, search: { setting: setting ?? "" }, replace })} />}
     </OperatorShell>
   );
 }
@@ -374,7 +374,7 @@ function EarningsPanel({ businessId }: { businessId: string | null }) {
 
 /* ---------------- MESSAGES ---------------- */
 
-function SettingsPanel({ data, section, onSectionChange }: { data: CaptainData; section?: string; onSectionChange: (section?: string) => void }) {
+function SettingsPanel({ data, section, onSectionChange }: { data: CaptainData; section?: string; onSectionChange: (section?: string, replace?: boolean) => void }) {
   const biz = data.business;
   if (!biz) return <Empty text="Complete onboarding to set up your business." />;
   return (

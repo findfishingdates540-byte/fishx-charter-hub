@@ -243,7 +243,7 @@ export function ShopDashboard({
           <BusinessInbox theme="dark" businessId={businessId} fullHeight />
         </MessagesFullScreen>
       )}
-      {active === "settings" && <Settings businessId={businessId} initialSection={initialSetting} onSectionChange={(setting) => navigate({ to: "/shop/$section", params: { section: "settings" }, search: { biz: businessId, setting: setting ?? "" } })} />}
+      {active === "settings" && <Settings businessId={businessId} initialSection={initialSetting} onSectionChange={(setting, replace) => navigate({ to: "/shop/$section", params: { section: "settings" }, search: { biz: businessId, setting: setting ?? "" }, replace })} />}
     </OperatorShell>
   );
 }
@@ -1107,7 +1107,7 @@ function ShippingSettingsCard({ businessId }: { businessId: string }) {
   );
 }
 
-function Settings({ businessId, initialSection, onSectionChange }: { businessId: string; initialSection?: string; onSectionChange: (section?: string) => void }) {
+function Settings({ businessId, initialSection, onSectionChange }: { businessId: string; initialSection?: string; onSectionChange: (section?: string, replace?: boolean) => void }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
       <ShippingSettingsCard businessId={businessId} />

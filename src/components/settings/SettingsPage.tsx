@@ -97,7 +97,7 @@ export function SettingsPage({
     navigate({ search: { section: key, biz: "", setting: "" } });
   };
 
-  const backToList = () => navigate({ search: { section: "", biz: "", setting: "" } });
+  const backToList = () => navigate({ search: { section: "", biz: "", setting: "" }, replace: true });
 
   const content = (
     <>
@@ -121,8 +121,8 @@ export function SettingsPage({
           <BusinessSettings
             businessId={activeBiz}
             initialSection={search.setting || undefined}
-            onSectionChange={(setting) =>
-              navigate({ search: { section: "business", biz: activeBiz, setting: setting ?? "" } })
+            onSectionChange={(setting, replace) =>
+              navigate({ search: { section: "business", biz: activeBiz, setting: setting ?? "" }, replace })
             }
           />
         </>
