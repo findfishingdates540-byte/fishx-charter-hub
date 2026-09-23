@@ -92,10 +92,16 @@ export const decideVerification = createServerFn({ method: "POST" })
         approve: z.boolean(),
         note: z.string().max(1000).optional(),
       })
-      .parse(i),
+      .parse(i)
+      // A rejection must always tell the operator what to fix.
+      .valueOf(),
   )
   .handler(async ({ data, context }) => {
     await assertAdmin(context.supabase, context.userId);
+    const reason = (data.note ?? "").trim();
+    if (!data.approve && reason.length < 10) {
+      throw new Error("Give the operator a reason (at least 10 characters) so they can resubmit.");
+    }
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     const { data: req, error: reqErr } = await supabaseAdmin
@@ -111,12 +117,14 @@ export const decideVerification = createServerFn({ method: "POST" })
       .from("verification_requests")
       .update({
         status,
-        notes: data.note ?? null,
+        notes: reason || null,
+        rejection_reason: data.approve ? null : reason,
         reviewer_id: context.userId,
         decided_at: new Date().toISOString(),
       })
       .eq("id", data.requestId);
     if (error) throw new Error(error.message);
+
 
     // Approving a request is what actually flips the badge on the storefront.
     await supabaseAdmin
