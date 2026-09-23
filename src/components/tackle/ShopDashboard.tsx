@@ -121,6 +121,7 @@ export function ShopDashboard({
   operatorName,
   categoryKey,
   initialTab,
+  initialSetting,
   workspaces = [],
 }: {
   businessId: string;
@@ -129,6 +130,7 @@ export function ShopDashboard({
   operatorName: string;
   categoryKey: string;
   initialTab?: string;
+  initialSetting?: string;
   workspaces?: Array<{ id: string; name: string; category_key: string }>;
 }) {
   const copy = KIND_COPY[categoryKey] ?? KIND_COPY.tackle_shop;
@@ -204,7 +206,7 @@ export function ShopDashboard({
       operatorRole={copy.brand}
       nav={nav}
       active={active}
-      onNav={(key) => navigate({ to: "/shop/$section", params: { section: key }, search: { biz: businessId } })}
+      onNav={(key) => navigate({ to: "/shop/$section", params: { section: key }, search: { biz: businessId, setting: "" } })}
       dock={[{ key: "overview", label: "Home" }, { key: "orders", label: "Orders" }, { key: "products", label: "Products" }]}
       pageTitle={(titles[active] ?? titles.overview).t}
       pageSub={(titles[active] ?? titles.overview).s}
@@ -213,7 +215,7 @@ export function ShopDashboard({
         <select
           aria-label="Current store"
           value={businessId}
-          onChange={(event) => navigate({ to: "/shop/$section", params: { section: active }, search: { biz: event.target.value } })}
+          onChange={(event) => navigate({ to: "/shop/$section", params: { section: active }, search: { biz: event.target.value, setting: initialSetting ?? "" } })}
           style={{ maxWidth: 220, border: "1px solid rgba(255,255,255,.12)", borderRadius: 8, padding: "8px 10px", background: "#14202B", color: "#F0F2F5", fontFamily: "inherit" }}
         >
           {workspaces.map((workspace) => <option key={workspace.id} value={workspace.id}>{workspace.name}</option>)}
@@ -241,7 +243,7 @@ export function ShopDashboard({
           <BusinessInbox theme="dark" businessId={businessId} fullHeight />
         </MessagesFullScreen>
       )}
-      {active === "settings" && <Settings businessId={businessId} />}
+      {active === "settings" && <Settings businessId={businessId} initialSection={initialSetting} onSectionChange={(setting, replace) => navigate({ to: "/shop/$section", params: { section: "settings" }, search: { biz: businessId, setting: setting ?? "" }, replace })} />}
     </OperatorShell>
   );
 }
@@ -1105,12 +1107,21 @@ function ShippingSettingsCard({ businessId }: { businessId: string }) {
   );
 }
 
-function Settings({ businessId }: { businessId: string }) {
+function Settings({ businessId, initialSection, onSectionChange }: { businessId: string; initialSection?: string; onSectionChange: (section?: string, replace?: boolean) => void }) {
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
-      <ShippingSettingsCard businessId={businessId} />
-      <BusinessSettings businessId={businessId} />
-    </div>
+    <BusinessSettings
+      businessId={businessId}
+      initialSection={initialSection}
+      onSectionChange={onSectionChange}
+      extraSections={[
+        {
+          key: "shipping",
+          label: "Shipping",
+          hint: "Rates, thresholds and policy",
+          content: <ShippingSettingsCard businessId={businessId} />,
+        },
+      ]}
+    />
   );
 }
 

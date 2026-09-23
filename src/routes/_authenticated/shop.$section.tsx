@@ -34,6 +34,7 @@ export const SHOP_SECTIONS = [
 export const Route = createFileRoute("/_authenticated/shop/$section")({
   validateSearch: (search: Record<string, unknown>) => ({
     biz: typeof search.biz === "string" ? search.biz : "",
+    ...(typeof search.setting === "string" ? { setting: search.setting } : {}),
   }),
   head: () => ({
     meta: [
@@ -56,7 +57,7 @@ export const Route = createFileRoute("/_authenticated/shop/$section")({
 
 function ShopSectionPage() {
   const { section } = Route.useParams();
-  const { biz } = Route.useSearch();
+  const { biz, setting } = Route.useSearch();
   const { data: boot } = useSuspenseQuery(bootstrapQO);
 
   const memberships: any[] = Array.isArray(boot?.businesses) ? boot.businesses : [];
@@ -94,6 +95,7 @@ function ShopSectionPage() {
         operatorName={operatorName}
         categoryKey={business.category_key ?? "tackle_shop"}
         initialTab={tab}
+        initialSetting={setting}
         workspaces={shops}
       />
     </Suspense>

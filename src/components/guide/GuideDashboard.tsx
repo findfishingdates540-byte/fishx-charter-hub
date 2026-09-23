@@ -63,16 +63,17 @@ export function GuideDashboard({
   workspaceName,
   operatorName,
   initialTab,
+  initialSetting,
 }: {
   businessId: string;
   businessSlug?: string | null;
   workspaceName: string;
   operatorName: string;
   initialTab?: string;
+  initialSetting?: string;
 }) {
   const { data } = useSuspenseQuery(overviewQO(businessId));
   const navigate = useNavigate();
-  const [settingsSection, setSettingsSection] = useState<string>("profile");
   const GUIDE_TABS = [
     "overview",
     "trips",
@@ -143,7 +144,7 @@ export function GuideDashboard({
       operatorRole="Owner · Verified outfitter"
       nav={nav}
       active={active}
-      onNav={(key) => navigate({ to: "/guide/$section", params: { section: key }, search: { biz: businessId } })}
+      onNav={(key) => navigate({ to: "/guide/$section", params: { section: key }, search: { biz: businessId, setting: "" } })}
       dock={[{ key: "overview", label: "Home" }, { key: "trips", label: "Trips" }, { key: "calendar", label: "Calendar" }]}
       pageTitle={(titles[active] ?? titles.overview).t}
       pageSub={(titles[active] ?? titles.overview).s}
@@ -156,8 +157,7 @@ export function GuideDashboard({
             onNav={(k) => {
               // Profile and verification are both fixed inside Settings.
               if (k === "profile" || k === "verification") {
-                setSettingsSection(k === "verification" ? "visibility" : "profile");
-                setActive("settings");
+                 navigate({ to: "/guide/$section", params: { section: "settings" }, search: { biz: businessId, setting: k === "verification" ? "visibility" : "profile" } });
                 return;
               }
               setActive(k);
@@ -213,7 +213,7 @@ export function GuideDashboard({
         </MessagesFullScreen>
       )}
       {active === "settings" && (
-        <BusinessSettings businessId={businessId} initialSection={settingsSection} />
+        <BusinessSettings businessId={businessId} initialSection={initialSetting} onSectionChange={(setting, replace) => navigate({ to: "/guide/$section", params: { section: "settings" }, search: { biz: businessId, setting: setting ?? "" }, replace })} />
       )}
     </OperatorShell>
   );

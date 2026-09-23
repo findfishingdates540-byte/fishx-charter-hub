@@ -2,6 +2,11 @@ import { createFileRoute } from "@tanstack/react-router";
 import { SettingsPage } from "@/components/settings/SettingsPage";
 
 export const Route = createFileRoute("/_authenticated/settings")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    ...(typeof search.section === "string" ? { section: search.section } : {}),
+    ...(typeof search.biz === "string" ? { biz: search.biz } : {}),
+    ...(typeof search.setting === "string" ? { setting: search.setting } : {}),
+  }),
   head: () => ({
     meta: [
       { title: "Settings — FISH-X.COM Bookings & Marketplace" },
@@ -19,7 +24,7 @@ export const Route = createFileRoute("/_authenticated/settings")({
       { name: "twitter:card", content: "summary" },
     ],
   }),
-  component: SettingsPage,
+  component: SettingsRoute,
   errorComponent: ({ error }) => (
     <div style={{ padding: 40, fontFamily: "'Outfit',system-ui,sans-serif" }}>
       <h1>Couldn't load settings</h1>
@@ -27,3 +32,8 @@ export const Route = createFileRoute("/_authenticated/settings")({
     </div>
   ),
 });
+
+function SettingsRoute() {
+  const search = Route.useSearch();
+  return <SettingsPage search={search} />;
+}

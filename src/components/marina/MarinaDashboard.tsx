@@ -88,16 +88,17 @@ export function MarinaDashboard({
   workspaceName,
   operatorName,
   initialTab,
+  initialSetting,
 }: {
   businessId: string;
   businessSlug?: string | null;
   workspaceName: string;
   operatorName: string;
   initialTab?: string;
+  initialSetting?: string;
 }) {
   const { data } = useSuspenseQuery(marinaOverviewQO(businessId));
   const navigate = useNavigate();
-  const [settingsSection, setSettingsSection] = useState<string>("profile");
   const MARINA_TABS = NAV.map((n) => n.key);
   const [active, setActive] = useState(
     initialTab && MARINA_TABS.includes(initialTab) ? initialTab : "overview",
@@ -137,7 +138,7 @@ export function MarinaDashboard({
         navigate({
           to: "/marina/$section",
           params: { section: key },
-          search: { biz: businessId },
+          search: { biz: businessId, setting: "" },
         })
       }
       dock={[{ key: "overview", label: "Harbor" }, { key: "slips", label: "Slips" }, { key: "bookings", label: "Bookings" }]}
@@ -177,8 +178,7 @@ export function MarinaDashboard({
             onNav={(k) => {
               // Profile and verification are both fixed inside Settings.
               if (k === "profile" || k === "verification") {
-                setSettingsSection(k === "verification" ? "visibility" : "profile");
-                setActive("settings");
+                 navigate({ to: "/marina/$section", params: { section: "settings" }, search: { biz: businessId, setting: k === "verification" ? "visibility" : "profile" } });
                 return;
               }
               setActive(k);
@@ -228,7 +228,7 @@ export function MarinaDashboard({
         </MessagesFullScreen>
       )}
       {active === "settings" && (
-        <BusinessSettings businessId={businessId} initialSection={settingsSection} />
+        <BusinessSettings businessId={businessId} initialSection={initialSetting} onSectionChange={(setting, replace) => navigate({ to: "/marina/$section", params: { section: "settings" }, search: { biz: businessId, setting: setting ?? "" }, replace })} />
       )}
     </OperatorShell>
   );
