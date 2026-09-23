@@ -701,7 +701,7 @@ export function OperatorOnboarding() {
   const requiredDocCount = verifyConfig.docs.length;
   const uploadedCount =
     Object.values(uploaded).filter(Boolean).length +
-    (data?.verification?.doc_urls?.length ? requiredDocCount : 0);
+    (!verificationRejected && verification?.doc_urls?.length ? requiredDocCount : 0);
   const pct = published ? 100 : Math.round((step / 4) * 100);
 
   if (isLoading) {
