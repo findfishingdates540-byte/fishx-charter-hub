@@ -31,6 +31,7 @@ export const GUIDE_SECTIONS = [
 export const Route = createFileRoute("/_authenticated/guide/$section")({
   validateSearch: (search: Record<string, unknown>) => ({
     biz: typeof search.biz === "string" ? search.biz : "",
+    setting: typeof search.setting === "string" ? search.setting : "",
   }),
   head: () => ({
     meta: [
@@ -53,7 +54,7 @@ export const Route = createFileRoute("/_authenticated/guide/$section")({
 
 function GuideSectionPage() {
   const { section } = Route.useParams();
-  const { biz } = Route.useSearch();
+  const { biz, setting } = Route.useSearch();
   const { data: boot } = useSuspenseQuery(bootstrapQO);
 
   const memberships: any[] = Array.isArray(boot?.businesses) ? boot.businesses : [];
@@ -92,6 +93,7 @@ function GuideSectionPage() {
         workspaceName={business.name}
         operatorName={operatorName}
         initialTab={tab}
+        initialSetting={setting}
       />
     </Suspense>
   );

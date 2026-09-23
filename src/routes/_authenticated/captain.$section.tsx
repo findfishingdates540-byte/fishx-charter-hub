@@ -18,6 +18,9 @@ export const CAPTAIN_SECTIONS = [
 ] as const;
 
 export const Route = createFileRoute("/_authenticated/captain/$section")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    setting: typeof search.setting === "string" ? search.setting : "",
+  }),
   head: () => ({
     meta: [
       { title: "Captain console — Fish-X" },
@@ -39,10 +42,11 @@ export const Route = createFileRoute("/_authenticated/captain/$section")({
 
 function CaptainSectionPage() {
   const { section } = Route.useParams();
+  const { setting } = Route.useSearch();
   const tab = (CAPTAIN_SECTIONS as readonly string[]).includes(section) ? section : "overview";
   return (
     <Suspense fallback={<div style={{ background: "#0D161F", minHeight: "100vh" }} />}>
-      <CaptainDashboard initialTab={tab} />
+      <CaptainDashboard initialTab={tab} initialSetting={setting} />
     </Suspense>
   );
 }
