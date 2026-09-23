@@ -1012,6 +1012,45 @@ body.dc-body { margin:0; background:#072057; }
   .fx-operator-main [style*="grid-template-columns: repeat(4"] { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
 }
 
+@media (max-width: 767px) {
+  .fx-settings-nav-hidden,
+  .fx-settings-content-hidden { display: none !important; }
+  .fx-settings-backbar {
+    position: sticky;
+    top: 62px;
+    z-index: 20;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: 10px;
+    margin: -12px 0 18px;
+    padding: 10px 0;
+    background: var(--background);
+  }
+  .fx-settings-backbar button {
+    display: grid;
+    width: 36px;
+    height: 36px;
+    place-items: center;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--card);
+    color: var(--foreground);
+    font: inherit;
+    font-size: 18px;
+    cursor: pointer;
+  }
+  .fx-settings-backbar span {
+    min-width: 0;
+    overflow: hidden;
+    color: var(--foreground);
+    font-size: 17px;
+    font-weight: 800;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
 @media (max-width: 560px) {
   .fx-operator-brand > span { gap: 7px !important; }
   .fx-operator-brand > span > span:last-child > span:first-child { font-size: 15px !important; }

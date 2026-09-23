@@ -81,7 +81,9 @@ export function BusinessSettings({
     if (initialSection && OP_SECTIONS.some((s) => s.key === initialSection)) {
       setActive(initialSection);
       setOpenOnPhone(true);
+      return;
     }
+    setOpenOnPhone(false);
   }, [initialSection]);
 
   // Hide the operator bottom dock while a section screen is open.
@@ -302,7 +304,10 @@ export function BusinessSettings({
           return (
               <button
               key={it.key}
-              onClick={() => setActive(it.key)}
+                onClick={() => {
+                  setActive(it.key);
+                  onSectionChange?.(it.key);
+                }}
               style={{
                 textAlign: "left",
                 border: 0,
