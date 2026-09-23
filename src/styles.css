@@ -1052,13 +1052,13 @@ body.dc-body { margin:0; background:#072057; }
 }
 
 @media (min-width: 768px) and (max-width: 900px) {
-  .fx-operator-main .fx-settings {
+  .fx-settings {
     grid-template-columns: 220px minmax(0, 1fr) !important;
     align-items: start !important;
   }
-  .fx-operator-main .fx-settings > nav {
+  .fx-settings > nav {
     position: sticky !important;
-    top: 16px !important;
+    top: 76px !important;
   }
 }
 
