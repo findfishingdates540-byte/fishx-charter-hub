@@ -635,12 +635,34 @@ export function OperatorOnboarding() {
     onError: (e: any) => showToast(e?.message ?? "Failed to save"),
   });
 
+  const verification = (data?.verification ?? null) as
+    | { id: string; status: string; doc_urls?: string[] | null; rejection_reason?: string | null; notes?: string | null; decided_at?: string | null }
+    | null;
+  const verificationRejected = verification?.status === "rejected";
+
+  // Documents were turned down: the operator uploads corrected files and
+  // resubmits, which opens a fresh review for our team.
+  const resubmitM = useMutation({
+    mutationFn: async () => {
+      const docPaths = Object.values(uploaded).filter(Boolean) as string[];
+      if (!docPaths.length) throw new Error("Upload your corrected documents first.");
+      return submitVer({ data: { docPaths } });
+    },
+    onSuccess: () => {
+      setUploaded({});
+      qc.invalidateQueries({ queryKey: ["onboarding"] });
+      showToast("Documents resubmitted for review");
+    },
+    onError: (e: any) => showToast(e?.message ?? "Could not resubmit your documents"),
+  });
+
   const publishM = useMutation({
     mutationFn: async () => {
       const docPaths = Object.values(uploaded).filter(Boolean) as string[];
-      if (docPaths.length > 0 && !data?.verification) {
+      if (docPaths.length > 0 && (!verification || verificationRejected)) {
         await submitVer({ data: { docPaths } });
       }
+
       await savePayout({ data: { schedule: payoutSchedule, stripeConnected } });
       return publish({
         data: {
@@ -679,7 +701,7 @@ export function OperatorOnboarding() {
   const requiredDocCount = verifyConfig.docs.length;
   const uploadedCount =
     Object.values(uploaded).filter(Boolean).length +
-    (data?.verification?.doc_urls?.length ? requiredDocCount : 0);
+    (!verificationRejected && verification?.doc_urls?.length ? requiredDocCount : 0);
   const pct = published ? 100 : Math.round((step / 4) * 100);
 
   if (isLoading) {
@@ -901,7 +923,13 @@ export function OperatorOnboarding() {
                   }
                   uploaded={uploaded}
                   onUpload={handleUpload}
-                  alreadySubmitted={!!data?.verification}
+                  alreadySubmitted={!!verification && !verificationRejected}
+                  rejected={verificationRejected}
+                  rejectionReason={verification?.rejection_reason ?? verification?.notes ?? null}
+                  decidedAt={verification?.decided_at ?? null}
+                  onResubmit={() => resubmitM.mutate()}
+                  resubmitting={resubmitM.isPending}
+                  hasNewUploads={Object.values(uploaded).some(Boolean)}
                 />
               )}
               {step === 2 && (
@@ -1100,21 +1128,57 @@ function VerifyStep({
   uploaded,
   onUpload,
   alreadySubmitted,
+  rejected,
+  rejectionReason,
+  decidedAt,
+  onResubmit,
+  resubmitting,
+  hasNewUploads,
 }: {
   config: { headline: string; docs: DocSpec[] };
   categoryLabel: string;
   uploaded: Record<string, string | null>;
   onUpload: (k: DocKey, file: File) => void;
   alreadySubmitted: boolean;
+  rejected?: boolean;
+  rejectionReason?: string | null;
+  decidedAt?: string | null;
+  onResubmit?: () => void;
+  resubmitting?: boolean;
+  hasNewUploads?: boolean;
 }) {
   return (
     <div className="flex flex-col gap-[14px] max-w-[720px]">
+      {rejected && (
+        <div className="bg-[rgba(239,68,68,0.12)] border border-[rgba(239,68,68,0.35)] rounded-2xl p-[16px_20px]">
+          <div className="text-[11px] font-bold tracking-[0.14em] uppercase text-[#F87171] mb-1">
+            Documents not approved
+            {decidedAt ? ` · ${new Date(decidedAt).toLocaleDateString()}` : ""}
+          </div>
+          <div className="text-[13.5px] text-[#F0F2F5] leading-[1.5]">
+            {rejectionReason || "Our team could not approve your documents. Please upload clearer, up-to-date paperwork."}
+          </div>
+          <div className="text-[12.5px] text-[#92A0AB] mt-2 leading-[1.5]">
+            Upload corrected documents below, then send them back for review.
+          </div>
+          {onResubmit && (
+            <button
+              onClick={onResubmit}
+              disabled={!hasNewUploads || resubmitting}
+              className="mt-3 bg-[#2DE2F2] text-[#04121B] rounded-[10px] px-[18px] py-[10px] text-[12.5px] font-bold disabled:opacity-50"
+            >
+              {resubmitting ? "Sending…" : "Resubmit documents"}
+            </button>
+          )}
+        </div>
+      )}
       <div className="bg-[#14202B] border border-[#2DE2F2]/10 rounded-2xl p-[16px_20px]">
         <div className="text-[11px] font-bold tracking-[0.14em] uppercase text-[#2DE2F2] mb-1">
           {categoryLabel}
         </div>
         <div className="text-[13.5px] text-[#F0F2F5] leading-[1.5]">{config.headline}</div>
       </div>
+
       {config.docs.map((meta) => {
         const done = !!uploaded[meta.key] || alreadySubmitted;
         return (

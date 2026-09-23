@@ -51,7 +51,7 @@ export const getOnboardingState = createServerFn({ method: "GET" })
       context.supabase.from("businesses").select("*").eq("id", businessId).maybeSingle(),
       context.supabase
         .from("verification_requests")
-        .select("id,status,doc_urls,created_at")
+        .select("id,status,doc_urls,notes,rejection_reason,decided_at,created_at")
         .eq("business_id", businessId)
         .order("created_at", { ascending: false })
         .limit(1)
