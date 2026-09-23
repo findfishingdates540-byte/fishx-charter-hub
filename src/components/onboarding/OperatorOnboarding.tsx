@@ -1128,21 +1128,57 @@ function VerifyStep({
   uploaded,
   onUpload,
   alreadySubmitted,
+  rejected,
+  rejectionReason,
+  decidedAt,
+  onResubmit,
+  resubmitting,
+  hasNewUploads,
 }: {
   config: { headline: string; docs: DocSpec[] };
   categoryLabel: string;
   uploaded: Record<string, string | null>;
   onUpload: (k: DocKey, file: File) => void;
   alreadySubmitted: boolean;
+  rejected?: boolean;
+  rejectionReason?: string | null;
+  decidedAt?: string | null;
+  onResubmit?: () => void;
+  resubmitting?: boolean;
+  hasNewUploads?: boolean;
 }) {
   return (
     <div className="flex flex-col gap-[14px] max-w-[720px]">
+      {rejected && (
+        <div className="bg-[rgba(239,68,68,0.12)] border border-[rgba(239,68,68,0.35)] rounded-2xl p-[16px_20px]">
+          <div className="text-[11px] font-bold tracking-[0.14em] uppercase text-[#F87171] mb-1">
+            Documents not approved
+            {decidedAt ? ` · ${new Date(decidedAt).toLocaleDateString()}` : ""}
+          </div>
+          <div className="text-[13.5px] text-[#F0F2F5] leading-[1.5]">
+            {rejectionReason || "Our team could not approve your documents. Please upload clearer, up-to-date paperwork."}
+          </div>
+          <div className="text-[12.5px] text-[#92A0AB] mt-2 leading-[1.5]">
+            Upload corrected documents below, then send them back for review.
+          </div>
+          {onResubmit && (
+            <button
+              onClick={onResubmit}
+              disabled={!hasNewUploads || resubmitting}
+              className="mt-3 bg-[#2DE2F2] text-[#04121B] rounded-[10px] px-[18px] py-[10px] text-[12.5px] font-bold disabled:opacity-50"
+            >
+              {resubmitting ? "Sending…" : "Resubmit documents"}
+            </button>
+          )}
+        </div>
+      )}
       <div className="bg-[#14202B] border border-[#2DE2F2]/10 rounded-2xl p-[16px_20px]">
         <div className="text-[11px] font-bold tracking-[0.14em] uppercase text-[#2DE2F2] mb-1">
           {categoryLabel}
         </div>
         <div className="text-[13.5px] text-[#F0F2F5] leading-[1.5]">{config.headline}</div>
       </div>
+
       {config.docs.map((meta) => {
         const done = !!uploaded[meta.key] || alreadySubmitted;
         return (
