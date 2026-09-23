@@ -75,6 +75,7 @@ export const getBusinessSettings = createServerFn({ method: "GET" })
       myRole,
       categories: catRes.data ?? [],
       viewerId: userId,
+      accountEmail,
     };
   });
 
