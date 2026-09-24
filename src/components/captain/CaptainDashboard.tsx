@@ -171,7 +171,7 @@ function OverviewPanel({
   };
   const navToSettingsSection: Record<string, string> = {
     payouts: "payouts",
-    verification: "visibility",
+    verification: "verification",
     profile: "profile",
     settings: "profile",
   };
