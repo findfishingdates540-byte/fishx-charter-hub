@@ -1234,15 +1234,16 @@ body.dc-body { margin:0; background:#072057; }
     display: grid !important;
     grid-template-columns: auto minmax(0, 1fr) auto;
     gap: 8px !important;
-    min-height: 54px;
-    padding: 7px 8px !important;
+    min-height: 48px;
+    padding: 6px 7px !important;
   }
   .fx-msg-thread-header > * { min-width: 0; }
   .fx-msg-thread-header a:last-child {
-    max-width: 40px;
+    width: 36px;
+    height: 36px;
+    justify-content: center;
     overflow: hidden;
-    white-space: nowrap;
-    padding: 8px 10px !important;
+    padding: 0 !important;
   }
   .fx-msg-composer > div { padding-left: 10px !important; padding-right: 10px !important; }
   .fx-msg-composer-form {

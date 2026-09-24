@@ -8,6 +8,7 @@ import { useEffect, useRef, useState } from "react";
 import { MediaImg } from "@/components/media/MediaImg";
 import { Link } from "@tanstack/react-router";
 import { useCompactMessages } from "@/hooks/use-compact-messages";
+import { Flag } from "lucide-react";
 import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import {
@@ -512,7 +513,7 @@ function ThreadView({ bookingId, mobile = false }: { bookingId: string; mobile?:
             ←
           </Link>
         )}
-        <ChatAvatar c={c} url={photo} label={name} size={mobile ? 36 : 42} />
+        <ChatAvatar c={c} url={photo} label={name} size={mobile ? 32 : 42} />
         <div style={{ flex: 1, minWidth: 0 }}>
           <div
             style={{
@@ -527,9 +528,9 @@ function ThreadView({ bookingId, mobile = false }: { bookingId: string; mobile?:
           >
             {name}
           </div>
-          <div
+          {!mobile && <div
             style={{
-              fontSize: mobile ? 10.5 : 12,
+              fontSize: 12,
               color: c.mut,
               marginTop: 1,
               whiteSpace: "nowrap",
@@ -538,7 +539,7 @@ function ThreadView({ bookingId, mobile = false }: { bookingId: string; mobile?:
             }}
           >
             {data.service?.title ?? "Charter trip"} · {capName}
-          </div>
+          </div>}
         </div>
         <Link
           to="/resolution-center"
@@ -556,8 +557,11 @@ function ThreadView({ bookingId, mobile = false }: { bookingId: string; mobile?:
             color: c.text,
             textDecoration: "none",
           }}
+          aria-label="Open resolution center"
+          title="Resolution center"
         >
-          ⚑ Resolution
+          <Flag size={mobile ? 17 : 14} aria-hidden="true" />
+          {!mobile && <span>Resolution</span>}
         </Link>
       </header>
 
