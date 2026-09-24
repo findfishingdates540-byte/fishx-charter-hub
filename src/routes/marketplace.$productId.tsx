@@ -1,6 +1,6 @@
 import { PublicHeader } from "@/components/public/PublicHeader";
 import { MediaImg } from "@/components/media/MediaImg";
-import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import {
@@ -180,6 +180,7 @@ function ProductDetail({
   variants: ProductVariant[];
   preview?: boolean;
 }) {
+  const navigate = useNavigate();
   const tile = tileFor(product.cat);
   const related = CATALOG.filter((p) => p.cat === product.cat && p.id !== product.id).slice(0, 3);
   const startCheckout = useServerFn(createProductCheckout);
@@ -290,6 +291,14 @@ function ProductDetail({
       window.location.href = "/marketplace?cart=1";
       return;
     }
+    const { data: sessionData } = await supabase.auth.getSession();
+    if (!sessionData.session) {
+      await navigate({
+        to: "/auth",
+        search: { productId: product.id },
+      });
+      return;
+    }
     setBusy(true);
     setErr("");
     try {
@@ -314,7 +323,11 @@ function ProductDetail({
       setErr("Could not start checkout.");
     } catch (e) {
       const msg = e instanceof Response ? await e.text() : String(e);
-      setErr(msg.slice(0, 160) || "Checkout failed");
+      if (/unauthorized|authorization header/i.test(msg)) {
+        await navigate({ to: "/auth", search: { productId: product.id } });
+        return;
+      }
+      setErr(msg.replace(/^Error:\s*/i, "").slice(0, 160) || "We couldn't start checkout. Please try again.");
     } finally {
       setBusy(false);
     }
