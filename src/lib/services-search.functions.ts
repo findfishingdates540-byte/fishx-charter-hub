@@ -9,11 +9,20 @@ import { z } from "zod";
 import type { Database } from "@/integrations/supabase/types";
 
 function publicClient() {
-  return createClient<Database>(
-    process.env["SUPABASE_URL"]!,
-    process.env["SUPABASE_PUBLISHABLE_KEY"]!,
-    { auth: { storage: undefined, persistSession: false, autoRefreshToken: false } },
-  );
+  const key = process.env["SUPABASE_PUBLISHABLE_KEY"]!;
+  return createClient<Database>(process.env["SUPABASE_URL"]!, key, {
+    auth: { storage: undefined, persistSession: false, autoRefreshToken: false },
+    global: {
+      fetch: (input, init) => {
+        const headers = new Headers(init?.headers);
+        if (key.startsWith("sb_") && headers.get("Authorization") === `Bearer ${key}`) {
+          headers.delete("Authorization");
+        }
+        headers.set("apikey", key);
+        return fetch(input, { ...init, headers });
+      },
+    },
+  });
 }
 
 export const SERVICE_KINDS = [
@@ -66,7 +75,10 @@ export const searchServices = createServerFn({ method: "GET" })
     if (data.maxPrice) query = query.lte("base_price_cents", data.maxPrice);
 
     const { data: rows, error } = await query;
-    if (error) throw new Response(error.message, { status: 500 });
+    if (error) {
+      console.error("searchServices failed", error.message);
+      return [];
+    }
 
     // Ranked ordering comes from the scoring RPC; fall back to recency.
     let scores = new Map<string, number>();
@@ -76,7 +88,8 @@ export const searchServices = createServerFn({ method: "GET" })
         _kinds: data.kind ? [data.kind] : undefined,
         _limit: 100,
       });
-      scores = new Map((ranked ?? []).map((r) => [r.service_id, Number(r.score)]));
+      const rankedRows = Array.isArray(ranked) ? ranked : [];
+      scores = new Map(rankedRows.map((r) => [r.service_id, Number(r.score)]));
     }
 
     const list: ServiceResult[] = (rows ?? []).map((r: any) => ({
