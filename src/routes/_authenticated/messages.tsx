@@ -85,56 +85,51 @@ function MessagesPage() {
     >
       {/* The open thread owns the compact phone/tablet header. */}
       {!(compact && (booking || business)) && <header style={{ flex: "none", background: "#072057", color: "#eaf1f6" }}>
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 12,
-            padding: "12px 16px",
-          }}
-        >
+        <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 12px 8px" }}>
           <Link
             to="/dashboard"
             aria-label="Back to dashboard"
-            style={{ color: "#93a7b7", textDecoration: "none", fontSize: 18, lineHeight: 1 }}
+            style={{
+              width: 36, height: 36, borderRadius: "50%", display: "grid", placeItems: "center",
+              color: "#eaf1f6", textDecoration: "none", fontSize: 20, lineHeight: 1,
+              background: "rgba(255,255,255,.08)", flexShrink: 0,
+            }}
           >
             ←
           </Link>
-          <span
+          <span style={{ fontSize: 20, fontWeight: 600 }}>Messages</span>
+        </div>
+        <div style={{ padding: "0 12px 10px" }}>
+          <div
+            role="tablist"
             style={{
-              fontFamily: "'Outfit',Georgia,serif",
-              fontSize: 21,
-              fontWeight: 600,
+              display: "grid", gridTemplateColumns: "1fr 1fr", gap: 4, padding: 4,
+              borderRadius: 12, background: "rgba(255,255,255,.08)",
             }}
           >
-            Messages
-          </span>
-        </div>
-        <div style={{ display: "flex", gap: 8, padding: "0 16px 12px" }}>
-          {(
-            [
-              { key: "trips", label: "Trips" },
-              { key: "shops", label: "Shops & operators" },
-            ] as const
-          ).map((t) => (
-            <Link
-              key={t.key}
-              to="/messages"
-              search={{ tab: t.key }}
-              style={{
-                textDecoration: "none",
-                borderRadius: 30,
-                padding: "8px 16px",
-                fontSize: 12.5,
-                fontWeight: 700,
-                border: "1px solid rgba(255,255,255,.14)",
-                background: active === t.key ? "#2DE2F2" : "transparent",
-                color: active === t.key ? "#04121B" : "#93a7b7",
-              }}
-            >
-              {t.label}
-            </Link>
-          ))}
+            {(
+              [
+                { key: "trips", label: "Trip chats" },
+                { key: "shops", label: "Businesses" },
+              ] as const
+            ).map((t) => (
+              <Link
+                key={t.key}
+                role="tab"
+                aria-selected={active === t.key}
+                to="/messages"
+                search={{ tab: t.key }}
+                style={{
+                  textDecoration: "none", textAlign: "center", borderRadius: 9,
+                  padding: "8px 10px", fontSize: 13, fontWeight: 700,
+                  background: active === t.key ? "#2DE2F2" : "transparent",
+                  color: active === t.key ? "#04121B" : "#c5d3de",
+                }}
+              >
+                {t.label}
+              </Link>
+            ))}
+          </div>
         </div>
       </header>}
 
