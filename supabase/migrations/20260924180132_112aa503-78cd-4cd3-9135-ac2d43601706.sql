@@ -1,0 +1,1 @@
+REVOKE ALL ON FUNCTION public.submit_verification_document(uuid,text,text,text) FROM authenticated, anon, public;
