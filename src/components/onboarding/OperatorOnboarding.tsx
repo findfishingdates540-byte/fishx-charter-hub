@@ -9,7 +9,6 @@ import {
   getOnboardingState,
   publishListing,
   savePayoutPreference,
-  submitVerification,
   submitOnboardingVerificationDocuments,
   upsertBusinessProfile,
 } from "@/lib/onboarding.functions";
@@ -498,7 +497,7 @@ export function OperatorOnboarding() {
   const fetchState = useServerFn(getOnboardingState);
   const upsertProfile = useServerFn(upsertBusinessProfile);
   const createUpload = useServerFn(createVerificationUploadUrl);
-  const submitVer = useServerFn(submitVerification);
+  const submitDocuments = useServerFn(submitOnboardingVerificationDocuments);
   const savePayout = useServerFn(savePayoutPreference);
   const publish = useServerFn(publishListing);
   const startConnect = useServerFn(createConnectOnboardingLink);
@@ -643,14 +642,16 @@ export function OperatorOnboarding() {
     | { id: string; status: string; doc_urls?: string[] | null; rejection_reason?: string | null; notes?: string | null; decided_at?: string | null }
     | null;
   const verificationRejected = verification?.status === "rejected";
+  const currentDocuments = ((data as any)?.verificationDocuments ?? []) as Array<{ document_key: string; status: string; rejection_reason?: string | null; decided_at?: string | null }>;
+  const hasRejectedDocument = currentDocuments.some((doc) => doc.status === "rejected" || doc.status === "reopened");
 
   // Documents were turned down: the operator uploads corrected files and
   // resubmits, which opens a fresh review for our team.
   const resubmitM = useMutation({
     mutationFn: async () => {
-      const docPaths = Object.values(uploaded).filter(Boolean) as string[];
-      if (!docPaths.length) throw new Error("Upload your corrected documents first.");
-      return submitVer({ data: { docPaths } });
+      const documents = Object.entries(uploaded).filter((entry): entry is [string, string] => Boolean(entry[1])).map(([key, path]) => ({ key, path }));
+      if (!documents.length) throw new Error("Upload your corrected documents first.");
+      return submitDocuments({ data: { documents } });
     },
     onSuccess: () => {
       setUploaded({});
@@ -662,9 +663,9 @@ export function OperatorOnboarding() {
 
   const publishM = useMutation({
     mutationFn: async () => {
-      const docPaths = Object.values(uploaded).filter(Boolean) as string[];
-      if (docPaths.length > 0 && (!verification || verificationRejected)) {
-        await submitVer({ data: { docPaths } });
+      const documents = Object.entries(uploaded).filter((entry): entry is [string, string] => Boolean(entry[1])).map(([key, path]) => ({ key, path }));
+      if (documents.length > 0) {
+        await submitDocuments({ data: { documents } });
       }
 
       await savePayout({ data: { schedule: payoutSchedule, stripeConnected } });
@@ -706,7 +707,7 @@ export function OperatorOnboarding() {
   const requiredDocCount = verifyConfig.docs.length;
   const uploadedCount =
     Object.values(uploaded).filter(Boolean).length +
-    (!verificationRejected && verification?.doc_urls?.length ? requiredDocCount : 0);
+    currentDocuments.filter((doc) => doc.status === "approved" || doc.status === "pending").length;
   const pct = published ? 100 : Math.round((step / 4) * 100);
 
   if (isLoading) {
@@ -975,8 +976,9 @@ export function OperatorOnboarding() {
                   }
                   uploaded={uploaded}
                   onUpload={handleUpload}
-                  alreadySubmitted={!!verification && !verificationRejected}
-                  rejected={verificationRejected}
+                  currentDocuments={currentDocuments}
+                  alreadySubmitted={currentDocuments.length > 0 || (!!verification && !verificationRejected)}
+                  rejected={verificationRejected || hasRejectedDocument}
                   rejectionReason={verification?.rejection_reason ?? verification?.notes ?? null}
                   decidedAt={verification?.decided_at ?? null}
                   onResubmit={() => resubmitM.mutate()}
@@ -1179,6 +1181,7 @@ function VerifyStep({
   categoryLabel,
   uploaded,
   onUpload,
+  currentDocuments,
   alreadySubmitted,
   rejected,
   rejectionReason,
@@ -1191,6 +1194,7 @@ function VerifyStep({
   categoryLabel: string;
   uploaded: Record<string, string | null>;
   onUpload: (k: DocKey, file: File) => void;
+  currentDocuments: Array<{ document_key: string; status: string; rejection_reason?: string | null; decided_at?: string | null }>;
   alreadySubmitted: boolean;
   rejected?: boolean;
   rejectionReason?: string | null;
@@ -1232,7 +1236,9 @@ function VerifyStep({
       </div>
 
       {config.docs.map((meta) => {
-        const done = !!uploaded[meta.key] || alreadySubmitted;
+        const current = currentDocuments.find((doc) => doc.document_key === meta.key);
+        const done = !!uploaded[meta.key] || current?.status === "approved" || current?.status === "pending" || (!currentDocuments.length && alreadySubmitted);
+        const locked = current?.status === "approved" || current?.status === "pending";
         return (
           <div
             key={meta.key}
@@ -1250,9 +1256,9 @@ function VerifyStep({
                 <span className="w-4 h-4 rounded-full bg-[#22C55E] text-white grid place-items-center text-[10px]">
                   ✓
                 </span>
-                Uploaded
+                 {current?.status === "approved" ? "Accepted · locked" : current?.status === "pending" ? "Under review" : "Uploaded"}
               </span>
-            ) : (
+            ) : !locked ? (
               <label className="flex-none bg-[#1C2936] text-white border-0 rounded-[10px] px-[18px] py-[10px] text-[12.5px] font-bold cursor-pointer">
                 Upload
                 <input
@@ -1266,7 +1272,8 @@ function VerifyStep({
                   }}
                 />
               </label>
-            )}
+            ) : null}
+            {current?.rejection_reason ? <div className="basis-full text-[12.5px] text-[#F87171]">{current.rejection_reason}</div> : null}
           </div>
         );
       })}
