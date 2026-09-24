@@ -5,7 +5,7 @@
  * Sections: public profile, storefront visibility + public page link,
  * team & roles, notification preferences, payouts.
  */
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { MediaImg } from "@/components/media/MediaImg";
 import { Link } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -25,6 +25,7 @@ import {
 import { Card } from "@/components/operator/OperatorShell";
 import { PayoutsConnect } from "@/components/operator/PayoutsConnect";
 import { ImageUpload } from "@/components/business/ImageUpload";
+import { AnglerAccount } from "@/components/profile/AnglerAccount";
 import { toast } from "sonner";
 
 const NOTIF_CATEGORIES: Array<{ key: string; label: string; hint: string }> = [
@@ -36,6 +37,7 @@ const NOTIF_CATEGORIES: Array<{ key: string; label: string; hint: string }> = [
 ];
 
 const OP_SECTIONS: Array<{ key: string; label: string; hint: string }> = [
+  { key: "account", label: "My Account", hint: "Your name, photo and contact details" },
   { key: "profile", label: "Business profile", hint: "Name, story, photos, hours" },
   { key: "visibility", label: "Storefront & visibility", hint: "Publish, verification, public page" },
   { key: "team", label: "Team & roles", hint: "Owners, managers, crew" },
@@ -73,7 +75,7 @@ export function BusinessSettings({
   const sections = [...OP_SECTIONS, ...extraSections.map(({ key, label, hint }) => ({ key, label, hint }))];
   const isSection = (value?: string) => Boolean(value && sections.some((section) => section.key === value));
   const [active, setActive] = useState<string>(
-    isSection(initialSection) ? (initialSection as string) : "profile",
+    isSection(initialSection) ? (initialSection as string) : "account",
   );
   // On phones the menu is a list; a section only opens when tapped (or deep-linked).
   const [openOnPhone, setOpenOnPhone] = useState<boolean>(
@@ -112,6 +114,11 @@ export function BusinessSettings({
 
   const body = (
     <>
+      {active === "account" && (
+        <Suspense fallback={<Muted>Loading your account…</Muted>}>
+          <AnglerAccount embedded theme="operator" />
+        </Suspense>
+      )}
       {active === "profile" && <ProfileCard business={data.business} canEdit={canEdit} />}
       {active === "visibility" && (
         <VisibilityCard

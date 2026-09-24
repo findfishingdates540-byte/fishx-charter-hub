@@ -132,7 +132,7 @@ function Shell({ children }: { children: React.ReactNode }) {
   );
 }
 
-const label = (s: string) => (
+const label = (s: string, colors = V) => (
   <span
     style={{
       display: "block",
@@ -140,7 +140,7 @@ const label = (s: string) => (
       fontWeight: 700,
       letterSpacing: ".14em",
       textTransform: "uppercase",
-      color: V.goldtext,
+      color: colors.goldtext,
       marginBottom: 8,
     }}
   >
@@ -169,7 +169,13 @@ const initialsOf = (name: string) =>
     .map((p) => p[0]!.toUpperCase())
     .join("") || "?";
 
-export function AnglerAccount({ embedded = false }: { embedded?: boolean } = {}) {
+export function AnglerAccount({
+  embedded = false,
+  theme = "light",
+}: {
+  embedded?: boolean;
+  theme?: "light" | "operator";
+} = {}) {
   const { data } = useSuspenseQuery({
     queryKey: ["my-profile"],
     queryFn: () => getMyProfile(),
@@ -221,6 +227,25 @@ export function AnglerAccount({ embedded = false }: { embedded?: boolean } = {})
   const shownName = displayName || fullName || email || "Your account";
   const initials = initialsOf(displayName || fullName || email || "");
   const disabled = saveMut.isPending || !dirty;
+  const C = theme === "operator"
+    ? {
+        ...V,
+        ink: "#F0F2F5",
+        paper: "#14202B",
+        card: "#14202B",
+        sandsoft: "rgba(45,226,242,.14)",
+        goldtext: "#2DE2F2",
+        ondmut: "#92A0AB",
+        tmut: "#92A0AB",
+        line: "rgba(255,255,255,.10)",
+      }
+    : V;
+  const fieldStyle: React.CSSProperties = {
+    ...inputStyle,
+    background: C.paper,
+    border: `1px solid ${C.line}`,
+    color: C.ink,
+  };
 
   const Wrap = embedded
     ? ({ children }: { children: React.ReactNode }) => <>{children}</>
@@ -237,12 +262,12 @@ export function AnglerAccount({ embedded = false }: { embedded?: boolean } = {})
               fontSize: 30,
               letterSpacing: "-.01em",
               margin: "0 0 6px",
-              color: V.ink,
+              color: C.ink,
             }}
           >
             Manage account
           </h1>
-          <p style={{ fontSize: 14, color: V.tmut, margin: "0 0 22px" }}>
+          <p style={{ fontSize: 14, color: C.tmut, margin: "0 0 22px" }}>
             Update how you appear to captains and how they can reach you.
           </p>
         </>
@@ -255,8 +280,8 @@ export function AnglerAccount({ embedded = false }: { embedded?: boolean } = {})
           display: "flex",
           alignItems: "center",
           gap: 18,
-          background: V.card,
-          border: `1px solid ${V.line}`,
+          background: C.card,
+          border: `1px solid ${C.line}`,
           borderRadius: 20,
           padding: 22,
           marginBottom: 22,
@@ -273,7 +298,7 @@ export function AnglerAccount({ embedded = false }: { embedded?: boolean } = {})
               borderRadius: "50%",
               objectFit: "cover",
               flex: "none",
-              border: `2px solid ${V.sandsoft}`,
+              border: `2px solid ${C.sandsoft}`,
             }}
           />
         ) : (
@@ -282,8 +307,8 @@ export function AnglerAccount({ embedded = false }: { embedded?: boolean } = {})
               width: 72,
               height: 72,
               borderRadius: "50%",
-              background: V.sandsoft,
-              color: V.goldtext,
+              background: C.sandsoft,
+              color: C.goldtext,
               display: "grid",
               placeItems: "center",
               fontFamily: V.serif,
@@ -301,13 +326,13 @@ export function AnglerAccount({ embedded = false }: { embedded?: boolean } = {})
               fontFamily: V.serif,
               fontSize: 24,
               fontWeight: 600,
-              color: V.ink,
+              color: C.ink,
               lineHeight: 1.1,
             }}
           >
             {shownName}
           </div>
-          <div style={{ fontSize: 13, color: V.tmut, marginTop: 4 }}>
+          <div style={{ fontSize: 13, color: C.tmut, marginTop: 4 }}>
             {email ?? "No email on file"}
             <span
               style={{
@@ -316,7 +341,7 @@ export function AnglerAccount({ embedded = false }: { embedded?: boolean } = {})
                 fontWeight: 700,
                 letterSpacing: ".1em",
                 textTransform: "uppercase",
-                color: V.ondmut,
+                color: C.ondmut,
               }}
             >
               · Sign-in email
@@ -328,8 +353,8 @@ export function AnglerAccount({ embedded = false }: { embedded?: boolean } = {})
       {/* Personal details card */}
       <div
         style={{
-          background: V.card,
-          border: `1px solid ${V.line}`,
+          background: C.card,
+          border: `1px solid ${C.line}`,
           borderRadius: 20,
           padding: 26,
         }}
@@ -339,7 +364,7 @@ export function AnglerAccount({ embedded = false }: { embedded?: boolean } = {})
             fontFamily: V.serif,
             fontSize: 18,
             fontWeight: 600,
-            color: V.ink,
+            color: C.ink,
             marginBottom: 20,
           }}
         >
@@ -348,78 +373,78 @@ export function AnglerAccount({ embedded = false }: { embedded?: boolean } = {})
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 18 }}>
           <div>
-            {label("Full name")}
+            {label("Full name", C)}
             <input
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
               maxLength={120}
               placeholder="Alex Chen"
-              style={inputStyle}
+              style={fieldStyle}
             />
           </div>
           <div>
-            {label("Display name")}
+            {label("Display name", C)}
             <input
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
               maxLength={80}
               placeholder="How captains see you"
-              style={inputStyle}
+              style={fieldStyle}
             />
           </div>
           <div>
-            {label("Phone number")}
+            {label("Phone number", C)}
             <input
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               maxLength={40}
               placeholder="+1 (305) 555-0129"
-              style={inputStyle}
+              style={fieldStyle}
             />
           </div>
           <div>
-            {label("Email address")}
+            {label("Email address", C)}
             <input
               value={email ?? ""}
               disabled
               readOnly
               placeholder="—"
-              style={{ ...inputStyle, color: V.tmut, cursor: "not-allowed" }}
+              style={{ ...fieldStyle, color: C.tmut, cursor: "not-allowed", opacity: 0.75 }}
             />
           </div>
           <div>
-            {label("Home port / city")}
+            {label("Home port / city", C)}
             <input
               value={homePort}
               onChange={(e) => setHomePort(e.target.value)}
               maxLength={120}
               placeholder="Key West, FL"
-              style={inputStyle}
+              style={fieldStyle}
             />
           </div>
           <div>
-            {label("Species you chase")}
+            {label("Species you chase", C)}
             <input
               value={species}
               onChange={(e) => setSpecies(e.target.value)}
               maxLength={160}
               placeholder="Tarpon, permit, mahi"
-              style={inputStyle}
+              style={fieldStyle}
             />
           </div>
           <div style={{ gridColumn: "1 / -1" }}>
-            {label("About you")}
+            {label("About you", C)}
             <textarea
               value={bio}
               onChange={(e) => setBio(e.target.value)}
               maxLength={600}
               rows={4}
               placeholder="A short intro captains and shops will see when you book."
-              style={{ ...inputStyle, minHeight: 104, resize: "vertical", lineHeight: 1.55 }}
+              style={{ ...fieldStyle, minHeight: 104, resize: "vertical", lineHeight: 1.55 }}
             />
           </div>
           <div style={{ gridColumn: "1 / -1" }}>
-            {label("Profile photo")}
+            {label("Profile photo", C)}
             <AvatarUpload
               userId={data.viewerId}
               value={avatarUrl}
@@ -435,7 +460,7 @@ export function AnglerAccount({ embedded = false }: { embedded?: boolean } = {})
             onClick={() => saveMut.mutate()}
             disabled={disabled}
             style={{
-              background: V.sand,
+              background: C.sand,
               color: "#04121B",
               border: 0,
               borderRadius: 12,

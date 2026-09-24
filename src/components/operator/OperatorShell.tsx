@@ -8,7 +8,7 @@ import { Link } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { Button } from "@/components/ui/button";
-import { LogOut, Menu, Settings, UserRound, X } from "lucide-react";
+import { LogOut, Menu, UserRound, X } from "lucide-react";
 
 
 async function signOut() {
@@ -312,32 +312,9 @@ export function OperatorShell({
           })}
         </nav>
 
-        <Link
-          to="/settings"
-          className="fx-side-settings"
-          style={{
-            marginTop: "auto",
-            display: "flex",
-            alignItems: "center",
-            gap: 9,
-            padding: "10px 12px",
-            marginBottom: 8,
-            borderRadius: 12,
-            color: "#92A0AB",
-            textDecoration: "none",
-            fontSize: 13,
-            fontWeight: 600,
-          }}
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7}>
-            <circle cx="12" cy="12" r="3" />
-            <path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-2.7 1.1V21a2 2 0 1 1-4 0v-.1A1.6 1.6 0 0 0 7.5 19.4a1.6 1.6 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.6 1.6 0 0 0-1.1-2.7H1a2 2 0 1 1 0-4h.1A1.6 1.6 0 0 0 2.6 7.5a1.6 1.6 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.6 1.6 0 0 0 1.8.3H7a1.6 1.6 0 0 0 1-1.5V1a2 2 0 1 1 4 0v.1a1.6 1.6 0 0 0 2.7 1.1 1.6 1.6 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0-.3 1.8V7a1.6 1.6 0 0 0 1.5 1H23a2 2 0 1 1 0 4h-.1a1.6 1.6 0 0 0-1.5 1z" />
-          </svg>
-          Settings
-        </Link>
-
         <div
           style={{
+            marginTop: "auto",
             display: "flex",
             alignItems: "center",
             gap: 11,
@@ -476,8 +453,6 @@ export function OperatorShell({
                 ))}
               </nav>
               <div className="fx-operator-drawer-account">
-                <Link to="/account" onClick={() => setDrawerOpen(false)}><UserRound />Account</Link>
-                <Button variant="ghost" onClick={() => choose("settings")}><Settings />Settings</Button>
                 <Button variant="ghost" onClick={() => signOut()}><LogOut />Sign out</Button>
               </div>
             </aside>
@@ -556,7 +531,7 @@ export function OperatorShell({
             );
           })}
           <Button variant="ghost" data-active={active === "settings" ? "true" : "false"} onClick={() => choose("settings")}>
-            <UserRound aria-hidden="true" /><small>Account</small>
+            <UserRound aria-hidden="true" /><small>My Account</small>
           </Button>
         </nav>
       </div>
