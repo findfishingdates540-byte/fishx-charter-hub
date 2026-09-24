@@ -1,13 +1,25 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { AnglerAccount } from "@/components/profile/AnglerAccount";
 import { getMyProfile } from "@/lib/angler-profile.functions";
+import { getMyBootstrap } from "@/lib/auth.functions";
 
 export const Route = createFileRoute("/_authenticated/account")({
-  loader: ({ context }) =>
-    context.queryClient.ensureQueryData({
+  loader: async ({ context }) => {
+    const bootstrap = await context.queryClient.ensureQueryData({
+      queryKey: ["my-bootstrap"],
+      queryFn: () => getMyBootstrap(),
+      staleTime: 5 * 60_000,
+    });
+    const memberships = Array.isArray(bootstrap?.businesses) ? bootstrap.businesses : [];
+    const business = memberships.map((membership: any) => membership?.business).find(Boolean);
+    if (business) {
+      throw redirect({ to: "/dashboard", search: { tab: "settings", biz: business.id } });
+    }
+    return context.queryClient.ensureQueryData({
       queryKey: ["my-profile"],
       queryFn: () => getMyProfile(),
-    }),
+    });
+  },
   head: () => ({
     meta: [
       { title: "Account — FISH-X.COM Bookings & Marketplace" },
