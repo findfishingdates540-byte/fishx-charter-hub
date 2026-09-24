@@ -264,8 +264,8 @@ function ThreadList({ activeId }: { activeId: string | null }) {
                 search={{ booking: t.booking.id }}
                 style={{
                   display: "flex",
-                  gap: 14,
-                  padding: "16px 20px",
+                  gap: isMobile ? 9 : 14,
+                  padding: isMobile ? "9px 10px" : "16px 20px",
                   width: "100%",
                   boxSizing: "border-box",
                   textDecoration: "none",
@@ -275,7 +275,7 @@ function ThreadList({ activeId }: { activeId: string | null }) {
                   background: active ? V.sandsoft : "transparent",
                 }}
               >
-                <CounterpartAvatar url={(t.business as any)?.logo_url || (t.business as any)?.hero_url || t.captain?.avatar_url} label={name} size={46} />
+                <CounterpartAvatar url={(t.business as any)?.logo_url || (t.business as any)?.hero_url || t.captain?.avatar_url} label={name} size={isMobile ? 40 : 46} />
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div
                     style={{
@@ -318,7 +318,7 @@ function ThreadList({ activeId }: { activeId: string | null }) {
                       display: "flex",
                       alignItems: "center",
                       gap: 8,
-                      marginTop: 8,
+                      marginTop: isMobile ? 4 : 8,
                     }}
                   >
                     <span
