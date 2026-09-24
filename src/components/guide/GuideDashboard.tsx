@@ -157,7 +157,7 @@ export function GuideDashboard({
             onNav={(k) => {
               // Profile and verification are both fixed inside Settings.
               if (k === "profile" || k === "verification") {
-                 navigate({ to: "/guide/$section", params: { section: "settings" }, search: { biz: businessId, setting: k === "verification" ? "visibility" : "profile" } });
+                 navigate({ to: "/guide/$section", params: { section: "settings" }, search: { biz: businessId, setting: k === "verification" ? "verification" : "profile" } });
                 return;
               }
               setActive(k);

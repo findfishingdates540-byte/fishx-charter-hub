@@ -3376,6 +3376,85 @@ export type Database = {
           },
         ]
       }
+      verification_documents: {
+        Row: {
+          business_id: string
+          created_at: string
+          decided_at: string | null
+          document_key: string
+          document_label: string
+          file_path: string
+          id: string
+          is_current: boolean
+          rejection_reason: string | null
+          replaces_document_id: string | null
+          request_id: string | null
+          reviewer_id: string | null
+          status: string
+          submitted_by: string
+          updated_at: string
+          version: number
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          decided_at?: string | null
+          document_key: string
+          document_label: string
+          file_path: string
+          id?: string
+          is_current?: boolean
+          rejection_reason?: string | null
+          replaces_document_id?: string | null
+          request_id?: string | null
+          reviewer_id?: string | null
+          status?: string
+          submitted_by: string
+          updated_at?: string
+          version?: number
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          decided_at?: string | null
+          document_key?: string
+          document_label?: string
+          file_path?: string
+          id?: string
+          is_current?: boolean
+          rejection_reason?: string | null
+          replaces_document_id?: string | null
+          request_id?: string | null
+          reviewer_id?: string | null
+          status?: string
+          submitted_by?: string
+          updated_at?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "verification_documents_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "verification_documents_replaces_document_id_fkey"
+            columns: ["replaces_document_id"]
+            isOneToOne: false
+            referencedRelation: "verification_documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "verification_documents_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "verification_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       verification_requests: {
         Row: {
           business_id: string
@@ -3789,6 +3868,38 @@ export type Database = {
         }
       }
       set_cron_secret: { Args: { _value: string }; Returns: undefined }
+      submit_verification_document: {
+        Args: {
+          _business_id: string
+          _document_key: string
+          _document_label: string
+          _file_path: string
+        }
+        Returns: {
+          business_id: string
+          created_at: string
+          decided_at: string | null
+          document_key: string
+          document_label: string
+          file_path: string
+          id: string
+          is_current: boolean
+          rejection_reason: string | null
+          replaces_document_id: string | null
+          request_id: string | null
+          reviewer_id: string | null
+          status: string
+          submitted_by: string
+          updated_at: string
+          version: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "verification_documents"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       transition_booking: {
         Args: {
           _booking_id: string

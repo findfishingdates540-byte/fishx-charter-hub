@@ -11,6 +11,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { Database } from "@/integrations/supabase/types";
+import { getVerificationConfig } from "./verification-config";
 
 type ServiceKind = Database["public"]["Enums"]["service_kind"];
 
@@ -87,9 +88,15 @@ export const getOnboardingState = createServerFn({ method: "GET" })
           includes: ((prodRes.data.metadata as any)?.tags as string[] | undefined) ?? [],
         }
       : svcRes.data ?? null;
+    const { data: documentRows } = await context.supabase
+      .from("verification_documents")
+      .select("id,document_key,document_label,file_path,status,rejection_reason,decided_at,is_current,version")
+      .eq("business_id", businessId)
+      .eq("is_current", true);
     return {
       business: bizRes.data,
       verification: verRes.data ?? null,
+      verificationDocuments: documentRows ?? [],
       service,
       categories: catRes.data ?? [],
     };
@@ -218,7 +225,7 @@ export const submitVerification = createServerFn({ method: "POST" })
             category: "verification",
             title: "We received your documents",
             body: `Thanks — ${data.docPaths.length} document(s) for ${biz?.name ?? "your business"} are with our team. You can keep setting up and taking payments while we review.`,
-            link: "/onboarding",
+            link: "/dashboard?tab=settings&setting=verification",
             severity: "info",
             meta: { businessId, requestId: row.id },
           }),
@@ -229,6 +236,29 @@ export const submitVerification = createServerFn({ method: "POST" })
     }
 
     return row;
+  });
+
+export const submitOnboardingVerificationDocuments = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i) => z.object({ documents: z.array(z.object({ key: z.string().regex(/^[a-z0-9_]+$/), path: z.string().min(3) })).min(1).max(10) }).parse(i))
+  .handler(async ({ data, context }) => {
+    const businessId = await pickBusinessId(context.supabase, context.userId);
+    if (!businessId) throw new Error("No business");
+    const { data: business } = await context.supabase.from("businesses").select("category_key").eq("id", businessId).maybeSingle();
+    if (!business) throw new Error("Business not found");
+    const specs = new Map(getVerificationConfig(business.category_key).docs.map((doc) => [doc.key, doc]));
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    for (const item of data.documents) {
+      const spec = specs.get(item.key);
+      if (!spec || !item.path.startsWith(`${businessId}/`)) throw new Error("Invalid verification document");
+      const { data: current } = await supabaseAdmin.from("verification_documents").select("*").eq("business_id", businessId).eq("document_key", item.key).eq("is_current", true).maybeSingle();
+      if (current && !["rejected", "reopened"].includes(current.status)) continue;
+      if (current) await supabaseAdmin.from("verification_documents").update({ is_current: false }).eq("id", current.id);
+      const { error } = await supabaseAdmin.from("verification_documents").insert({ business_id: businessId, document_key: item.key, document_label: spec.title, file_path: item.path, submitted_by: context.userId, status: "pending", version: (current?.version ?? 0) + 1, replaces_document_id: current?.id ?? null });
+      if (error) throw new Error(error.message);
+    }
+    await supabaseAdmin.from("businesses").update({ verified_at: null }).eq("id", businessId);
+    return { ok: true };
   });
 
 export const savePayoutPreference = createServerFn({ method: "POST" })
