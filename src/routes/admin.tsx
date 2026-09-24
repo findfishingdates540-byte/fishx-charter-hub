@@ -9,6 +9,7 @@ import { useEffect, useState } from "react";
 import {
   getAdminOverview,
   decideVerification,
+  decideVerificationDocument,
   resolveDispute,
   markPayoutPaid,
   getPayoutReconciliation,
@@ -162,6 +163,7 @@ function AdminConsole() {
   });
 
   const decide = useServerFn(decideVerification);
+  const decideDocument = useServerFn(decideVerificationDocument);
   const resolve = useServerFn(resolveDispute);
   const payPayout = useServerFn(markPayoutPaid);
   const refresh = () => qc.invalidateQueries({ queryKey: ["admin-overview"] });
@@ -176,6 +178,11 @@ function AdminConsole() {
     },
     onError: (e: unknown) =>
       setRejectError(e instanceof Error ? e.message : "That decision could not be saved."),
+  });
+  const documentDecision = useMutation({
+    mutationFn: (value: { documentId: string; action: "approve" | "reject" | "reopen"; reason?: string }) => decideDocument({ data: value }),
+    onSuccess: () => { setRejecting(null); setRejectReason(""); setRejectError(null); refresh(); },
+    onError: (e: unknown) => setRejectError(e instanceof Error ? e.message : "That decision could not be saved."),
   });
   const resolveMut = useMutation({
     mutationFn: (v: { disputeId: string; note: string; outcome: "resolved" | "rejected" }) =>
@@ -257,23 +264,21 @@ function AdminConsole() {
 
       {tab === "verifications" && (
         <div style={{ display: "grid", gap: 12 }}>
-          {data.verifications.length === 0 && <div style={{ ...card, color: T.mut }}>No verification requests yet.</div>}
-          {data.verifications.map((v: any) => (
+          {data.verificationDocuments.length === 0 && <div style={{ ...card, color: T.mut }}>No verification documents yet.</div>}
+          {data.verificationDocuments.map((v: any) => (
             <div key={v.id} style={{ ...card, display: "grid", gap: 12 }}>
               <div style={{ display: "flex", gap: 14, flexWrap: "wrap", alignItems: "center", justifyContent: "space-between" }}>
                 <div style={{ minWidth: 220 }}>
                   <div style={{ fontWeight: 700 }}>{v.business?.name ?? "Unknown business"}</div>
                   <div style={{ color: T.mut, fontSize: 13 }}>
-                    {v.business?.category_key ?? "—"} · submitted {day(v.created_at)} · {v.doc_urls?.length ?? 0} document(s)
+                    {v.document_label} · version {v.version} · submitted {day(v.created_at)}
                   </div>
                   {v.status === "rejected" && (v.rejection_reason || v.notes) && (
                     <div style={{ color: "#F87171", fontSize: 13, marginTop: 4, overflowWrap: "anywhere" }}>
                       Rejected {day(v.decided_at)}: {v.rejection_reason || v.notes}
                     </div>
                   )}
-                  {v.status !== "rejected" && v.notes && (
-                    <div style={{ color: T.mut, fontSize: 13, marginTop: 4 }}>{v.notes}</div>
-                  )}
+                  {v.rejection_reason && <div style={{ color: v.status === "approved" ? T.mut : "#F87171", fontSize: 13, marginTop: 4 }}>{v.rejection_reason}</div>}
                 </div>
                 <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
                   <span style={{ fontSize: 12, color: T.mut, textTransform: "uppercase", letterSpacing: ".08em" }}>{v.status}</span>
@@ -281,14 +286,14 @@ function AdminConsole() {
                     <>
                       <button
                         style={btn}
-                        disabled={decideMut.isPending}
-                        onClick={() => decideMut.mutate({ requestId: v.id, approve: true })}
+                        disabled={documentDecision.isPending}
+                        onClick={() => documentDecision.mutate({ documentId: v.id, action: "approve" })}
                       >
                         Approve
                       </button>
                       <button
                         style={ghost}
-                        disabled={decideMut.isPending}
+                        disabled={documentDecision.isPending}
                         onClick={() => {
                           setRejectError(null);
                           setRejectReason("");
@@ -299,6 +304,8 @@ function AdminConsole() {
                       </button>
                     </>
                   )}
+                  {v.status === "approved" && <button style={ghost} disabled={documentDecision.isPending} onClick={() => { setRejectError(null); setRejectReason(""); setRejecting(rejecting === v.id ? null : v.id); }}>Reopen</button>}
+                  <a href={v.file_path ? `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/authenticated/verification-docs/${encodeURIComponent(v.file_path).replaceAll("%2F", "/")}` : undefined} target="_blank" rel="noreferrer" style={{ ...ghost, textDecoration: "none" }}>Open file</a>
                   {v.business_id && (
                     <button
                       style={ghost}
@@ -313,7 +320,7 @@ function AdminConsole() {
               {rejecting === v.id && (
                 <div style={{ borderTop: `1px solid ${T.line}`, paddingTop: 12, display: "grid", gap: 8 }}>
                   <label style={{ fontSize: 13, color: T.mut }}>
-                    Why can&rsquo;t these documents be approved? The operator sees this and resubmits.
+                    {v.status === "approved" ? "Why does this accepted document need to be reopened?" : "Why can’t this document be approved? The operator sees this reason."}
                   </label>
                   <textarea
                     value={rejectReason}
@@ -335,12 +342,12 @@ function AdminConsole() {
                   <div style={{ display: "flex", gap: 8 }}>
                     <button
                       style={{ ...btn, background: "#F87171" }}
-                      disabled={decideMut.isPending || rejectReason.trim().length < 10}
+                      disabled={documentDecision.isPending || rejectReason.trim().length < 10}
                       onClick={() =>
-                        decideMut.mutate({ requestId: v.id, approve: false, note: rejectReason.trim() })
+                        documentDecision.mutate({ documentId: v.id, action: v.status === "approved" ? "reopen" : "reject", reason: rejectReason.trim() })
                       }
                     >
-                      {decideMut.isPending ? "Sending…" : "Reject with reason"}
+                      {documentDecision.isPending ? "Sending…" : v.status === "approved" ? "Reopen document" : "Reject with reason"}
                     </button>
                     <button style={ghost} onClick={() => setRejecting(null)}>Cancel</button>
                   </div>
