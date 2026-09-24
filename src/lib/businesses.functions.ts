@@ -8,11 +8,20 @@ import { z } from "zod";
 import type { Database } from "@/integrations/supabase/types";
 
 function publicClient() {
-  return createClient<Database>(
-    process.env.SUPABASE_URL!,
-    process.env.SUPABASE_PUBLISHABLE_KEY!,
-    { auth: { storage: undefined, persistSession: false, autoRefreshToken: false } },
-  );
+  const key = process.env["SUPABASE_PUBLISHABLE_KEY"]!;
+  return createClient<Database>(process.env["SUPABASE_URL"]!, key, {
+    auth: { storage: undefined, persistSession: false, autoRefreshToken: false },
+    global: {
+      fetch: (input, init) => {
+        const headers = new Headers(init?.headers);
+        if (key.startsWith("sb_") && headers.get("Authorization") === `Bearer ${key}`) {
+          headers.delete("Authorization");
+        }
+        headers.set("apikey", key);
+        return fetch(input, { ...init, headers });
+      },
+    },
+  });
 }
 
 export const listPublicBusinesses = createServerFn({ method: "GET" })
@@ -42,7 +51,10 @@ export const listPublicBusinesses = createServerFn({ method: "GET" })
       .limit(cats ? 500 : 60);
     if (cats) q = q.in("category_key", cats);
     const { data: rows, error } = await q;
-    if (error) throw new Response(error.message, { status: 500 });
+    if (error) {
+      console.error("listPublicBusinesses failed", error.message);
+      return [];
+    }
     return rows ?? [];
   });
 
@@ -52,7 +64,10 @@ export const listCategories = createServerFn({ method: "GET" }).handler(async ()
     .from("business_categories")
     .select("key,label,icon,sort_order")
     .order("sort_order");
-  if (error) throw new Response(error.message, { status: 500 });
+  if (error) {
+    console.error("listCategories failed", error.message);
+    return [];
+  }
   return data ?? [];
 });
 

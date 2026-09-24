@@ -109,10 +109,11 @@ function VerticalPage() {
       >
         <div style={{ maxWidth: 1280, margin: "0 auto" }}>
           <Link
-            to="/discover"
-            style={{ color: "var(--sand,#2DE2F2)", fontWeight: 700, fontSize: 13.5, textDecoration: "none" }}
+            to="/services/search"
+            search={{ sort: "recommended" }}
+            style={{ display: "inline-flex", alignItems: "center", gap: 8, minHeight: 38, padding: "0 13px", border: "1px solid rgba(255,255,255,.16)", borderRadius: 6, background: "rgba(255,255,255,.07)", color: "var(--sand,#2DE2F2)", fontWeight: 700, fontSize: 13.5, textDecoration: "none" }}
           >
-            ← All of Fish-X
+            ← All results
           </Link>
           <h1 style={{ fontFamily: serif, fontSize: "clamp(28px,4vw,46px)", fontWeight: 600, letterSpacing: "-.025em", margin: "12px 0 10px" }}>
             {v.title}
