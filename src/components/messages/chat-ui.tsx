@@ -969,25 +969,31 @@ export function ChatComposer({
               <Paperclip size={21} strokeWidth={1.8} aria-hidden="true" />
             </button>
           )}
-        </div>
-        {canAttach && !value.trim() && (
+          {canAttach && !value.trim() && (
             <button
               type="button"
               aria-label={busy === "record" ? "Stop recording" : "Record a voice note"}
               title={busy === "record" ? "Stop recording" : "Record a voice note"}
               onClick={() => (busy === "record" ? stopRecording() : void startRecording())}
               disabled={busy === "upload"}
-              className="fx-msg-round-action"
-              style={{ ...roundAction(c, false), background: busy === "record" ? "#e5484d" : c.field, color: busy === "record" ? "#fff" : c.mut }}
+              style={{
+                ...composerIconBtn(c),
+                color: busy === "record" ? "#e5484d" : c.mut,
+              }}
             >
-              {busy === "record" ? <Square size={17} fill="currentColor" aria-hidden="true" /> : <Mic size={21} aria-hidden="true" />}
+              {busy === "record" ? <Square size={16} fill="currentColor" aria-hidden="true" /> : <Mic size={20} aria-hidden="true" />}
             </button>
-        )}
-        {value.trim() && (
-          <button type="submit" aria-label="Send message" disabled={disabled} className="fx-msg-round-action" style={roundAction(c, true)}>
-            <Send size={20} strokeWidth={2} aria-hidden="true" />
-          </button>
-        )}
+          )}
+        </div>
+        <button
+          type="submit"
+          aria-label="Send message"
+          disabled={disabled || !value.trim()}
+          className="fx-msg-round-action"
+          style={{ ...roundAction(c, true), opacity: disabled || !value.trim() ? 0.5 : 1 }}
+        >
+          <Send size={20} strokeWidth={2} aria-hidden="true" />
+        </button>
       </form>
     </div>
   );

@@ -73,6 +73,7 @@ function MessagesPage() {
 
   return (
     <div
+      className="fx-messages-page"
       style={{
         fontFamily: "'Outfit',system-ui,sans-serif",
         height: "100dvh",
