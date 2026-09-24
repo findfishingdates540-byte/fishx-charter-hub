@@ -34,12 +34,18 @@ export const getAdminOverview = createServerFn({ method: "GET" })
     await assertAdmin(context.supabase, context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    const [verifs, payouts, disputes, businesses] = await Promise.all([
+    const [verifs, verificationDocs, payouts, disputes, businesses] = await Promise.all([
       supabaseAdmin
         .from("verification_requests")
         .select("id,business_id,status,notes,rejection_reason,reviewer_id,doc_urls,created_at,decided_at")
         .order("created_at", { ascending: false })
         .limit(200),
+      supabaseAdmin
+        .from("verification_documents")
+        .select("*")
+        .eq("is_current", true)
+        .order("created_at", { ascending: false })
+        .limit(500),
       supabaseAdmin
         .from("payouts")
         .select("id,business_id,booking_id,amount_cents,currency,status,paid_at,arrival_date,failure_message,created_at")
@@ -67,11 +73,12 @@ export const getAdminOverview = createServerFn({ method: "GET" })
 
     return {
       verifications: named(verifs.data),
+      verificationDocuments: named(verificationDocs.data),
       payouts: named(payouts.data),
       disputes: disputes.data ?? [],
       businesses: businesses.data ?? [],
       totals: {
-        pendingVerifications: (verifs.data ?? []).filter((v) => v.status === "pending").length,
+        pendingVerifications: (verificationDocs.data ?? []).filter((v) => v.status === "pending").length,
         openDisputes: (disputes.data ?? []).filter((d) => d.status !== "resolved" && d.status !== "withdrawn").length,
         pendingPayoutCents: (payouts.data ?? [])
           .filter((p) => p.status !== "paid")
@@ -171,6 +178,54 @@ export const decideVerification = createServerFn({ method: "POST" })
     }
 
     return { ok: true, status };
+  });
+
+export const decideVerificationDocument = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i) => z.object({
+    documentId: z.string().uuid(),
+    action: z.enum(["approve", "reject", "reopen"]),
+    reason: z.string().max(1000).optional(),
+  }).parse(i))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.supabase, context.userId);
+    const reason = (data.reason ?? "").trim();
+    if (data.action !== "approve" && reason.length < 10) throw new Error("Give the operator a reason of at least 10 characters.");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: document, error: findError } = await supabaseAdmin.from("verification_documents").select("*").eq("id", data.documentId).eq("is_current", true).maybeSingle();
+    if (findError || !document) throw new Error(findError?.message ?? "Document not found");
+    if (data.action === "reopen" && document.status !== "approved") throw new Error("Only an accepted document can be reopened");
+    if (data.action !== "reopen" && document.status !== "pending") throw new Error("Only a pending document can be reviewed");
+    const status = data.action === "approve" ? "approved" : data.action === "reject" ? "rejected" : "reopened";
+    const now = new Date().toISOString();
+    const { error } = await supabaseAdmin.from("verification_documents").update({ status, rejection_reason: status === "approved" ? null : reason, reviewer_id: context.userId, decided_at: now }).eq("id", data.documentId).eq("is_current", true);
+    if (error) throw new Error(error.message);
+
+    const [{ data: business }, { data: currentDocs }, { data: team }] = await Promise.all([
+      supabaseAdmin.from("businesses").select("name,category_key").eq("id", document.business_id).maybeSingle(),
+      supabaseAdmin.from("verification_documents").select("document_key,status").eq("business_id", document.business_id).eq("is_current", true),
+      supabaseAdmin.from("business_members").select("user_id").eq("business_id", document.business_id),
+    ]);
+    const { getVerificationConfig } = await import("./verification-config");
+    const required = getVerificationConfig(business?.category_key ?? "").docs.map((doc) => doc.key);
+    const current = new Map((currentDocs ?? []).map((doc: any) => [doc.document_key, doc.status]));
+    const fullyApproved = required.length > 0 && required.every((key) => current.get(key) === "approved");
+    await supabaseAdmin.from("businesses").update({ verified_at: fullyApproved ? now : null }).eq("id", document.business_id);
+
+    try {
+      const { sendDirectNotification } = await import("./notifications.server");
+      await Promise.all((team ?? []).map((member: any) => sendDirectNotification(supabaseAdmin, {
+        userId: member.user_id,
+        category: "verification",
+        title: data.action === "approve" ? `${document.document_label} accepted` : `${document.document_label} needs attention`,
+        body: data.action === "approve" ? (fullyApproved ? "All required documents are accepted. Your business is verified." : "This file is locked while the remaining documents are reviewed.") : reason,
+        link: "/dashboard?tab=settings&setting=verification",
+        severity: data.action === "approve" ? "success" : "warning",
+        meta: { businessId: document.business_id, documentId: document.id, action: data.action },
+      })));
+    } catch (notificationError) { console.error("verification document notification failed", notificationError); }
+    await supabaseAdmin.from("audit_logs").insert({ actor_id: context.userId, action: `verification.document_${data.action}`, target_type: "business", target_id: document.business_id, meta_json: { documentId: document.id, documentKey: document.document_key, reason: reason || null } });
+    return { ok: true, status, fullyApproved };
   });
 
 export const resolveDispute = createServerFn({ method: "POST" })

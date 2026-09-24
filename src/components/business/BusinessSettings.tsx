@@ -26,6 +26,7 @@ import { Card } from "@/components/operator/OperatorShell";
 import { PayoutsConnect } from "@/components/operator/PayoutsConnect";
 import { ImageUpload } from "@/components/business/ImageUpload";
 import { AnglerAccount } from "@/components/profile/AnglerAccount";
+import { VerificationDocuments } from "@/components/business/VerificationDocuments";
 import { toast } from "sonner";
 
 const NOTIF_CATEGORIES: Array<{ key: string; label: string; hint: string }> = [
@@ -40,6 +41,7 @@ const OP_SECTIONS: Array<{ key: string; label: string; hint: string }> = [
   { key: "account", label: "My Account", hint: "Your name, photo and contact details" },
   { key: "profile", label: "Business profile", hint: "Name, story, photos, hours" },
   { key: "visibility", label: "Storefront & visibility", hint: "Publish, verification, public page" },
+  { key: "verification", label: "Verification documents", hint: "Credentials, decisions and resubmissions" },
   { key: "team", label: "Team & roles", hint: "Owners, managers, crew" },
   { key: "notifications", label: "Notifications", hint: "What we email you about" },
   { key: "payouts", label: "Payouts", hint: "Bank details & Stripe status" },
@@ -127,6 +129,7 @@ export function BusinessSettings({
           onDone={() => qc.invalidateQueries({ queryKey: ["business-settings", businessId] })}
         />
       )}
+      {active === "verification" && <VerificationDocuments businessId={businessId} />}
       {active === "team" && <TeamCard businessId={businessId} team={data.team} myRole={data.myRole} />}
       {active === "notifications" && <NotificationsCard />}
       {active === "payouts" && (
