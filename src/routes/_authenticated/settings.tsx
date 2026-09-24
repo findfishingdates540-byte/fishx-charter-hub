@@ -1,5 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { SettingsPage } from "@/components/settings/SettingsPage";
+import { getMyBootstrap } from "@/lib/auth.functions";
 
 export const Route = createFileRoute("/_authenticated/settings")({
   validateSearch: (search: Record<string, unknown>) => ({
@@ -24,6 +25,19 @@ export const Route = createFileRoute("/_authenticated/settings")({
       { name: "twitter:card", content: "summary" },
     ],
   }),
+  loader: async ({ context }) => {
+    const bootstrap = await context.queryClient.ensureQueryData({
+      queryKey: ["my-bootstrap"],
+      queryFn: () => getMyBootstrap(),
+      staleTime: 5 * 60_000,
+    });
+    const memberships = Array.isArray(bootstrap?.businesses) ? bootstrap.businesses : [];
+    const business = memberships.map((membership: any) => membership?.business).find(Boolean);
+    if (business) {
+      throw redirect({ to: "/dashboard", search: { tab: "settings", biz: business.id } });
+    }
+    return bootstrap;
+  },
   component: SettingsRoute,
   errorComponent: ({ error }) => (
     <div style={{ padding: 40, fontFamily: "'Outfit',system-ui,sans-serif" }}>
