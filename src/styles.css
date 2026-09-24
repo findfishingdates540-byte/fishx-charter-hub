@@ -1217,7 +1217,7 @@ body.dc-body { margin:0; background:#072057; }
 .fx-msg-round-action:active { transform: scale(.94); }
 
 /* Captain messages — mobile single scrollable screen */
-@media (max-width: 720px) {
+@media (max-width: 900px) {
   .fx-msg-fullscreen-header {
     gap: 8px !important;
     padding: calc(7px + env(safe-area-inset-top)) 8px 7px !important;
