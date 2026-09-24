@@ -517,7 +517,7 @@ function ThreadView({ bookingId, mobile = false }: { bookingId: string; mobile?:
           <div
             style={{
               fontFamily: V.serif,
-              fontSize: 18,
+              fontSize: mobile ? 15 : 18,
               fontWeight: 600,
               color: c.text,
               whiteSpace: "nowrap",
@@ -527,7 +527,16 @@ function ThreadView({ bookingId, mobile = false }: { bookingId: string; mobile?:
           >
             {name}
           </div>
-          <div style={{ fontSize: 12, color: c.mut, marginTop: 1 }}>
+          <div
+            style={{
+              fontSize: mobile ? 10.5 : 12,
+              color: c.mut,
+              marginTop: 1,
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+            }}
+          >
             {data.service?.title ?? "Charter trip"} · {capName}
           </div>
         </div>
@@ -541,7 +550,7 @@ function ThreadView({ bookingId, mobile = false }: { bookingId: string; mobile?:
             gap: 6,
             border: `1px solid ${c.line}`,
             borderRadius: 30,
-            padding: "8px 14px",
+            padding: mobile ? "7px 9px" : "8px 14px",
             fontSize: 11.5,
             fontWeight: 600,
             color: c.text,

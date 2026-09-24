@@ -6,6 +6,7 @@ import { Messages } from "@/components/messages/Messages";
 import { BusinessInbox } from "@/components/messages/BusinessInbox";
 import { startBusinessConversation } from "@/lib/business-messages.functions";
 import { getThread, listMessageThreads } from "@/lib/messages.functions";
+import { useCompactMessages } from "@/hooks/use-compact-messages";
 
 const searchSchema = z.object({
   booking: z.string().uuid().optional(),
@@ -61,6 +62,7 @@ export const Route = createFileRoute("/_authenticated/messages")({
 function MessagesPage() {
   const { booking, business, tab } = useSearch({ from: "/_authenticated/messages" });
   const active: "trips" | "shops" = tab ?? (business ? "shops" : "trips");
+  const compact = useCompactMessages();
 
   const startFn = useServerFn(startBusinessConversation);
   const convo = useQuery({
@@ -80,8 +82,8 @@ function MessagesPage() {
         overflow: "hidden",
       }}
     >
-      {/* One header, always the same — never swaps between tabs or threads. */}
-      <header style={{ flex: "none", background: "#072057", color: "#eaf1f6" }}>
+      {/* The open thread owns the compact phone/tablet header. */}
+      {!(compact && (booking || business)) && <header style={{ flex: "none", background: "#072057", color: "#eaf1f6" }}>
         <div
           style={{
             display: "flex",
@@ -133,7 +135,7 @@ function MessagesPage() {
             </Link>
           ))}
         </div>
-      </header>
+      </header>}
 
       <main className="fx-messages-main" style={{ flex: 1, minHeight: 0, overflow: "hidden" }}>
         {active === "trips" ? (
