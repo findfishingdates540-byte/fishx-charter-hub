@@ -45,7 +45,7 @@ export const listPublicBusinesses = createServerFn({ method: "GET" })
         : null;
     let q = sb
       .from("businesses")
-      .select("id,slug,name,category_key,tagline,hero_url,logo_url,city,region,country,verified_at,premium_until")
+      .select("id,slug,name,category_key,tagline,description,hero_url,logo_url,city,region,country,verified_at,premium_until")
       .eq("is_published", true)
       .order("created_at", { ascending: false })
       .limit(cats ? 500 : 60);

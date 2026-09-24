@@ -61,15 +61,19 @@ function LandingPage() {
       const cat = active?.getAttribute("data-cat") ?? "charters";
       const q = host.querySelector<HTMLInputElement>("[data-search-input]")?.value.trim() ?? "";
       const city = host.querySelector<HTMLInputElement>("[data-loc-input]")?.value.trim() ?? "";
-      if (cat === "charters") {
-        navigate({
-          to: "/charters/search",
-          search: { ...(q ? { q } : {}), ...(city ? { city } : {}), sort: "recommended" as const },
-        });
-        return;
-      }
-      const vertical = cat === "tackle" ? "tackle" : cat === "marinas" ? "marinas" : "gear";
-      navigate({ to: "/explore/$vertical", params: { vertical }, search: city ? { city } : {} });
+      const vertical =
+        cat === "charters"
+          ? "charters"
+          : cat === "tackle"
+            ? "tackle"
+            : cat === "marinas"
+              ? "marinas"
+              : "gear";
+      navigate({
+        to: "/explore/$vertical",
+        params: { vertical },
+        search: { ...(q ? { q } : {}), ...(city ? { city } : {}) },
+      });
     };
 
     const onClick = (e: Event) => {
