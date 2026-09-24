@@ -692,6 +692,14 @@ body.dc-body { margin:0; background:#072057; }
 .fx-authed .fx-messages-main {
   padding: 0 !important;
 }
+.fx-messages-page {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
 .fx-authed .fx-thread-list {
   position: relative !important;
   width: 100% !important;
@@ -1237,7 +1245,10 @@ body.dc-body { margin:0; background:#072057; }
     padding: 8px 10px !important;
   }
   .fx-msg-composer > div { padding-left: 10px !important; padding-right: 10px !important; }
-  .fx-msg-composer-form { gap: 6px !important; padding-left: 6px !important; padding-right: 6px !important; }
+  .fx-msg-composer-form {
+    gap: 5px !important;
+    padding: 4px 4px calc(4px + env(safe-area-inset-bottom)) !important;
+  }
   .fx-msg-input-pill { padding-left: 2px !important; padding-right: 2px !important; }
   .fx-msg-bubble-row { max-width: 91% !important; gap: 5px !important; }
   .fx-msg-bubble-row > :first-child:not(:last-child) { flex-shrink: 0; }
