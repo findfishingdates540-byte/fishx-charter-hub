@@ -17,6 +17,7 @@ import {
 } from "react";
 import { MediaImg } from "@/components/media/MediaImg";
 import { useMediaUrl } from "@/lib/media-url";
+import { Mic, Paperclip, Send, Smile, Square, X } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
 
@@ -184,6 +185,7 @@ export function ChatAvatar({
   return (
     <span
       aria-hidden
+      className="fx-msg-bubble-row"
       style={{
         width: size,
         height: size,
@@ -474,7 +476,7 @@ export function MessageBubble({
             borderRadius: 16,
             borderTopRightRadius: mine ? 5 : 16,
             borderTopLeftRadius: mine ? 16 : 5,
-            padding: "10px 14px",
+            padding: "8px 11px",
             fontSize: 14,
             lineHeight: 1.55,
             whiteSpace: "pre-wrap",
@@ -751,7 +753,7 @@ export function ChatComposer({
   }, [value]);
 
   return (
-    <div style={{ borderTop: `1px solid ${c.line}`, background: c.surface }}>
+    <div className="fx-msg-composer" style={{ borderTop: `1px solid ${c.line}`, background: c.surface }}>
       {replyPreview && (
         <div
           style={{
@@ -801,7 +803,7 @@ export function ChatComposer({
               flex: "none",
             }}
           >
-            ✕
+            <X size={14} aria-hidden="true" />
           </button>
         </div>
       )}
@@ -815,150 +817,152 @@ export function ChatComposer({
         </div>
       )}
       <form
+        className="fx-msg-composer-form"
         onSubmit={(e) => {
           e.preventDefault();
           onSubmit();
         }}
-        style={{ display: "flex", gap: 10, alignItems: "flex-end", padding: "14px 18px" }}
+        style={{ display: "flex", gap: 8, alignItems: "flex-end", padding: "8px 10px calc(8px + env(safe-area-inset-bottom))" }}
       >
         {canAttach && (
-          <>
+          <input
+            ref={fileRef}
+            type="file"
+            accept="image/*"
+            hidden
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              e.target.value = "";
+              if (file) void upload(file, "image", (file.name.split(".").pop() || "jpg").toLowerCase());
+            }}
+          />
+        )}
+        <div
+          className="fx-msg-input-pill"
+          style={{
+            position: "relative",
+            flex: 1,
+            minWidth: 0,
+            minHeight: 44,
+            display: "flex",
+            alignItems: "flex-end",
+            gap: 2,
+            padding: "3px 5px",
+            background: c.field,
+            border: `1px solid ${c.line}`,
+            borderRadius: 24,
+          }}
+        >
+          <div style={{ position: "relative", flex: "none" }}>
+            <button
+              type="button"
+              aria-label="Insert an emoji"
+              title="Insert an emoji"
+              onClick={() => setEmojiOpen((v) => !v)}
+              style={composerIconBtn(c)}
+            >
+              <Smile size={21} strokeWidth={1.8} aria-hidden="true" />
+            </button>
+            {emojiOpen && (
+              <div
+                style={{
+                  position: "absolute",
+                  bottom: 48,
+                  left: 0,
+                  zIndex: 40,
+                  display: "grid",
+                  gridTemplateColumns: "repeat(8, 30px)",
+                  gap: 4,
+                  padding: 8,
+                  borderRadius: 14,
+                  background: c.surface,
+                  border: `1px solid ${c.line}`,
+                  boxShadow: "0 14px 34px rgba(0,0,0,.28)",
+                }}
+              >
+                {EMOJI_PICKER.map((e) => (
+                  <button
+                    key={e}
+                    type="button"
+                    onClick={() => {
+                      onChange(value + e);
+                      setEmojiOpen(false);
+                      ref.current?.focus();
+                    }}
+                    style={{ background: "transparent", border: 0, cursor: "pointer", fontSize: 18, lineHeight: 1, padding: 3 }}
+                  >
+                    {e}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+          <textarea
+            ref={ref}
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                onSubmit();
+              }
+            }}
+            rows={1}
+            placeholder={placeholder}
+            style={{
+              flex: 1,
+              minWidth: 0,
+              resize: "none",
+              minHeight: 38,
+              maxHeight: 132,
+              background: "transparent",
+              border: 0,
+              padding: "9px 4px 7px",
+              fontFamily: c.sans,
+              fontSize: 15,
+              lineHeight: 1.45,
+              color: c.text,
+              outline: "none",
+            }}
+          />
+          {canAttach && (
             <input
-              ref={fileRef}
-              type="file"
-              accept="image/*"
-              hidden
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                e.target.value = "";
-                if (file) void upload(file, "image", (file.name.split(".").pop() || "jpg").toLowerCase());
-              }}
+              aria-hidden="true"
+              tabIndex={-1}
+              style={{ display: "none" }}
             />
+          )}
+          {canAttach && (
             <button
               type="button"
               aria-label="Attach a photo"
               title="Attach a photo"
               disabled={!!busy}
               onClick={() => fileRef.current?.click()}
-              style={iconBtn(c)}
+              style={composerIconBtn(c)}
             >
-              📎
+              <Paperclip size={21} strokeWidth={1.8} aria-hidden="true" />
             </button>
+          )}
+        </div>
+        {canAttach && !value.trim() && (
             <button
               type="button"
               aria-label={busy === "record" ? "Stop recording" : "Record a voice note"}
               title={busy === "record" ? "Stop recording" : "Record a voice note"}
               onClick={() => (busy === "record" ? stopRecording() : void startRecording())}
               disabled={busy === "upload"}
-              style={{
-                ...iconBtn(c),
-                background: busy === "record" ? "#e5484d" : iconBtn(c).background,
-                color: busy === "record" ? "#fff" : iconBtn(c).color,
-              }}
+              className="fx-msg-round-action"
+              style={{ ...roundAction(c, false), background: busy === "record" ? "#e5484d" : c.field, color: busy === "record" ? "#fff" : c.mut }}
             >
-              {busy === "record" ? "■" : "🎤"}
+              {busy === "record" ? <Square size={17} fill="currentColor" aria-hidden="true" /> : <Mic size={21} aria-hidden="true" />}
             </button>
-          </>
         )}
-        <div style={{ position: "relative", flex: "none" }}>
-          <button
-            type="button"
-            aria-label="Insert an emoji"
-            title="Insert an emoji"
-            onClick={() => setEmojiOpen((v) => !v)}
-            style={iconBtn(c)}
-          >
-            😊
+        {value.trim() && (
+          <button type="submit" aria-label="Send message" disabled={disabled} className="fx-msg-round-action" style={roundAction(c, true)}>
+            <Send size={20} strokeWidth={2} aria-hidden="true" />
           </button>
-          {emojiOpen && (
-            <div
-              style={{
-                position: "absolute",
-                bottom: 52,
-                left: 0,
-                zIndex: 40,
-                display: "grid",
-                gridTemplateColumns: "repeat(8, 30px)",
-                gap: 4,
-                padding: 8,
-                borderRadius: 14,
-                background: c.surface,
-                border: `1px solid ${c.line}`,
-                boxShadow: "0 14px 34px rgba(0,0,0,.28)",
-              }}
-            >
-              {EMOJI_PICKER.map((e) => (
-                <button
-                  key={e}
-                  type="button"
-                  onClick={() => {
-                    onChange(value + e);
-                    setEmojiOpen(false);
-                    ref.current?.focus();
-                  }}
-                  style={{
-                    background: "transparent",
-                    border: 0,
-                    cursor: "pointer",
-                    fontSize: 18,
-                    lineHeight: 1,
-                    padding: 3,
-                  }}
-                >
-                  {e}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-        <textarea
-          ref={ref}
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && !e.shiftKey) {
-              e.preventDefault();
-              onSubmit();
-            }
-          }}
-          rows={1}
-          placeholder={placeholder}
-          style={{
-            flex: 1,
-            resize: "none",
-            minHeight: 44,
-            maxHeight: 132,
-            background: c.field,
-            border: `1px solid ${c.line}`,
-            borderRadius: 14,
-            padding: "12px 15px",
-            fontFamily: c.sans,
-            fontSize: 14,
-            lineHeight: 1.5,
-            color: c.text,
-            outline: "none",
-          }}
-        />
-        <button
-          type="submit"
-          disabled={disabled || !value.trim()}
-          style={{
-            flex: "none",
-            background: c.accent,
-            color: c.onAccent,
-            border: 0,
-            borderRadius: 14,
-            padding: "0 22px",
-            height: 44,
-            fontFamily: c.sans,
-            fontSize: 12.5,
-            fontWeight: 800,
-            cursor: "pointer",
-            opacity: disabled || !value.trim() ? 0.55 : 1,
-          }}
-        >
-          Send
-        </button>
+        )}
       </form>
     </div>
   );
