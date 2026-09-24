@@ -1166,82 +1166,41 @@ body.dc-body { margin:0; background:#072057; }
   }
 }
 
-/* Angler dashboard top bar — base: fluid nav, hidden scrollbar, never overlaps */
-.ang-topnav {
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-  -webkit-overflow-scrolling: touch;
-}
-.ang-topnav::-webkit-scrollbar { display: none; }
-.ang-topnav > button,
-.ang-topnav > a { flex: 0 0 auto; }
-.ang-topactions { flex: 0 0 auto; }
+/* Shared signed-in header for dashboard and browsing surfaces. */
+.fx-member-header { position: sticky; top: 0; z-index: 60; background: var(--navy, #072057); color: var(--ond, #eaf1f6); font-family: var(--sans, 'Outfit', system-ui, sans-serif); border-bottom: 1px solid rgba(255,255,255,.12); }
+.fx-member-bar { min-height: 66px; padding: 0 32px; display: grid; grid-template-columns: auto minmax(0,1fr) auto; align-items: center; gap: 24px; }
+.fx-member-brand { display: flex; color: inherit; text-decoration: none; }
+.fx-member-nav { display: flex; align-items: center; gap: 4px; min-width: 0; overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none; -webkit-overflow-scrolling: touch; }
+.fx-member-nav::-webkit-scrollbar { display: none; }
+.fx-member-nav > a, .fx-member-nav > button { flex: 0 0 auto; border: 0; border-radius: 6px; padding: 9px 12px; background: transparent; color: var(--ondmut, #93a7b7); font: 600 13px/1 var(--sans, 'Outfit', system-ui, sans-serif); text-decoration: none; cursor: pointer; white-space: nowrap; }
+.fx-member-nav > .is-active { background: rgba(255,255,255,.1); color: var(--ond, #eaf1f6); }
+.fx-member-actions { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.fx-member-custom-actions { display: flex; align-items: center; gap: 10px; }
+.fx-member-icon, .fx-member-menu { width: 40px; height: 40px; border-radius: 50%; border: 1px solid rgba(255,255,255,.14); background: rgba(255,255,255,.06); color: var(--ond, #eaf1f6); display: grid; place-items: center; text-decoration: none; cursor: pointer; }
+.fx-member-account { display: flex; align-items: center; gap: 8px; color: var(--ond, #eaf1f6); text-decoration: none; }
+.fx-member-account > span, .fx-member-drawer-profile > span { width: 38px; height: 38px; border-radius: 50%; background: rgba(45,226,242,.16); color: var(--sand, #2DE2F2); display: grid; place-items: center; font-weight: 700; }
+.fx-member-account strong { max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; }
+.fx-member-menu, .fx-member-drawer { display: none; }
 
-/* Angler dashboard top bar — intermediate widths */
-@media (max-width: 1180px) {
-  .ang-topbar {
-    max-width: none !important;
-    display: grid !important;
-    grid-template-columns: auto minmax(0, 1fr) auto;
-    column-gap: 28px !important;
-    padding: 0 36px !important;
-    flex-wrap: nowrap !important;
-    overflow: visible !important;
-  }
-  .ang-topbar > div:first-child {
-    flex: 0 0 auto !important;
-    transform: scale(0.9) !important;
-    transform-origin: left center !important;
-  }
-  .ang-topnav {
-    width: 100%;
-    min-width: 0 !important;
-    gap: 0 !important;
-    overflow-x: auto !important;
-    flex-wrap: nowrap !important;
-    scrollbar-width: none !important;
-    -webkit-overflow-scrolling: touch;
-  }
-  .ang-topnav::-webkit-scrollbar { display: none !important; }
-  .ang-topnav > button,
-  .ang-topnav > a {
-    flex: 0 0 auto !important;
-    padding: 8px 8px !important;
-    font-size: 12.5px !important;
-  }
-  .ang-topsearch { display: none !important; }
-  .ang-topactions {
-    flex: 0 0 auto !important;
-    gap: 8px !important;
-    margin-left: 0 !important;
-    padding-left: 16px;
-    border-left: 1px solid rgba(255, 255, 255, 0.14);
-    position: relative;
-    z-index: 2;
-    background: var(--navy);
-    flex-wrap: nowrap !important;
-    overflow: visible !important;
-  }
-  .ang-topname,
-  .ang-signout,
-  .ang-topactions > a[title="Settings"] { display: none !important; }
+@media (max-width: 1080px) {
+  .fx-member-bar { padding: 0 22px; gap: 16px; }
+  .fx-member-account strong, .fx-member-signout { display: none; }
+  .fx-member-custom-actions { max-width: 330px; }
 }
-/* Angler dashboard top bar — mobile */
-@media (max-width: 860px) {
-  .ang-topbar { gap: 8px; padding: 0 28px !important; height: auto !important; min-height: 58px; flex-wrap: nowrap !important; align-items: center; }
-  .ang-topbar > div:first-child { transform: scale(0.88) !important; }
-  .ang-topsearch { display: none !important; }
-  .ang-topactions { gap: 8px !important; margin-left: auto !important; flex-wrap: nowrap !important; }
-  .ang-topname,
-  .ang-signout,
-  .ang-topactions > a[title="Settings"] { display: none !important; }
-  .ang-topnav {
-    order: 3; width: 100%; overflow-x: auto; flex-wrap: nowrap; gap: 2px !important;
-    margin: 0 -28px; padding: 0 28px 8px !important; scrollbar-width: none;
-    -webkit-overflow-scrolling: touch;
-  }
-  .ang-topnav::-webkit-scrollbar { display: none; }
-  .ang-topnav > button, .ang-topnav > a { padding: 8px 10px !important; font-size: 13px !important; }
+@media (max-width: 820px) {
+  .fx-member-bar { min-height: 62px; grid-template-columns: minmax(0,1fr) auto; padding: 0 16px; }
+  .fx-member-brand { width: min-content; transform: scale(.9); transform-origin: left center; }
+  .fx-member-bar > .fx-member-nav, .fx-member-icon, .fx-member-account, .fx-member-custom-actions { display: none; }
+  .fx-member-menu { display: grid; }
+  .fx-member-drawer { display: none; padding: 8px 16px 18px; border-top: 1px solid rgba(255,255,255,.1); }
+  .fx-member-header[data-open="true"] .fx-member-drawer { display: block; }
+  .fx-member-drawer-profile { display: flex; align-items: center; gap: 10px; padding: 8px 4px 14px; }
+  .fx-member-drawer-profile div { display: grid; min-width: 0; }
+  .fx-member-drawer-profile strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .fx-member-drawer-profile small { color: var(--ondmut, #93a7b7); }
+  .fx-member-drawer nav { display: grid; }
+  .fx-member-drawer nav > a, .fx-member-drawer nav > button { min-height: 46px; display: flex; align-items: center; gap: 10px; border: 0; border-top: 1px solid rgba(255,255,255,.08); background: transparent; color: var(--ond, #eaf1f6); padding: 0 6px; font: 600 14px/1 var(--sans, 'Outfit', system-ui, sans-serif); text-decoration: none; text-align: left; cursor: pointer; }
+  .fx-member-drawer nav > .is-active { color: var(--sand, #2DE2F2); }
 }
 
 /* Messages thread — hide scrollbar while keeping scroll */
