@@ -132,7 +132,7 @@ function Shell({ children }: { children: React.ReactNode }) {
   );
 }
 
-const label = (s: string) => (
+const label = (s: string, colors = V) => (
   <span
     style={{
       display: "block",
@@ -140,7 +140,7 @@ const label = (s: string) => (
       fontWeight: 700,
       letterSpacing: ".14em",
       textTransform: "uppercase",
-      color: V.goldtext,
+      color: colors.goldtext,
       marginBottom: 8,
     }}
   >

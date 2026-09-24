@@ -8,7 +8,7 @@ import { Link } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { Button } from "@/components/ui/button";
-import { LogOut, Menu, X } from "lucide-react";
+import { LogOut, Menu, UserRound, X } from "lucide-react";
 
 
 async function signOut() {
@@ -531,7 +531,7 @@ export function OperatorShell({
             );
           })}
           <Button variant="ghost" data-active={active === "settings" ? "true" : "false"} onClick={() => choose("settings")}>
-            <UserRound aria-hidden="true" /><small>Account</small>
+            <UserRound aria-hidden="true" /><small>My Account</small>
           </Button>
         </nav>
       </div>
