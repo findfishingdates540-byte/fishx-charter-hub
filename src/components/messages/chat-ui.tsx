@@ -897,16 +897,22 @@ export function ChatComposer({
             </button>
             {emojiOpen && (
               <div
+                role="listbox"
+                aria-label="Emoji"
                 style={{
                   position: "absolute",
                   bottom: 48,
-                  left: 0,
+                  left: -4,
                   zIndex: 40,
-                  display: "grid",
-                  gridTemplateColumns: "repeat(8, 30px)",
-                  gap: 4,
+                  display: "flex",
+                  flexWrap: "wrap",
+                  width: "min(304px, calc(100vw - 24px))",
+                  maxHeight: 220,
+                  overflowY: "auto",
+                  gap: 2,
                   padding: 8,
-                  borderRadius: 14,
+                  boxSizing: "border-box",
+                  borderRadius: 16,
                   background: c.surface,
                   border: `1px solid ${c.line}`,
                   boxShadow: "0 14px 34px rgba(0,0,0,.28)",
@@ -921,7 +927,7 @@ export function ChatComposer({
                       setEmojiOpen(false);
                       ref.current?.focus();
                     }}
-                    style={{ background: "transparent", border: 0, cursor: "pointer", fontSize: 18, lineHeight: 1, padding: 3 }}
+                    style={{ flex: "0 0 36px", width: 36, height: 36, display: "flex", alignItems: "center", justifyContent: "center", background: "transparent", border: 0, borderRadius: 10, cursor: "pointer", fontSize: 22, lineHeight: 1, padding: 0 }}
                   >
                     {e}
                   </button>
