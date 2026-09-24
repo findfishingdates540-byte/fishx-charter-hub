@@ -54,9 +54,7 @@ export const Route = createFileRoute("/charters/search")({
       : "recommended"),
   }),
   loaderDeps: ({ search }) => search,
-  loader: ({ context, deps }) => {
-    context.queryClient.ensureQueryData(charterSearchQO(deps));
-  },
+  loader: ({ context, deps }) => context.queryClient.ensureQueryData(charterSearchQO(deps)),
   component: CharterResults,
   errorComponent: ({ error }) => <div className="p-10">Couldn't load results: {error.message}</div>,
 });

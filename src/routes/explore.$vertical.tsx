@@ -43,7 +43,7 @@ export const Route = createFileRoute("/explore/$vertical")({
   },
   loader: ({ context, params }) => {
     const v = verticalFor(params.vertical);
-    if (v) context.queryClient.ensureQueryData(directoryQO(v.categories));
+    if (v) return context.queryClient.ensureQueryData(directoryQO(v.categories));
   },
   head: ({ params }) => {
     const v = verticalFor(params.vertical);
