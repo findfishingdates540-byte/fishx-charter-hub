@@ -71,9 +71,14 @@ export const getAdminOverview = createServerFn({ method: "GET" })
         business: r.business_id ? bizById.get(r.business_id) ?? null : null,
       }));
 
+    const verificationDocuments = await Promise.all(named(verificationDocs.data).map(async (document: any) => {
+      const { data: signed } = await supabaseAdmin.storage.from("verification-docs").createSignedUrl(document.file_path, 900);
+      return { ...document, viewUrl: signed?.signedUrl ?? null };
+    }));
+
     return {
       verifications: named(verifs.data),
-      verificationDocuments: named(verificationDocs.data),
+      verificationDocuments,
       payouts: named(payouts.data),
       disputes: disputes.data ?? [],
       businesses: businesses.data ?? [],

@@ -305,7 +305,7 @@ function AdminConsole() {
                     </>
                   )}
                   {v.status === "approved" && <button style={ghost} disabled={documentDecision.isPending} onClick={() => { setRejectError(null); setRejectReason(""); setRejecting(rejecting === v.id ? null : v.id); }}>Reopen</button>}
-                  <a href={v.file_path ? `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/authenticated/verification-docs/${encodeURIComponent(v.file_path).replaceAll("%2F", "/")}` : undefined} target="_blank" rel="noreferrer" style={{ ...ghost, textDecoration: "none" }}>Open file</a>
+                  {v.viewUrl && <a href={v.viewUrl} target="_blank" rel="noreferrer" style={{ ...ghost, textDecoration: "none" }}>Open file</a>}
                   {v.business_id && (
                     <button
                       style={ghost}
