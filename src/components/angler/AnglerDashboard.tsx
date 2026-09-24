@@ -5,11 +5,9 @@
 import { useMemo, useState, useEffect, Suspense } from "react";
 import { cachedMediaUrl } from "@/lib/media-url";
 import { MediaImg } from "@/components/media/MediaImg";
-import { BrandLogo } from "@/components/brand/BrandLogo";
 import { Link, useNavigate, useSearch } from "@tanstack/react-router";
 import { useSuspenseQuery, queryOptions } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { NotificationBell } from "@/components/notifications/NotificationBell";
+import { AuthenticatedHeader } from "@/components/auth/AuthenticatedHeader";
 
 import {
   getAnglerDashboard,
@@ -100,9 +98,6 @@ export function AnglerDashboard() {
   const { data: home } = useSuspenseQuery(anglerHomeQO);
   const { data: recos } = useSuspenseQuery(recosQO);
 
-  const initial =
-    (home.profile?.display_name || home.profile?.full_name || "A").trim().charAt(0).toUpperCase() ||
-    "A";
   const firstName =
     (home.profile?.display_name || home.profile?.full_name || "Angler").split(" ")[0] || "Angler";
   // Never trust the wire shape blindly — a malformed payload must not crash the dashboard.
@@ -112,120 +107,17 @@ export function AnglerDashboard() {
   const nextTripDate = nextTrip ? new Date(`${nextTrip.trip_date}T${nextTrip.start_time ?? "08:00"}`) : null;
   const cd = useCountdown(nextTripDate);
 
-  async function handleSignOut() {
-    await supabase.auth.signOut();
-    navigate({ to: "/", replace: true });
-  }
-
   return (
     <div id="ang-dash" style={styleVars}>
-      {/* TOP NAV */}
-      <header style={{ position: "sticky", top: 0, zIndex: 30, background: "var(--navy)", color: "var(--ond)" }}>
-        <div className="ang-topbar" style={{ maxWidth: "100%", margin: "0 auto", padding: "0 44px", minHeight: 66, height: "auto", display: "flex", alignItems: "center", flexWrap: "nowrap", gap: 16, minWidth: 0 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0, flex: "0 0 auto" }}>
-            <BrandLogo size="md" accent="var(--sand)" color="var(--ond)" />
-          </div>
-          <nav className="ang-topnav" style={{ display: "flex", alignItems: "center", gap: 6, minWidth: 0, flex: "1 1 auto", overflowX: "auto", overflowY: "hidden" }}>
-            {(["home", "trips", "history", "explore", "wallet", "orders"] as Tab[]).map((t) => (
-              <button
-                key={t}
-                onClick={() => goTab(t)}
-                style={{
-                  background: tab === t ? "rgba(255,255,255,.08)" : "transparent",
-                  border: 0,
-                  borderRadius: 10,
-                  padding: "9px 15px",
-                  cursor: "pointer",
-                  fontFamily: "var(--sans)",
-                  fontSize: 14,
-                  fontWeight: 600,
-                  color: tab === t ? "#fff" : "var(--ondmut)",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                {t === "home" ? "Home" : t === "trips" ? "My Trips" : t.charAt(0).toUpperCase() + t.slice(1)}
-              </button>
-            ))}
-            <Link
-              to="/messages"
-              style={{
-                background: "transparent",
-                borderRadius: 10,
-                padding: "9px 15px",
-                fontFamily: "var(--sans)",
-                fontSize: 14,
-                fontWeight: 600,
-                color: "var(--ondmut)",
-                textDecoration: "none",
-                whiteSpace: "nowrap",
-              }}
-            >
-              Messages
-            </Link>
-            <Link
-              to="/marketplace"
-              style={{
-                background: "transparent",
-                borderRadius: 10,
-                padding: "9px 15px",
-                fontFamily: "var(--sans)",
-                fontSize: 14,
-                fontWeight: 600,
-                color: "var(--ondmut)",
-                textDecoration: "none",
-                whiteSpace: "nowrap",
-              }}
-            >
-              Marketplace ↗
-            </Link>
-          </nav>
-          <div className="ang-topactions" style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 14, flex: "0 0 auto", minWidth: 0 }}>
-            <NotificationBell />
-
-            <label className="ang-topsearch" style={{ display: "flex", alignItems: "center", gap: 7, background: "rgba(255,255,255,.06)", border: "1px solid var(--lined)", borderRadius: 30, padding: "7px 11px", maxWidth: 145, width: "100%", flex: "0 1 145px", minWidth: 0 }}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#93a7b7" strokeWidth="1.8">
-                <circle cx="11" cy="11" r="7" />
-                <path d="m21 21-4.3-4.3" />
-              </svg>
-              <input
-                type="text"
-                placeholder="Search charters & gear…"
-                style={{ border: 0, outline: "none", background: "transparent", fontFamily: "var(--sans)", fontSize: 12.5, color: "#fff", width: "100%" }}
-              />
-            </label>
-            <Link
-              to="/settings"
-              title="Settings"
-              style={{ width: 40, height: 40, borderRadius: "50%", background: "rgba(255,255,255,.06)", border: "1px solid var(--lined)", display: "grid", placeItems: "center", color: "var(--ond)", textDecoration: "none" }}
-            >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7">
-                <circle cx="12" cy="12" r="3.2" />
-                <path d="M4.8 14.6 3.4 15.6l1.6 2.8 1.7-.6a7.6 7.6 0 0 0 1.7 1l.3 1.8h3.2l.3-1.8a7.6 7.6 0 0 0 1.7-1l1.7.6 1.6-2.8-1.4-1a7.7 7.7 0 0 0 0-2l1.4-1-1.6-2.8-1.7.6a7.6 7.6 0 0 0-1.7-1L12 4.4H8.8l-.3 1.8a7.6 7.6 0 0 0-1.7 1l-1.7-.6-1.6 2.8 1.4 1a7.7 7.7 0 0 0 0 2Z" />
-              </svg>
-            </Link>
-            <Link
-              to="/settings"
-              title="Your account"
-              style={{ display: "flex", alignItems: "center", gap: 9, background: "transparent", border: 0, cursor: "pointer", textDecoration: "none" }}
-            >
-              <div style={{ width: 38, height: 38, borderRadius: "50%", background: "rgba(45,226,242,.16)", display: "grid", placeItems: "center", fontFamily: "var(--sans)", fontSize: 15, fontWeight: 700, color: "var(--sand)" }}>
-                {initial}
-              </div>
-              <span className="ang-topname" style={{ fontSize: 13.5, fontWeight: 600, color: "#fff" }}>{firstName}</span>
-            </Link>
-            <button
-              className="ang-signout"
-              onClick={handleSignOut}
-              title="Sign out"
-              style={{ width: 40, height: 40, borderRadius: "50%", background: "rgba(255,255,255,.06)", border: "1px solid var(--lined)", cursor: "pointer", display: "grid", placeItems: "center", color: "var(--ond)" }}
-            >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7">
-                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" />
-              </svg>
-            </button>
-          </div>
-        </div>
-      </header>
+      <AuthenticatedHeader
+        displayName={home.profile?.display_name || home.profile?.full_name}
+        tabs={(["home", "trips", "history", "explore", "wallet", "orders"] as Tab[]).map((key) => ({
+          key,
+          label: key === "home" ? "Home" : key === "trips" ? "My Trips" : key.charAt(0).toUpperCase() + key.slice(1),
+        }))}
+        activeTab={tab}
+        onTabChange={(key) => goTab(key as Tab)}
+      />
 
 
       <main

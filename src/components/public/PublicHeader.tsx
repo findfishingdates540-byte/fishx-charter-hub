@@ -2,6 +2,8 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import { BrandLogo } from "@/components/brand/BrandLogo";
 import { useEffect, useState, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import type { User } from "@supabase/supabase-js";
+import { AuthenticatedHeader } from "@/components/auth/AuthenticatedHeader";
 
 /** Canonical site navigation — identical on every public page. */
 const NAV = [
@@ -26,18 +28,28 @@ export function PublicHeader({
   actions?: ReactNode;
 }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const [signedIn, setSignedIn] = useState<boolean | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => setSignedIn(!!data.session));
+    supabase.auth.getSession().then(({ data }) => setUser(data.session?.user ?? null));
     const { data: sub } = supabase.auth.onAuthStateChange((_e, s) =>
-      setSignedIn(!!s),
+      setUser(s?.user ?? null),
     );
     return () => sub.subscription.unsubscribe();
   }, []);
 
   useEffect(() => setOpen(false), [pathname]);
+
+  if (user) {
+    const displayName =
+      typeof user.user_metadata?.display_name === "string"
+        ? user.user_metadata.display_name
+        : typeof user.user_metadata?.full_name === "string"
+          ? user.user_metadata.full_name
+          : user.email;
+    return <AuthenticatedHeader displayName={displayName} actions={actions} />;
+  }
 
   const navLink = (active: boolean): React.CSSProperties => ({
     color: "#031029",
@@ -88,7 +100,7 @@ export function PublicHeader({
         }}
       >
         <Link
-          to={signedIn ? "/dashboard" : "/"}
+          to="/"
           style={{ display: "flex", alignItems: "center", gap: 11, textDecoration: "none", color: "#031029" }}
         >
           <BrandLogo size="lg" accent="var(--sand, #2DE2F2)" color="#031029" />
@@ -109,7 +121,7 @@ export function PublicHeader({
             <>
               {actions}
               <Link
-                to={signedIn ? "/dashboard" : "/auth"}
+                to="/auth"
                 style={{
                   color: "#031029",
                   textDecoration: "none",
@@ -119,30 +131,9 @@ export function PublicHeader({
                   whiteSpace: "nowrap",
                 }}
               >
-                {signedIn ? "Dashboard" : "Sign in"}
+                Sign in
               </Link>
             </>
-          ) : signedIn ? (
-
-            <Link
-              to="/dashboard"
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 8,
-                background: "var(--sand, #2DE2F2)",
-                color: "#04121B",
-                textDecoration: "none",
-                fontSize: 12,
-                fontWeight: 700,
-                letterSpacing: ".1em",
-                textTransform: "uppercase",
-                padding: "12px 20px",
-                borderRadius: 30,
-              }}
-            >
-              Dashboard
-            </Link>
           ) : (
             <>
               <Link
@@ -227,26 +218,7 @@ export function PublicHeader({
           </Link>
         ))}
         <div style={{ display: "flex", gap: 10, marginTop: 12 }}>
-          {signedIn ? (
-            <Link
-              to="/dashboard"
-              style={{
-                flex: 1,
-                textAlign: "center",
-                background: "var(--sand, #2DE2F2)",
-                color: "#04121B",
-                textDecoration: "none",
-                padding: "12px 16px",
-                borderRadius: 30,
-                fontWeight: 700,
-                fontSize: 12,
-                letterSpacing: ".1em",
-                textTransform: "uppercase",
-              }}
-            >
-              Dashboard
-            </Link>
-          ) : (
+          {(
             <>
               <Link
                 to="/auth"
