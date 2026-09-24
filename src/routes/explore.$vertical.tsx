@@ -11,7 +11,7 @@ import { photoFor } from "@/lib/platform-photos";
 import { verticalFor, VERTICALS } from "@/lib/explore-verticals";
 import { PublicHeader } from "@/components/public/PublicHeader";
 
-type Search = { category?: string; city?: string };
+type Search = { category?: string; city?: string; q?: string };
 
 const serif = "'Outfit', Georgia, serif";
 
@@ -36,6 +36,7 @@ export const Route = createFileRoute("/explore/$vertical")({
   validateSearch: (s: Record<string, unknown>): Search => ({
     ...(typeof s.category === "string" && s.category ? { category: s.category } : {}),
     ...(typeof s.city === "string" && s.city ? { city: s.city } : {}),
+    ...(typeof s.q === "string" && s.q ? { q: s.q } : {}),
   }),
   beforeLoad: ({ params }) => {
     if (!verticalFor(params.vertical)) throw notFound();
@@ -77,7 +78,11 @@ function VerticalPage() {
     (b) =>
       (!search.category || b.category_key === search.category) &&
       (!search.city ||
-        `${b.city ?? ""} ${b.region ?? ""}`.toLowerCase().includes(search.city.toLowerCase())),
+        `${b.city ?? ""} ${b.region ?? ""} ${b.country ?? ""}`.toLowerCase().includes(search.city.toLowerCase())) &&
+      (!search.q ||
+        `${b.name} ${b.tagline ?? ""} ${b.description ?? ""} ${CATEGORY_LABELS[b.category_key] ?? ""} ${b.city ?? ""} ${b.region ?? ""} ${b.country ?? ""}`
+          .toLowerCase()
+          .includes(search.q.toLowerCase())),
   );
 
   const set = (patch: Search) =>
@@ -144,6 +149,13 @@ function VerticalPage() {
           </button>
         ))}
         <input
+          defaultValue={search.q ?? ""}
+          placeholder="Search businesses"
+          onKeyDown={(e) => e.key === "Enter" && set({ q: (e.target as HTMLInputElement).value })}
+          style={field}
+          aria-label="Search businesses"
+        />
+        <input
           defaultValue={search.city ?? ""}
           placeholder="City or region"
           onKeyDown={(e) => e.key === "Enter" && set({ city: (e.target as HTMLInputElement).value })}
@@ -155,7 +167,7 @@ function VerticalPage() {
       <section style={{ maxWidth: 1280, margin: "0 auto", padding: "clamp(22px,3vw,34px) 24px clamp(56px,8vw,96px)" }}>
         {list.length === 0 ? (
           <div style={{ padding: 44, textAlign: "center", color: "#5c6b78", border: "1px solid rgba(13,34,54,.10)", borderRadius: 16 }}>
-            No {v.title.toLowerCase()} match these filters yet — try clearing the city filter.
+            No {v.title.toLowerCase()} match your search yet — try another keyword or clear the location.
           </div>
         ) : (
           <div className="fx-vp-grid">
