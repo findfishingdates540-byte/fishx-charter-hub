@@ -7,6 +7,12 @@ import { resolveAsset } from "@/lib/dc-template";
 import { sendSignupConfirmation } from "@/lib/auth-emails.functions";
 
 export const Route = createFileRoute("/auth")({
+  validateSearch: (search: Record<string, unknown>): { view?: string; productId?: string } => ({
+    ...(search.view === "signup" ? { view: "signup" } : {}),
+    ...(typeof search.productId === "string" && /^[0-9a-f-]{36}$/i.test(search.productId)
+      ? { productId: search.productId }
+      : {}),
+  }),
   component: AuthPage,
 });
 
@@ -102,7 +108,18 @@ function ErrorBox({ msg }: { msg: string }) {
 
 function AuthPage() {
   const navigate = useNavigate();
-  const search = useSearch({ from: "/auth" }) as { view?: string };
+  const search = useSearch({ from: "/auth" });
+  const continueAfterSignIn = () => {
+    if (search.productId) {
+      void navigate({
+        to: "/marketplace/$productId",
+        params: { productId: search.productId },
+        replace: true,
+      });
+      return;
+    }
+    void navigate({ to: "/dashboard", replace: true });
+  };
   const [view, setView] = useState<View>(search.view === "signup" ? "signup" : "login");
   const [step, setStep] = useState<Step>("intent");
   const [vertical, setVertical] = useState<Vertical>("");
@@ -119,12 +136,12 @@ function AuthPage() {
   useEffect(() => {
     let cancelled = false;
     supabase.auth.getSession().then(({ data }) => {
-      if (!cancelled && data.session) navigate({ to: "/dashboard", replace: true });
+      if (!cancelled && data.session) continueAfterSignIn();
     });
     return () => {
       cancelled = true;
     };
-  }, [navigate]);
+  }, [navigate, search.productId]);
 
   useEffect(() => {
     document.body.classList.add("dc-body");
@@ -147,10 +164,10 @@ function AuthPage() {
   useEffect(() => {
     if (!isDone) return;
     const timer = setTimeout(() => {
-      navigate({ to: "/dashboard" });
+      continueAfterSignIn();
     }, 1200);
     return () => clearTimeout(timer);
-  }, [isDone, doneKind, navigate]);
+  }, [isDone, doneKind, navigate, search.productId]);
 
   // 60-second cooldown on the "Resend email" button (Supabase rate-limits
   // repeated resend calls, so the button waits it out).
@@ -309,7 +326,7 @@ function AuthPage() {
 
   const handleDoneCta = () => {
     if (doneKind === "business") navigate({ to: "/onboarding" });
-    else navigate({ to: "/dashboard" });
+    else continueAfterSignIn();
   };
 
   const oauth = async (provider: "google" | "apple", role?: "angler") => {
@@ -324,7 +341,7 @@ function AuthPage() {
         provider,
         options: {
           // Must be a public page; /auth sends signed-in users on to /dashboard.
-          redirectTo: `${appOrigin()}/auth`,
+           redirectTo: `${appOrigin()}/auth${search.productId ? `?productId=${encodeURIComponent(search.productId)}` : ""}`,
           skipBrowserRedirect: inFrame,
           queryParams: provider === "google" ? { prompt: "select_account" } : undefined,
           ...(role ? { data: { intended_role: role } } : {}),
