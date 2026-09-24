@@ -8,7 +8,7 @@
  * every vertical looks identical.
  */
 import { useEffect, useMemo, useState } from "react";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useCompactMessages } from "@/hooks/use-compact-messages";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import {
@@ -53,7 +53,7 @@ export function BusinessInbox({
   fullHeight?: boolean;
 }) {
   const c = chatPalette(theme);
-  const isMobile = useIsMobile();
+  const isMobile = useCompactMessages();
   const qc = useQueryClient();
   const side: "angler" | "business" = businessId ? "business" : "angler";
 
@@ -76,7 +76,7 @@ export function BusinessInbox({
     if (initialConversationId) setActiveId(initialConversationId);
   }, [initialConversationId]);
   useEffect(() => {
-    if (isMobile) return; // phones start on the conversation list, WhatsApp-style
+    if (isMobile) return; // phones and tablets start on the conversation list, WhatsApp-style
     if (!activeId && threads.length) setActiveId(threads[0].id);
   }, [activeId, threads, isMobile]);
 

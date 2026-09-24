@@ -7,7 +7,7 @@
 import { useEffect, useRef, useState } from "react";
 import { MediaImg } from "@/components/media/MediaImg";
 import { Link } from "@tanstack/react-router";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useCompactMessages } from "@/hooks/use-compact-messages";
 import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import {
@@ -183,7 +183,7 @@ function CounterpartAvatar({
 /* ------------------------------------------------------------- Thread list -- */
 
 function ThreadList({ activeId }: { activeId: string | null }) {
-  const isMobile = useIsMobile();
+  const isMobile = useCompactMessages();
   const { data } = useSuspenseQuery({
     queryKey: ["message-threads"],
     queryFn: () => listMessageThreads(),
@@ -685,10 +685,10 @@ function ThreadPlaceholder() {
 /* ---------------------------------------------------------------- Screen --- */
 
 export function Messages({ bookingId }: { bookingId: string | null }) {
-  const isMobile = useIsMobile();
+  const isMobile = useCompactMessages();
 
-  // WhatsApp behaviour on phones: the list IS the screen, and opening a chat
-  // replaces it full-bleed (with an in-chat back arrow). Desktop keeps 2 panes.
+  // WhatsApp behaviour on phones and tablets: the list IS the screen, and
+  // opening a chat replaces it full-bleed. Wide desktop keeps two panes.
   if (isMobile) {
     return (
       <div style={{ height: "100%", minHeight: 0 }}>
