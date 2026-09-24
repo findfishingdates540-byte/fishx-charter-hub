@@ -7,10 +7,13 @@ import { resolveAsset } from "@/lib/dc-template";
 import { sendSignupConfirmation } from "@/lib/auth-emails.functions";
 
 export const Route = createFileRoute("/auth")({
-  validateSearch: (search: Record<string, unknown>): { view?: string; productId?: string } => ({
+  validateSearch: (search: Record<string, unknown>): { view?: string; productId?: string; redirect?: string } => ({
     ...(search.view === "signup" ? { view: "signup" } : {}),
     ...(typeof search.productId === "string" && /^[0-9a-f-]{36}$/i.test(search.productId)
       ? { productId: search.productId }
+      : {}),
+    ...(typeof search.redirect === "string" && search.redirect.startsWith("/")
+      ? { redirect: search.redirect }
       : {}),
   }),
   component: AuthPage,
