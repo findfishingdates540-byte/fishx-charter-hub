@@ -287,6 +287,7 @@ export function BusinessInbox({
         }}
       >
         <div
+          className="fx-msg-thread-header"
           style={{
             display: "flex",
             alignItems: "center",
@@ -332,7 +333,7 @@ export function BusinessInbox({
             minHeight: fullHeight ? 0 : 240,
             maxHeight: isMobile || fullHeight ? "none" : 460,
             overflowY: "auto",
-            padding: isMobile ? 14 : 18,
+            padding: isMobile ? "10px 8px" : 18,
             display: "flex",
             flexDirection: "column",
             gap: 12,

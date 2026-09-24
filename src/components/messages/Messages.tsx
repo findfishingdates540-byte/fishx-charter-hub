@@ -486,6 +486,7 @@ function ThreadView({ bookingId, mobile = false }: { bookingId: string; mobile?:
     >
       {/* Header */}
       <header
+        className="fx-msg-thread-header"
         style={{
           display: "flex",
           alignItems: "center",
@@ -558,7 +559,7 @@ function ThreadView({ bookingId, mobile = false }: { bookingId: string; mobile?:
           flex: 1,
           minHeight: 0,
           overflowY: "auto",
-          padding: "20px 22px",
+          padding: mobile ? "10px 8px" : "16px 18px",
           display: "flex",
           flexDirection: "column",
           gap: 12,
