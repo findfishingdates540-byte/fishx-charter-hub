@@ -4,7 +4,9 @@
  * and hands the remaining space to the inbox.
  */
 import { useEffect, type ReactNode } from "react";
+import { ArrowLeft } from "lucide-react";
 import { chatPalette, type ChatTheme } from "@/components/messages/chat-ui";
+import { Button } from "@/components/ui/button";
 
 export function MessagesFullScreen({
   theme = "dark",
@@ -46,66 +48,20 @@ export function MessagesFullScreen({
         paddingBottom: "env(safe-area-inset-bottom)",
       }}
     >
-      <header
-        className="fx-msg-fullscreen-header"
-        style={{
-          flex: "none",
-          display: "grid",
-          gridTemplateColumns: "auto minmax(0, 1fr)",
-          alignItems: "center",
-          gap: 12,
-          padding: "12px 16px",
-          paddingTop: "calc(12px + env(safe-area-inset-top))",
-          borderBottom: `1px solid ${c.line}`,
-          background: c.surface,
-        }}
-      >
-        <button
+      <header className="fx-msg-fullscreen-header" data-theme={theme}>
+        <Button
           type="button"
+          variant="ghost"
+          size="icon"
           onClick={onBack}
           aria-label="Back"
-          style={{
-            background: "transparent",
-            border: 0,
-            color: c.text,
-            borderRadius: "50%",
-            width: 38,
-            height: 38,
-            padding: 0,
-            fontSize: 20,
-            fontWeight: 700,
-            cursor: "pointer",
-            flex: "none",
-          }}
+          className="fx-msg-fullscreen-back"
         >
-          ←
-        </button>
-        <div style={{ minWidth: 0, flex: 1 }}>
-          <div
-            style={{
-              fontSize: "clamp(16px, 4.4vw, 19px)",
-              fontWeight: 700,
-              lineHeight: 1.15,
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
-            }}
-          >
-            {title}
-          </div>
-          {subtitle && (
-            <div
-              style={{
-                fontSize: 12,
-                color: c.mut,
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                whiteSpace: "nowrap",
-              }}
-            >
-              {subtitle}
-            </div>
-          )}
+          <ArrowLeft aria-hidden="true" />
+        </Button>
+        <div className="fx-msg-fullscreen-heading">
+          <h1>{title}</h1>
+          {subtitle && <p>{subtitle}</p>}
         </div>
       </header>
 
