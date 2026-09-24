@@ -225,7 +225,7 @@ export const submitVerification = createServerFn({ method: "POST" })
             category: "verification",
             title: "We received your documents",
             body: `Thanks — ${data.docPaths.length} document(s) for ${biz?.name ?? "your business"} are with our team. You can keep setting up and taking payments while we review.`,
-            link: "/onboarding",
+            link: "/dashboard?tab=settings&setting=verification",
             severity: "info",
             meta: { businessId, requestId: row.id },
           }),
