@@ -4,6 +4,7 @@ import { cachedMediaUrl } from "@/lib/media-url";
 import { BrandLogo } from "@/components/brand/BrandLogo";
 import { MarinaServiceRequest } from "@/components/profile/MarinaServiceRequest";
 import { StorefrontBooking } from "@/components/profile/StorefrontBooking";
+import { ArrowLeft } from "lucide-react";
 
 import { useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
@@ -264,6 +265,11 @@ export function OperatorProfile({
   const socialLinks = Object.entries(social).filter(([, v]) => typeof v === "string" && v.trim());
   const labels = LABEL_BY_CATEGORY[b.category_key] ?? { services: "What we offer", blurb: "" };
   const isShop = ["tackle_shop", "bait_shop", "apparel", "gear_mfg"].includes(b.category_key);
+  const backDestination = isShop
+    ? "/marketplace"
+    : b.category_key === "charter"
+      ? "/charters/search"
+      : "/services/search";
 
   const roleLabel = variant === "captain" ? "Verified captain" : "Verified guide";
   const heroFallback = "linear-gradient(135deg,#F0F2F5,#031029)";
@@ -277,8 +283,26 @@ export function OperatorProfile({
           <Link to="/" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none", color: "#F0F2F5" }}>
             <BrandLogo size="md" accent="#2DE2F2" color="#F0F2F5" />
           </Link>
-          <Link to="/discover" style={{ display: "inline-flex", alignItems: "center", gap: 7, color: "#92A0AB", textDecoration: "none", fontSize: 13, fontWeight: 500 }}>
-            <span>←</span> Back to directory
+          <Link
+            to={backDestination}
+            style={{
+              display: "inline-flex",
+              minHeight: 38,
+              alignItems: "center",
+              gap: 8,
+              padding: "0 13px",
+              border: "1px solid rgba(255,255,255,.14)",
+              borderRadius: 6,
+              background: "rgba(255,255,255,.06)",
+              color: "#D5E1E8",
+              textDecoration: "none",
+              fontSize: 13,
+              fontWeight: 600,
+              whiteSpace: "nowrap",
+            }}
+          >
+            <ArrowLeft size={16} strokeWidth={1.8} aria-hidden="true" />
+            Back to results
           </Link>
         </div>
       </header>
