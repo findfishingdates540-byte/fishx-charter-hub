@@ -428,7 +428,7 @@ function CaptainThread({ bookingId, onBack }: { bookingId: string; onBack?: () =
         overflow: "hidden",
       }}
     >
-      <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "16px 20px", borderBottom: `1px solid ${C.line}` }}>
+      <div className="fx-msg-thread-header" style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", borderBottom: `1px solid ${C.line}` }}>
         {onBack && (
           <button
             type="button"
@@ -465,7 +465,7 @@ function CaptainThread({ bookingId, onBack }: { bookingId: string; onBack?: () =
           flex: 1,
           minHeight: 260,
           overflowY: "auto",
-          padding: "18px 20px",
+          padding: "12px 10px",
           display: "flex",
           flexDirection: "column",
           gap: 12,

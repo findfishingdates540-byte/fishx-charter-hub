@@ -1208,9 +1208,39 @@ body.dc-body { margin:0; background:#072057; }
 .fx-msg-fullscreen .fx-msg-grid > aside,
 .fx-msg-fullscreen .fx-msg-grid > section { min-height: 0; }
 .fx-msg-thread::-webkit-scrollbar { display: none; }
+.fx-msg-input-pill:focus-within {
+  border-color: var(--cyan, #2DE2F2) !important;
+}
+.fx-msg-round-action {
+  transition: transform 120ms ease, opacity 120ms ease;
+}
+.fx-msg-round-action:active { transform: scale(.94); }
 
 /* Captain messages — mobile single scrollable screen */
 @media (max-width: 720px) {
+  .fx-msg-fullscreen-header {
+    gap: 8px !important;
+    padding: calc(7px + env(safe-area-inset-top)) 8px 7px !important;
+  }
+  .fx-msg-thread-header {
+    display: grid !important;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 8px !important;
+    min-height: 54px;
+    padding: 7px 8px !important;
+  }
+  .fx-msg-thread-header > * { min-width: 0; }
+  .fx-msg-thread-header a:last-child {
+    max-width: 40px;
+    overflow: hidden;
+    white-space: nowrap;
+    padding: 8px 10px !important;
+  }
+  .fx-msg-composer > div { padding-left: 10px !important; padding-right: 10px !important; }
+  .fx-msg-composer-form { gap: 6px !important; padding-left: 6px !important; padding-right: 6px !important; }
+  .fx-msg-input-pill { padding-left: 2px !important; padding-right: 2px !important; }
+  .fx-msg-bubble-row { max-width: 91% !important; gap: 5px !important; }
+  .fx-msg-bubble-row > :first-child:not(:last-child) { flex-shrink: 0; }
   .fx-msg-grid {
     display: flex !important;
     flex-direction: column;

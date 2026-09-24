@@ -262,6 +262,38 @@ function iconBtn(c: ChatPalette): CSSProperties {
   };
 }
 
+function composerIconBtn(c: ChatPalette): CSSProperties {
+  return {
+    flex: "none",
+    width: 38,
+    height: 38,
+    border: 0,
+    borderRadius: "50%",
+    background: "transparent",
+    color: c.mut,
+    cursor: "pointer",
+    display: "grid",
+    placeItems: "center",
+    padding: 0,
+  };
+}
+
+function roundAction(c: ChatPalette, primary: boolean): CSSProperties {
+  return {
+    flex: "none",
+    width: 44,
+    height: 44,
+    border: primary ? 0 : `1px solid ${c.line}`,
+    borderRadius: "50%",
+    background: primary ? c.accent : c.field,
+    color: primary ? c.onAccent : c.mut,
+    cursor: "pointer",
+    display: "grid",
+    placeItems: "center",
+    padding: 0,
+  };
+}
+
 const clock = (ms: number) => {
   const total = Math.max(0, Math.round(ms / 1000));
   return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, "0")}`;
@@ -925,13 +957,6 @@ export function ChatComposer({
               outline: "none",
             }}
           />
-          {canAttach && (
-            <input
-              aria-hidden="true"
-              tabIndex={-1}
-              style={{ display: "none" }}
-            />
-          )}
           {canAttach && (
             <button
               type="button"

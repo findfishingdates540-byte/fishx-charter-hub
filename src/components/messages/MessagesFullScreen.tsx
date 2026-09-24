@@ -47,9 +47,11 @@ export function MessagesFullScreen({
       }}
     >
       <header
+        className="fx-msg-fullscreen-header"
         style={{
           flex: "none",
-          display: "flex",
+          display: "grid",
+          gridTemplateColumns: "auto minmax(0, 1fr)",
           alignItems: "center",
           gap: 12,
           padding: "12px 16px",
@@ -64,17 +66,19 @@ export function MessagesFullScreen({
           aria-label="Back"
           style={{
             background: "transparent",
-            border: `1px solid ${c.line}`,
+            border: 0,
             color: c.text,
-            borderRadius: 10,
-            padding: "8px 13px",
-            fontSize: 12.5,
+            borderRadius: "50%",
+            width: 38,
+            height: 38,
+            padding: 0,
+            fontSize: 20,
             fontWeight: 700,
             cursor: "pointer",
             flex: "none",
           }}
         >
-          ← Back
+          ←
         </button>
         <div style={{ minWidth: 0, flex: 1 }}>
           <div
