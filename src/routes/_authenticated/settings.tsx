@@ -25,7 +25,7 @@ export const Route = createFileRoute("/_authenticated/settings")({
       { name: "twitter:card", content: "summary" },
     ],
   }),
-  loader: async ({ context }) => {
+  loader: async ({ context, location }) => {
     const bootstrap = await context.queryClient.ensureQueryData({
       queryKey: ["my-bootstrap"],
       queryFn: () => getMyBootstrap(),
@@ -34,7 +34,15 @@ export const Route = createFileRoute("/_authenticated/settings")({
     const memberships = Array.isArray(bootstrap?.businesses) ? bootstrap.businesses : [];
     const business = memberships.map((membership: any) => membership?.business).find(Boolean);
     if (business) {
-      throw redirect({ to: "/dashboard", search: { tab: "settings", biz: business.id } });
+      const incoming = location.search as { biz?: string; setting?: string } | undefined;
+      throw redirect({
+        to: "/dashboard",
+        search: {
+          tab: "settings",
+          biz: typeof incoming?.biz === "string" ? incoming.biz : business.id,
+          ...(typeof incoming?.setting === "string" ? { setting: incoming.setting } : {}),
+        },
+      });
     }
     return bootstrap;
   },

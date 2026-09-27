@@ -86,11 +86,12 @@ function pickPrimaryBusiness(
 
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
-  validateSearch: (search: Record<string, unknown>): { tab?: string; as?: string; vertical?: string; biz?: string } => ({
+  validateSearch: (search: Record<string, unknown>): { tab?: string; as?: string; vertical?: string; biz?: string; setting?: string } => ({
     ...(typeof search.tab === "string" ? { tab: search.tab } : {}),
     ...(search.as === "angler" ? { as: "angler" as const } : {}),
     ...(typeof search.vertical === "string" ? { vertical: search.vertical } : {}),
     ...(typeof search.biz === "string" ? { biz: search.biz } : {}),
+    ...(typeof search.setting === "string" ? { setting: search.setting } : {}),
   }),
   head: () => ({ meta: [
     { title: "Dashboard — FISH-X.COM Bookings & Marketplace" },
@@ -233,7 +234,7 @@ function Dashboard() {
   const businesses = Array.isArray(boot?.businesses) ? boot.businesses : [];
   const profile = boot?.profile ?? null;
   const primaryRole = hasPrimaryRole(roles);
-  const { as, tab, biz: requestedBusinessId } = Route.useSearch();
+  const { as, tab, biz: requestedBusinessId, setting } = Route.useSearch();
   // Browsing "as angler" is an explicit choice (?as=angler). Merely having an
   // angler role alongside an operator role must not land an operator on the
   // angler dashboard — their routing role is the vertical they signed up for.
@@ -282,7 +283,7 @@ function Dashboard() {
       const key = biz.category_key ?? roleCategoryKey(primaryRole);
 
 
-      if (!key || key === "charter") return <CaptainDashboard initialTab={tab} />;
+      if (!key || key === "charter") return <CaptainDashboard initialTab={tab} initialSetting={setting} />;
       if (key === "marina" || key === "lodge")
         return (
           <MarinaDashboard
@@ -291,6 +292,7 @@ function Dashboard() {
             workspaceName={biz.name}
             operatorName={operatorName}
             initialTab={tab}
+            initialSetting={setting}
           />
         );
       if (
@@ -307,6 +309,7 @@ function Dashboard() {
             operatorName={operatorName}
             categoryKey={key}
             initialTab={tab}
+            initialSetting={setting}
             workspaces={businesses
               .map((membership: any) => membership?.business)
               .filter((business: any) => business && ["tackle_shop", "bait_shop", "gear_mfg", "apparel"].includes(business.category_key))}
@@ -320,6 +323,7 @@ function Dashboard() {
             workspaceName={biz.name}
             operatorName={operatorName}
             initialTab={tab}
+            initialSetting={setting}
           />
         );
       return <DashboardFrame src="/dashboards/captain.html" title="Operator dashboard" />;
