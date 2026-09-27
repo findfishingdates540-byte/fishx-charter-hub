@@ -274,22 +274,43 @@ function AdminConsole() {
       {tab === "history" && <AdminHistory businesses={data.businesses as any} />}
 
       {tab === "verifications" && (
-        <div style={{ display: "grid", gap: 12 }}>
-          {data.verificationDocuments.length === 0 && <div style={{ ...card, color: T.mut }}>No verification documents yet.</div>}
-          {Object.values(
-            (data.verificationDocuments as any[]).reduce((acc: Record<string, { business: any; docs: any[] }>, v: any) => {
-              const key = v.business_id ?? v.id;
-              if (!acc[key]) acc[key] = { business: v.business, docs: [] };
-              acc[key].docs.push(v);
-              return acc;
-            }, {})
-          ).map((group) => {
-            const bizId = group.docs[0]?.business_id;
-            const open = openBiz === bizId;
-            const pendingCount = group.docs.filter((d) => d.status === "pending").length;
-            const rejectedCount = group.docs.filter((d) => d.status === "rejected" || d.status === "reopened").length;
-            const approvedCount = group.docs.filter((d) => d.status === "approved").length;
-            return (
+        <>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 16 }}>
+            {V_FILTERS.map((f) => {
+              const active = vStatus === f.key;
+              return (
+                <button
+                  key={f.key}
+                  onClick={() => setVStatus(f.key)}
+                  style={{
+                    ...ghost,
+                    padding: "7px 12px",
+                    background: active ? "rgba(45,226,242,.14)" : "transparent",
+                    color: active ? T.accent : T.ink,
+                    borderColor: active ? T.accent : T.line,
+                    display: "inline-flex", alignItems: "center", gap: 7,
+                  }}
+                >
+                  {f.label}
+                  <span style={{ fontSize: 11.5, fontWeight: 700, color: active ? T.accent : T.mut }}>{vCounts[f.key]}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          <div style={{ display: "grid", gap: 12 }}>
+            {vVisible.length === 0 && (
+              <div style={{ ...card, color: T.mut }}>
+                No operators in this group.
+              </div>
+            )}
+            {vVisible.map((group) => {
+              const bizId = group.business?.id ?? group.docs[0]?.business_id;
+              const open = openBiz === bizId;
+              const pendingCount = group.pending;
+              const rejectedCount = group.rejected;
+              const approvedCount = group.approved;
+              return (
               <div key={bizId} style={{ ...card, display: "grid", gap: 12 }}>
                 <button
                   onClick={() => setOpenBiz(open ? null : bizId)}
