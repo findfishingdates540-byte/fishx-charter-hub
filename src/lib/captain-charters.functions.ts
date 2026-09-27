@@ -37,7 +37,7 @@ const charterInput = z.object({
   hero_url: blank(z.string().max(2000)),
   image_urls: z.array(z.string()).optional(),
   boat_id: blank(z.string().uuid()),
-  water_type: blank(z.string().max(40)),
+  water_type: blank(z.string().max(120)),
   target_species: z.array(z.string()).optional(),
   departure_location: blank(z.string().max(200)),
   duration_minutes: z.number().int().min(30).max(1440).nullable().optional(),

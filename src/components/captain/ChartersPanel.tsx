@@ -60,7 +60,15 @@ type CharterRow = {
 const money = (c: number) =>
   `$${(Math.max(0, c) / 100).toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
 
-export const WATER_TYPES = ["Inshore", "Nearshore", "Offshore", "Flats", "Nearshore/Offshore", "Freshwater"];
+export const WATER_TYPES = ["Offshore / bluewater", "Inshore", "Nearshore & reef", "Flats", "Freshwater"];
+
+export const splitWaterTypes = (value: string | null | undefined): string[] =>
+  (value ?? "")
+    .split(",")
+    .map((v) => v.trim())
+    .filter(Boolean);
+
+export const joinWaterTypes = (types: string[]): string => types.join(", ");
 
 export const ghostBtn: React.CSSProperties = {
   background: "transparent",
