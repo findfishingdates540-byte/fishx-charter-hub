@@ -5,7 +5,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   getAdminOverview,
   decideVerification,
@@ -31,10 +31,30 @@ import { supabase } from "@/integrations/supabase/client";
 
 const SECTIONS = ["dashboard","operators","members","verifications","history","listings","bookings","calendar","payments","payouts","reconciliation","disputes","activity"] as const;
 
+/** Verification status tabs — one row per operator, grouped by where they stand. */
+const V_FILTERS = [
+  { key: "all", label: "All" },
+  { key: "review", label: "In review" },
+  { key: "resubmit", label: "Needs resubmission" },
+  { key: "verified", label: "Verified" },
+  { key: "none", label: "Not verified" },
+] as const;
+type VFilter = (typeof V_FILTERS)[number]["key"];
+type VGroup = { business: any; docs: any[]; pending: number; rejected: number; approved: number; status: VFilter };
+const V_KEYS: readonly string[] = V_FILTERS.map((f) => f.key);
+const V_RANK: Record<string, number> = { review: 0, resubmit: 1, verified: 2, none: 3 };
+const V_CHIP: Record<string, { label: string; color: string }> = {
+  review: { label: "In review", color: "#FFB86B" },
+  resubmit: { label: "Needs resubmission", color: "#F87171" },
+  verified: { label: "Verified", color: "#2DE2F2" },
+  none: { label: "Not verified", color: "#8AA2B0" },
+};
+
 export const Route = createFileRoute("/admin")({
   ssr: false,
-  validateSearch: (s: Record<string, unknown>): { section?: (typeof SECTIONS)[number] } => ({
+  validateSearch: (s: Record<string, unknown>): { section?: (typeof SECTIONS)[number]; vstatus?: VFilter } => ({
     section: (SECTIONS as readonly string[]).includes(String(s.section)) ? (s.section as any) : undefined,
+    vstatus: V_KEYS.includes(String(s.vstatus)) ? (s.vstatus as VFilter) : undefined,
   }),
   head: () => ({
     meta: [
