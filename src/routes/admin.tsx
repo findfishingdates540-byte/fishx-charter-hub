@@ -407,7 +407,10 @@ function AdminConsole() {
                 <BusinessHistory businessId={v.business_id} title="Readiness history" />
               )}
             </div>
-          ))}
+                ))}
+              </div>
+            );
+          })}
         </div>
       )}
 
