@@ -380,3 +380,149 @@ export const getAuditTrail = createServerFn({ method: "GET" })
     if (error) throw new Error(error.message);
     return data ?? [];
   });
+
+/* ---------------------- Visibility, reminders, accounts ---------------------- */
+
+export type VisibilityItem = { key: string; label: string; done: boolean; fix: string };
+
+/** Shared rule: what an operator still needs before anglers can see them. */
+export async function visibilityChecklist(admin: any, b: any): Promise<VisibilityItem[]> {
+  const { data: bookable } = await admin.rpc("business_has_bookable", { _business_id: b.id });
+  return [
+    { key: "verification", label: "Documents approved", done: Boolean(b.verified_at), fix: "Review and approve every required document." },
+    { key: "payments", label: "Payments connected", done: Boolean(b.charges_enabled && b.payouts_enabled), fix: "Operator must finish connecting Stripe payouts." },
+    { key: "listings", label: "Bookable listing or product", done: Boolean(bookable), fix: "Operator must publish a listing with upcoming dates, or an in-stock product." },
+    { key: "published", label: "Storefront switched live", done: Boolean(b.is_published), fix: "Operator (or you) can switch the storefront live once the steps above are done." },
+  ];
+}
+
+/** Per-operator visibility checklist for the admin directory. */
+export const getOperatorVisibility = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: unknown) => z.object({ businessId: z.string().uuid() }).parse(i))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.supabase, context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: b, error } = await supabaseAdmin
+      .from("businesses")
+      .select("id,name,slug,is_published,listing_ready,listing_grace,verified_at,charges_enabled,payouts_enabled")
+      .eq("id", data.businessId)
+      .maybeSingle();
+    if (error || !b) throw new Error(error?.message ?? "Business not found");
+    const items = await visibilityChecklist(supabaseAdmin, b);
+    const visible = b.is_published && (b.listing_ready || b.listing_grace);
+    return { business: b, items, visible };
+  });
+
+/** Notify every team member of the steps still blocking their public listing. */
+export const sendSetupReminder = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: unknown) => z.object({ businessId: z.string().uuid() }).parse(i))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.supabase, context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: b } = await supabaseAdmin
+      .from("businesses")
+      .select("id,name,is_published,verified_at,charges_enabled,payouts_enabled")
+      .eq("id", data.businessId)
+      .maybeSingle();
+    if (!b) throw new Error("Business not found");
+    const missing = (await visibilityChecklist(supabaseAdmin, b)).filter((i) => !i.done);
+    if (!missing.length) return { ok: true, sent: 0 };
+    const { data: team } = await supabaseAdmin.from("business_members").select("user_id").eq("business_id", b.id);
+    const { sendDirectNotification } = await import("./notifications.server");
+    await Promise.all(
+      (team ?? []).map((m: any) =>
+        sendDirectNotification(supabaseAdmin, {
+          userId: m.user_id,
+          category: "verification",
+          title: `Finish setup so anglers can find ${b.name}`,
+          body: `Still to do: ${missing.map((i) => i.label.toLowerCase()).join(", ")}.`,
+          link: "/dashboard",
+          severity: "warning",
+          meta: { businessId: b.id, missing: missing.map((i) => i.key) },
+        } as any).catch(() => null),
+      ),
+    );
+    await logAction(supabaseAdmin, context.userId, "operator.reminder_sent", "business", b.id, { missing: missing.map((i) => i.key) });
+    return { ok: true, sent: team?.length ?? 0 };
+  });
+
+/** Publish/unpublish a storefront. Publishing never bypasses payments or listings. */
+export const setBusinessPublished = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: unknown) => z.object({ businessId: z.string().uuid(), published: z.boolean() }).parse(i))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.supabase, context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    if (data.published) {
+      const { data: b } = await supabaseAdmin
+        .from("businesses")
+        .select("id,is_published,verified_at,charges_enabled,payouts_enabled")
+        .eq("id", data.businessId)
+        .maybeSingle();
+      if (!b) throw new Error("Business not found");
+      const missing = (await visibilityChecklist(supabaseAdmin, b)).filter((i) => !i.done && i.key !== "published");
+      if (missing.length) throw new Error(`Can't publish yet: ${missing.map((i) => i.label.toLowerCase()).join(", ")} missing.`);
+    }
+    const { error } = await supabaseAdmin.from("businesses").update({ is_published: data.published }).eq("id", data.businessId);
+    if (error) throw new Error(error.message);
+    await supabaseAdmin.rpc("recompute_listing_ready", { _business_id: data.businessId });
+    await logAction(supabaseAdmin, context.userId, data.published ? "business.published" : "business.unpublished", "business", data.businessId);
+    return { ok: true };
+  });
+
+/** Sign-in email + suspension state for member accounts. */
+export const getMemberAccounts = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertAdmin(context.supabase, context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const out: Record<string, { email: string | null; suspended: boolean; lastSignIn: string | null }> = {};
+    for (let page = 1; page <= 10; page++) {
+      const { data, error } = await supabaseAdmin.auth.admin.listUsers({ page, perPage: 1000 });
+      if (error) break;
+      for (const u of data.users as any[]) {
+        out[u.id] = {
+          email: u.email ?? null,
+          suspended: Boolean(u.banned_until && new Date(u.banned_until) > new Date()),
+          lastSignIn: u.last_sign_in_at ?? null,
+        };
+      }
+      if (data.users.length < 1000) break;
+    }
+    return out;
+  });
+
+/** Suspend or restore a member's ability to sign in. */
+export const setUserSuspended = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: unknown) => z.object({ userId: z.string().uuid(), suspended: z.boolean() }).parse(i))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.supabase, context.userId);
+    if (data.userId === context.userId) throw new Error("You cannot suspend your own account");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin.auth.admin.updateUserById(data.userId, {
+      ban_duration: data.suspended ? "876000h" : "none",
+    } as any);
+    if (error) throw new Error(error.message);
+    await logAction(supabaseAdmin, context.userId, data.suspended ? "user.suspended" : "user.restored", "user", data.userId);
+    return { ok: true };
+  });
+
+/** Email the member a password reset link. */
+export const sendPasswordReset = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: unknown) => z.object({ userId: z.string().uuid() }).parse(i))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.supabase, context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: u, error } = await supabaseAdmin.auth.admin.getUserById(data.userId);
+    if (error || !u.user?.email) throw new Error("This account has no email on file");
+    const { error: resetError } = await context.supabase.auth.resetPasswordForEmail(u.user.email, {
+      redirectTo: "https://www.bookfishingtrips.com/auth?view=reset",
+    });
+    if (resetError) throw new Error(resetError.message);
+    await logAction(supabaseAdmin, context.userId, "user.password_reset_sent", "user", data.userId);
+    return { ok: true };
+  });
