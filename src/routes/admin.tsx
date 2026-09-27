@@ -32,7 +32,7 @@ import { supabase } from "@/integrations/supabase/client";
 const SECTIONS = ["dashboard","operators","members","verifications","history","listings","bookings","calendar","payments","payouts","reconciliation","disputes","activity"] as const;
 
 /** Verification status tabs — one row per operator, grouped by where they stand. */
-const V_FILTERS = [
+export const V_FILTERS = [
   { key: "all", label: "All" },
   { key: "review", label: "In review" },
   { key: "resubmit", label: "Needs resubmission" },
@@ -41,9 +41,9 @@ const V_FILTERS = [
 ] as const;
 type VFilter = (typeof V_FILTERS)[number]["key"];
 type VGroup = { business: any; docs: any[]; pending: number; rejected: number; approved: number; status: VFilter };
-const V_KEYS: readonly string[] = V_FILTERS.map((f) => f.key);
-const V_RANK: Record<string, number> = { review: 0, resubmit: 1, verified: 2, none: 3 };
-const V_CHIP: Record<string, { label: string; color: string }> = {
+export const V_KEYS: readonly string[] = V_FILTERS.map((f) => f.key);
+export const V_RANK: Record<string, number> = { review: 0, resubmit: 1, verified: 2, none: 3 };
+export const V_CHIP: Record<string, { label: string; color: string }> = {
   review: { label: "In review", color: "#FFB86B" },
   resubmit: { label: "Needs resubmission", color: "#F87171" },
   verified: { label: "Verified", color: "#2DE2F2" },
