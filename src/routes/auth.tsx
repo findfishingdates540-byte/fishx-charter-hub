@@ -263,6 +263,11 @@ function AuthPage() {
       if (pw.length < 8) return setError("Password must be at least 8 characters.");
       if (!val("bizName")) return setError("Please enter your business name.");
       if (!val("location")) return setError("Please add your location.");
+      if (form.querySelector('input[type="checkbox"][name="detail"]')) {
+        const picks = new FormData(form).getAll("detail").map(String);
+        if (picks.length === 0) return setError("Please tick at least one option.");
+        if (picks.includes("Other") && !val("detail_other")) return setError("Please describe your 'Other' option.");
+      }
       if (!checked("terms")) return setError("Please accept the terms to continue.");
       kind = "business";
     }
@@ -309,7 +314,7 @@ function AuthPage() {
             data: {
               intended_role: intendedRole, full_name: val("name"),
               vertical, business_name: val("bizName"),
-              location: val("location"), vertical_detail: val("detail"),
+              location: val("location"), vertical_detail: detailValue(form, val),
             },
           },
         });
