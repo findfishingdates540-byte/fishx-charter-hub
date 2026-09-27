@@ -307,6 +307,12 @@ function AdminConsole() {
                   <span style={{ color: T.mut, fontSize: 13 }}>{open ? "Hide documents ▴" : "View documents ▾"}</span>
                 </button>
 
+                {open && group.docs.length === 0 && (
+                  <div style={{ border: `1px dashed ${T.line}`, borderRadius: 10, padding: 14, color: T.mut, fontSize: 13 }}>
+                    This operator hasn&rsquo;t uploaded any verification documents yet.
+                  </div>
+                )}
+
                 {open && group.docs.map((v: any) => (
             <div key={v.id} style={{ border: `1px solid ${T.line}`, borderRadius: 10, padding: 14, display: "grid", gap: 12 }}>
               <div style={{ display: "flex", gap: 14, flexWrap: "wrap", alignItems: "center", justifyContent: "space-between" }}>
@@ -411,8 +417,9 @@ function AdminConsole() {
                 ))}
               </div>
             );
-          })}
-        </div>
+            })}
+          </div>
+        </>
       )}
 
 
