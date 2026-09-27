@@ -296,15 +296,33 @@ function AdminConsole() {
                   style={{ background: "none", border: "none", padding: 0, cursor: "pointer", textAlign: "left", display: "flex", gap: 14, flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", color: "inherit", fontFamily: "inherit" }}
                 >
                   <div style={{ minWidth: 220 }}>
-                    <div style={{ fontWeight: 700, fontSize: 15 }}>{group.business?.name ?? "Unknown business"}</div>
-                    <div style={{ color: T.mut, fontSize: 13, marginTop: 2 }}>
-                      {group.docs.length} document{group.docs.length === 1 ? "" : "s"}
-                      {pendingCount > 0 && <> · <span style={{ color: T.accent }}>{pendingCount} awaiting review</span></>}
-                      {rejectedCount > 0 && <> · <span style={{ color: "#F87171" }}>{rejectedCount} need{rejectedCount === 1 ? "s" : ""} resubmission</span></>}
-                      {approvedCount > 0 && <> · {approvedCount} accepted</>}
+                    <div style={{ display: "flex", alignItems: "center", gap: 9, flexWrap: "wrap" }}>
+                      <span style={{ fontWeight: 700, fontSize: 15 }}>{group.business?.name ?? "Unknown business"}</span>
+                      <span
+                        style={{
+                          fontSize: 10.5, fontWeight: 700, letterSpacing: ".07em", textTransform: "uppercase",
+                          color: V_CHIP[group.status]?.color, border: `1px solid ${V_CHIP[group.status]?.color}`,
+                          borderRadius: 999, padding: "2px 8px",
+                        }}
+                      >
+                        {V_CHIP[group.status]?.label}
+                      </span>
+                    </div>
+                    <div style={{ color: T.mut, fontSize: 13, marginTop: 4 }}>
+                      {group.docs.length === 0 ? (
+                        "No documents submitted yet"
+                      ) : (
+                        <>
+                          {group.docs.length} document{group.docs.length === 1 ? "" : "s"}
+                          {pendingCount > 0 && <> · <span style={{ color: "#FFB86B" }}>{pendingCount} awaiting review</span></>}
+                          {rejectedCount > 0 && <> · <span style={{ color: "#F87171" }}>{rejectedCount} need{rejectedCount === 1 ? "s" : ""} resubmission</span></>}
+                          {approvedCount > 0 && <> · {approvedCount} accepted</>}
+                        </>
+                      )}
+                      {group.business?.verified_at && <> · verified {day(group.business.verified_at)}</>}
                     </div>
                   </div>
-                  <span style={{ color: T.mut, fontSize: 13 }}>{open ? "Hide documents ▴" : "View documents ▾"}</span>
+                  <span style={{ color: T.mut, fontSize: 13 }}>{open ? "Hide documents ▴" : group.docs.length === 0 ? "Details ▾" : "View documents ▾"}</span>
                 </button>
 
                 {open && group.docs.length === 0 && (
