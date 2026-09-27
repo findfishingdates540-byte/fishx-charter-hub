@@ -216,21 +216,40 @@ export const decideVerificationDocument = createServerFn({ method: "POST" })
     const current = new Map((currentDocs ?? []).map((doc: any) => [doc.document_key, doc.status]));
     const fullyApproved = required.length > 0 && required.every((key) => current.get(key) === "approved");
     await supabaseAdmin.from("businesses").update({ verified_at: fullyApproved ? now : null }).eq("id", document.business_id);
+    await supabaseAdmin.rpc("recompute_listing_ready", { _business_id: document.business_id });
+
+    let remaining: string[] = [];
+    if (fullyApproved) {
+      const { data: fresh } = await supabaseAdmin
+        .from("businesses")
+        .select("id,is_published,verified_at,charges_enabled,payouts_enabled")
+        .eq("id", document.business_id)
+        .maybeSingle();
+      if (fresh) {
+        const { visibilityChecklist } = await import("./admin-directory.functions");
+        remaining = (await visibilityChecklist(supabaseAdmin, fresh)).filter((i) => !i.done).map((i) => i.label);
+      }
+    }
 
     try {
       const { sendDirectNotification } = await import("./notifications.server");
+      const approvedBody = fullyApproved
+        ? remaining.length
+          ? `All required documents are accepted. To appear to anglers you still need: ${remaining.map((r) => r.toLowerCase()).join(", ")}.`
+          : "All required documents are accepted. Your business is verified and visible to anglers."
+        : "This file is locked while the remaining documents are reviewed.";
       await Promise.all((team ?? []).map((member: any) => sendDirectNotification(supabaseAdmin, {
         userId: member.user_id,
         category: "verification",
         title: data.action === "approve" ? `${document.document_label} accepted` : `${document.document_label} needs attention`,
-        body: data.action === "approve" ? (fullyApproved ? "All required documents are accepted. Your business is verified." : "This file is locked while the remaining documents are reviewed.") : reason,
-        link: "/dashboard?tab=settings&setting=verification",
+        body: data.action === "approve" ? approvedBody : reason,
+        link: data.action === "approve" && fullyApproved && remaining.length ? "/dashboard" : "/dashboard?tab=settings&setting=verification",
         severity: data.action === "approve" ? "success" : "warning",
         meta: { businessId: document.business_id, documentId: document.id, action: data.action },
       })));
     } catch (notificationError) { console.error("verification document notification failed", notificationError); }
     await supabaseAdmin.from("audit_logs").insert({ actor_id: context.userId, action: `verification.document_${data.action}`, target_type: "business", target_id: document.business_id, meta_json: { documentId: document.id, documentKey: document.document_key, reason: reason || null } });
-    return { ok: true, status, fullyApproved };
+    return { ok: true, status, fullyApproved, remaining };
   });
 
 export const resolveDispute = createServerFn({ method: "POST" })

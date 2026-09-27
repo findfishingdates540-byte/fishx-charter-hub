@@ -14,7 +14,14 @@ import {
   setListingPublished,
   getBookingLedger,
   getAuditTrail,
+  getOperatorVisibility,
+  sendSetupReminder,
+  setBusinessPublished,
+  getMemberAccounts,
+  setUserSuspended,
+  sendPasswordReset,
 } from "@/lib/admin-directory.functions";
+import { Fragment } from "react";
 
 const T = {
   bg: "#0D161F",
@@ -155,6 +162,7 @@ export function AdminOperators() {
   });
   const [filter, setFilter] = useState<"all" | "pending" | "not_submitted" | "verified" | "incomplete">("all");
   const [term, setTerm] = useState("");
+  const [open, setOpen] = useState<string | null>(null);
 
   const rows = useMemo(() => {
     const all = data?.operators ?? [];
@@ -224,7 +232,7 @@ export function AdminOperators() {
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13.5, minWidth: 900 }}>
           <thead>
             <tr style={{ color: T.mut }}>
-              {["Operator", "Status", "Owner", "Signed up", "Documents", "Setup", "Listings", "Bookings", "Gross"].map((h) => (
+              {["Operator", "Status", "Owner", "Signed up", "Documents", "Setup", "Listings", "Bookings", "Gross", ""].map((h) => (
                 <th key={h} style={th}>
                   {h}
                 </th>
@@ -234,13 +242,14 @@ export function AdminOperators() {
           <tbody>
             {rows.length === 0 && (
               <tr>
-                <td colSpan={9} style={{ ...td, color: T.mut }}>
+                <td colSpan={10} style={{ ...td, color: T.mut }}>
                   No operators match that view.
                 </td>
               </tr>
             )}
             {rows.map((o: any) => (
-              <tr key={o.id}>
+              <Fragment key={o.id}>
+              <tr>
                 <td style={td}>
                   <div style={{ fontWeight: 700 }}>{o.name}</div>
                   <div style={{ color: T.mut, fontSize: 12.5 }}>
@@ -290,11 +299,83 @@ export function AdminOperators() {
                 </td>
                 <td style={{ ...td, color: T.mut }}>{o.bookingCount}</td>
                 <td style={{ ...td, fontWeight: 700 }}>{money(o.grossCents)}</td>
+                <td style={td}>
+                  <button style={open === o.id ? btn : ghost} onClick={() => setOpen(open === o.id ? null : o.id)}>
+                    {open === o.id ? "Close" : "Manage"}
+                  </button>
+                </td>
               </tr>
+              {open === o.id && (
+                <tr>
+                  <td colSpan={10} style={{ ...td, background: T.bg }}>
+                    <OperatorManage businessId={o.id} slug={o.slug} />
+                  </td>
+                </tr>
+              )}
+              </Fragment>
             ))}
           </tbody>
         </table>
       </div>
+    </div>
+  );
+}
+
+/** Visibility checklist + admin actions for one operator. */
+export function OperatorManage({ businessId, slug }: { businessId: string; slug?: string | null }) {
+  const fetchVis = useServerFn(getOperatorVisibility);
+  const remind = useServerFn(sendSetupReminder);
+  const publish = useServerFn(setBusinessPublished);
+  const qc = useQueryClient();
+  const [msg, setMsg] = useState<string | null>(null);
+  const vis = useQuery({
+    queryKey: ["admin-visibility", businessId],
+    queryFn: () => fetchVis({ data: { businessId } }),
+  });
+  const refresh = () => {
+    qc.invalidateQueries({ queryKey: ["admin-visibility", businessId] });
+    qc.invalidateQueries({ queryKey: ["admin-operator-directory"] });
+  };
+  const remindMut = useMutation({
+    mutationFn: () => remind({ data: { businessId } }),
+    onSuccess: (r: any) => setMsg(r.sent ? `Reminder sent to ${r.sent} team member(s).` : "Nothing missing — no reminder needed."),
+    onError: (e: unknown) => setMsg(e instanceof Error ? e.message : "Could not send reminder."),
+  });
+  const pubMut = useMutation({
+    mutationFn: (published: boolean) => publish({ data: { businessId, published } }),
+    onSuccess: () => { setMsg("Saved."); refresh(); },
+    onError: (e: unknown) => setMsg(e instanceof Error ? e.message : "Could not save."),
+  });
+  if (vis.isLoading || !vis.data) return <div style={{ color: T.mut }}>Checking visibility…</div>;
+  const { items, visible, business } = vis.data as any;
+  const missing = items.filter((i: any) => !i.done);
+  return (
+    <div style={{ display: "grid", gap: 12 }}>
+      <div style={{ fontWeight: 700, color: visible ? T.accent : T.warn }}>
+        {visible ? "Visible to anglers" : `Hidden from anglers — ${missing.map((i: any) => i.label.toLowerCase()).join(", ") || "setup incomplete"}`}
+      </div>
+      <div style={{ display: "grid", gap: 8, gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))" }}>
+        {items.map((i: any) => (
+          <div key={i.key} style={{ ...card, padding: 12 }}>
+            <div style={{ fontWeight: 600, color: i.done ? T.accent : T.warn }}>{i.done ? "✓" : "✕"} {i.label}</div>
+            {!i.done && <div style={{ color: T.mut, fontSize: 12.5, marginTop: 4 }}>{i.fix}</div>}
+          </div>
+        ))}
+      </div>
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+        {missing.length > 0 && (
+          <button style={btn} disabled={remindMut.isPending} onClick={() => remindMut.mutate()}>
+            {remindMut.isPending ? "Sending…" : "Send reminder"}
+          </button>
+        )}
+        {business.is_published ? (
+          <button style={ghost} disabled={pubMut.isPending} onClick={() => window.confirm("Unpublish this storefront?") && pubMut.mutate(false)}>Unpublish storefront</button>
+        ) : (
+          <button style={ghost} disabled={pubMut.isPending} onClick={() => pubMut.mutate(true)}>Publish storefront</button>
+        )}
+        {slug && <a href={`/b/${slug}`} target="_blank" rel="noreferrer" style={{ ...ghost, textDecoration: "none" }}>View storefront</a>}
+      </div>
+      {msg && <div style={{ color: T.mut, fontSize: 13 }}>{msg}</div>}
     </div>
   );
 }
@@ -328,6 +409,21 @@ export function AdminMembers() {
     staleTime: 20_000,
   });
 
+  const fetchAccounts = useServerFn(getMemberAccounts);
+  const accounts = useQuery({ queryKey: ["admin-member-accounts"], queryFn: () => fetchAccounts(), staleTime: 30_000 });
+  const suspend = useServerFn(setUserSuspended);
+  const reset = useServerFn(sendPasswordReset);
+  const suspendMut = useMutation({
+    mutationFn: (v: { userId: string; suspended: boolean }) => suspend({ data: v }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["admin-member-accounts"] }),
+    onError: (e: unknown) => window.alert(e instanceof Error ? e.message : "Could not update account."),
+  });
+  const resetMut = useMutation({
+    mutationFn: (userId: string) => reset({ data: { userId } }),
+    onSuccess: () => window.alert("Password reset email sent."),
+    onError: (e: unknown) => window.alert(e instanceof Error ? e.message : "Could not send reset email."),
+  });
+
   const roleMut = useMutation({
     mutationFn: (v: { userId: string; role: string; grant: boolean }) =>
       changeRole({ data: v as any }),
@@ -341,9 +437,10 @@ export function AdminMembers() {
     return (data?.members ?? []).filter((m: any) => {
       if (kind !== "all" && m.kind !== kind) return false;
       if (!q) return true;
-      return `${m.display_name ?? ""} ${m.full_name ?? ""}`.toLowerCase().includes(q);
+      const email = (accounts.data as any)?.[m.id]?.email ?? "";
+      return `${m.display_name ?? ""} ${m.full_name ?? ""} ${email}`.toLowerCase().includes(q);
     });
-  }, [data, term, kind]);
+  }, [data, term, kind, accounts.data]);
 
   if (error) return <div style={{ ...card, color: "#FF8A8A" }}>Could not load members.</div>;
   if (isLoading || !data) return <div style={{ ...card, color: T.mut }}>Loading members…</div>;
@@ -376,7 +473,7 @@ export function AdminMembers() {
         <input
           value={term}
           onChange={(e) => setTerm(e.target.value)}
-          placeholder="Search by name"
+          placeholder="Search by name or email"
           style={{ ...input, flex: "1 1 220px", minWidth: 180 }}
         />
       </div>
@@ -384,7 +481,18 @@ export function AdminMembers() {
       <div style={{ display: "grid", gap: 10 }}>
         {rows.length === 0 && <div style={{ ...card, color: T.mut }}>No members match that view.</div>}
         {rows.map((m: any) => (
-          <MemberRow key={m.id} member={m} busy={roleMut.isPending} onChange={roleMut.mutate} />
+          <MemberRow
+            key={m.id}
+            member={m}
+            account={(accounts.data as any)?.[m.id]}
+            busy={roleMut.isPending || suspendMut.isPending || resetMut.isPending}
+            onChange={roleMut.mutate}
+            onSuspend={(suspended) => {
+              if (window.confirm(suspended ? "Suspend this account? They won't be able to sign in." : "Restore sign-in for this account?"))
+                suspendMut.mutate({ userId: m.id, suspended });
+            }}
+            onReset={() => resetMut.mutate(m.id)}
+          />
         ))}
       </div>
     </div>
@@ -393,12 +501,18 @@ export function AdminMembers() {
 
 function MemberRow({
   member,
+  account,
   busy,
   onChange,
+  onSuspend,
+  onReset,
 }: {
   member: any;
+  account?: { email: string | null; suspended: boolean; lastSignIn: string | null };
   busy: boolean;
   onChange: (v: { userId: string; role: string; grant: boolean }) => void;
+  onSuspend: (suspended: boolean) => void;
+  onReset: () => void;
 }) {
   const [role, setRole] = useState<string>("angler");
   return (
@@ -406,8 +520,10 @@ function MemberRow({
       <div style={{ minWidth: 220 }}>
         <div style={{ fontWeight: 700 }}>{member.display_name ?? member.full_name ?? "Unnamed member"}</div>
         <div style={{ color: T.mut, fontSize: 12.5 }}>
-          Joined {day(member.created_at)} · {member.businessCount} business(es)
+          {account?.email ?? ""}{account?.email ? " · " : ""}Joined {day(member.created_at)} · {member.businessCount} business(es)
+          {account?.lastSignIn ? ` · last seen ${day(account.lastSignIn)}` : ""}
         </div>
+        {account?.suspended && <div style={{ marginTop: 6 }}><Pill tone="warn">Suspended</Pill></div>}
         <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 8 }}>
           {member.roles.length === 0 && <Pill tone="mut">no role</Pill>}
           {member.roles.map((r: string) => (
@@ -444,6 +560,10 @@ function MemberRow({
           onClick={() => onChange({ userId: member.id, role, grant: true })}
         >
           Add role
+        </button>
+        <button style={ghost} disabled={busy || !account?.email} onClick={onReset}>Reset password</button>
+        <button style={{ ...ghost, color: account?.suspended ? T.accent : T.warn }} disabled={busy || !account} onClick={() => onSuspend(!account?.suspended)}>
+          {account?.suspended ? "Restore" : "Suspend"}
         </button>
       </div>
     </div>

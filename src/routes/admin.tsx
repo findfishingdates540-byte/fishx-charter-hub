@@ -2,7 +2,7 @@
  * Platform admin console: verification queue, payout ledger, dispute tracker.
  * Uses the operator dark theme; every read/write is admin-gated server-side.
  */
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
@@ -25,10 +25,17 @@ import {
 } from "@/components/admin/AdminManagement";
 import { AdminHistory, BusinessHistory } from "@/components/admin/BusinessHistory";
 import { AdminPayments } from "@/components/admin/AdminPayments";
+import { AdminDashboard } from "@/components/admin/AdminDashboard";
+import { DocumentPreviewDialog } from "@/components/admin/DocumentPreviewDialog";
 import { supabase } from "@/integrations/supabase/client";
+
+const SECTIONS = ["dashboard","operators","members","verifications","history","listings","bookings","calendar","payments","payouts","reconciliation","disputes","activity"] as const;
 
 export const Route = createFileRoute("/admin")({
   ssr: false,
+  validateSearch: (s: Record<string, unknown>): { section?: (typeof SECTIONS)[number] } => ({
+    section: (SECTIONS as readonly string[]).includes(String(s.section)) ? (s.section as any) : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "Admin console | Fish-X Charters" },
@@ -106,25 +113,14 @@ const money = (c: number) =>
 
 const day = (s?: string | null) => (s ? new Date(s).toLocaleDateString() : "—");
 
-type Tab =
-  | "operators"
-  | "verifications"
-  | "history"
-  | "members"
-  | "listings"
-  | "bookings"
-  | "payments"
-  | "calendar"
-  | "payouts"
-  | "reconciliation"
-  | "disputes"
-  | "activity";
+type Tab = (typeof SECTIONS)[number];
 
 const TABS: Array<[Tab, string]> = [
+  ["dashboard", "Dashboard"],
   ["operators", "Operators"],
-  ["verifications", "Documents"],
-  ["history", "History"],
-  ["members", "Members"],
+  ["members", "Users"],
+  ["verifications", "Verification"],
+  ["history", "Readiness history"],
   ["listings", "Listings"],
   ["bookings", "Bookings"],
   ["payments", "Payments"],
@@ -143,7 +139,12 @@ function AdminConsole() {
     queryFn: () => fetchOverview(),
     staleTime: 15_000,
   });
-  const [tab, setTab] = useState<Tab>("operators");
+  const search = Route.useSearch();
+  const navigate = useNavigate();
+  const tab: Tab = search.section ?? "dashboard";
+  const setTab = (k: Tab) => { navigate({ to: "/admin", search: { section: k } }); setMenuOpen(false); };
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [preview, setPreview] = useState<any | null>(null);
   const [rejecting, setRejecting] = useState<string | null>(null);
   const [rejectReason, setRejectReason] = useState("");
   const [rejectError, setRejectError] = useState<string | null>(null);
@@ -213,45 +214,54 @@ function AdminConsole() {
     return <Shell><div style={{ ...card, color: T.mut }}>Loading the console…</div></Shell>;
   }
 
-  const stats: Array<[string, string]> = [
-    ["Pending verifications", String(data.totals.pendingVerifications)],
-    ["Open disputes", String(data.totals.openDisputes)],
-    ["Payouts owed", money(data.totals.pendingPayoutCents)],
-    ["Paid out to date", money(data.totals.paidPayoutCents)],
-  ];
+  const pendingDocs = data.verificationDocuments.filter((v: any) => v.status === "pending").length;
 
   return (
-    <Shell>
-      <h1 style={{ fontSize: 28, margin: "0 0 4px", fontWeight: 700 }}>Admin console</h1>
-      <p style={{ color: T.mut, margin: "0 0 22px", fontSize: 14 }}>
-        Vendors, money and disputes across the whole marketplace.
-      </p>
+    <div className="fx-admin" style={{ minHeight: "100vh", background: T.bg, color: T.ink, fontFamily: "Outfit, sans-serif", letterSpacing: "-0.025em" }}>
+      <style>{`
+        .fx-admin-side{position:fixed;inset:0 auto 0 0;width:240px;background:${T.card};border-right:1px solid ${T.line};padding:22px 14px;overflow-y:auto;z-index:40;transition:transform .2s}
+        .fx-admin-main{margin-left:240px;padding:28px 24px 80px;max-width:1280px}
+        .fx-admin-top{display:none}
+        @media (max-width: 900px){
+          .fx-admin-side{transform:translateX(-100%)}
+          .fx-admin-side.open{transform:none;box-shadow:0 0 0 100vmax rgba(0,0,0,.55)}
+          .fx-admin-main{margin-left:0;padding:16px 14px 80px}
+          .fx-admin-top{display:flex}
+        }
+      `}</style>
+      <aside className={`fx-admin-side${menuOpen ? " open" : ""}`} aria-label="Admin menu">
+        <div style={{ color: T.accent, fontSize: 12, letterSpacing: ".14em", textTransform: "uppercase", fontWeight: 700 }}>FISH-X.COM</div>
+        <div style={{ fontSize: 18, fontWeight: 700, margin: "2px 0 20px" }}>Admin console</div>
+        <nav style={{ display: "grid", gap: 2 }}>
+          {TABS.map(([k, label]) => (
+            <button
+              key={k}
+              onClick={() => setTab(k)}
+              style={{
+                display: "flex", justifyContent: "space-between", alignItems: "center",
+                textAlign: "left", border: 0, borderRadius: 10, padding: "10px 12px", cursor: "pointer",
+                fontSize: 14, fontFamily: "inherit", fontWeight: tab === k ? 700 : 500,
+                background: tab === k ? "rgba(45,226,242,.14)" : "transparent",
+                color: tab === k ? T.accent : T.ink,
+              }}
+            >
+              <span>{label}</span>
+              {k === "verifications" && pendingDocs > 0 && <span style={{ background: T.accent, color: "#04121B", borderRadius: 999, fontSize: 11, padding: "1px 7px", fontWeight: 700 }}>{pendingDocs}</span>}
+              {k === "disputes" && data.totals.openDisputes > 0 && <span style={{ background: "#FFB86B", color: "#04121B", borderRadius: 999, fontSize: 11, padding: "1px 7px", fontWeight: 700 }}>{data.totals.openDisputes}</span>}
+            </button>
+          ))}
+        </nav>
+        <button onClick={() => supabase.auth.signOut()} style={{ ...ghost, width: "100%", marginTop: 20 }}>Sign out</button>
+      </aside>
+      <main className="fx-admin-main">
+        <div className="fx-admin-top" style={{ alignItems: "center", gap: 10, marginBottom: 14 }}>
+          <button aria-label="Open menu" onClick={() => setMenuOpen(true)} style={{ ...ghost, padding: "8px 11px", fontSize: 16 }}>☰</button>
+          <div style={{ fontWeight: 700 }}>Admin console</div>
+        </div>
+        {menuOpen && <div onClick={() => setMenuOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 39 }} />}
+        <h1 style={{ fontSize: 26, margin: "0 0 18px", fontWeight: 700 }}>{TABS.find(([k]) => k === tab)?.[1]}</h1>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(190px,1fr))", gap: 12, marginBottom: 22 }}>
-        {stats.map(([k, v]) => (
-          <div key={k} style={card}>
-            <div style={{ color: T.mut, fontSize: 12, textTransform: "uppercase", letterSpacing: ".1em" }}>{k}</div>
-            <div style={{ fontSize: 24, fontWeight: 700, marginTop: 6, color: T.accent }}>{v}</div>
-          </div>
-        ))}
-      </div>
-
-      <div style={{ display: "flex", gap: 8, marginBottom: 16, flexWrap: "wrap" }}>
-        {TABS.map(([k, label]) => (
-          <button
-            key={k}
-            onClick={() => setTab(k)}
-            style={{
-              ...ghost,
-              background: tab === k ? T.accent : "transparent",
-              color: tab === k ? "#04121B" : T.ink,
-            }}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
-
+      {tab === "dashboard" && <AdminDashboard overview={data} onGo={(k) => setTab(k as Tab)} />}
       {tab === "operators" && <AdminOperators />}
       {tab === "members" && <AdminMembers />}
       {tab === "listings" && <AdminListings />}
@@ -287,9 +297,10 @@ function AdminConsole() {
                       <button
                         style={btn}
                         disabled={documentDecision.isPending}
-                        onClick={() => documentDecision.mutate({ documentId: v.id, action: "approve" })}
+                        title="Open the document to approve it"
+                        onClick={() => v.viewUrl ? setPreview(v) : undefined}
                       >
-                        Approve
+                        Review &amp; approve
                       </button>
                       <button
                         style={ghost}
@@ -305,7 +316,11 @@ function AdminConsole() {
                     </>
                   )}
                   {v.status === "approved" && <button style={ghost} disabled={documentDecision.isPending} onClick={() => { setRejectError(null); setRejectReason(""); setRejecting(rejecting === v.id ? null : v.id); }}>Reopen</button>}
-                  {v.viewUrl && <a href={v.viewUrl} target="_blank" rel="noreferrer" style={{ ...ghost, textDecoration: "none" }}>Open file</a>}
+                  {v.viewUrl ? (
+                    <button style={{ ...btn, background: "transparent", color: T.accent, border: `1px solid ${T.accent}` }} onClick={() => setPreview(v)}>View document</button>
+                  ) : (
+                    <span style={{ color: "#FFB86B", fontSize: 12.5 }}>File missing — ask operator to resubmit</span>
+                  )}
                   {v.business_id && (
                     <button
                       style={ghost}
@@ -483,7 +498,26 @@ function AdminConsole() {
           ))}
         </div>
       )}
-    </Shell>
+      {preview && (
+        <DocumentPreviewDialog
+          doc={preview}
+          busy={documentDecision.isPending}
+          error={rejectError}
+          onClose={() => { setPreview(null); setRejectError(null); }}
+          onDecide={async (action, reason) => {
+            setRejectError(null);
+            try {
+              const r: any = await documentDecision.mutateAsync({ documentId: preview.id, action, reason });
+              setPreview(null);
+              if (r?.fullyApproved && r.remaining?.length) {
+                window.alert(`All documents approved. This operator is still hidden until they complete: ${r.remaining.join(", ")}. They've been notified.`);
+              }
+            } catch {}
+          }}
+        />
+      )}
+      </main>
+    </div>
   );
 }
 
