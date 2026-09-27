@@ -275,13 +275,44 @@ function AdminConsole() {
       {tab === "verifications" && (
         <div style={{ display: "grid", gap: 12 }}>
           {data.verificationDocuments.length === 0 && <div style={{ ...card, color: T.mut }}>No verification documents yet.</div>}
-          {data.verificationDocuments.map((v: any) => (
-            <div key={v.id} style={{ ...card, display: "grid", gap: 12 }}>
+          {Object.values(
+            (data.verificationDocuments as any[]).reduce((acc: Record<string, { business: any; docs: any[] }>, v: any) => {
+              const key = v.business_id ?? v.id;
+              if (!acc[key]) acc[key] = { business: v.business, docs: [] };
+              acc[key].docs.push(v);
+              return acc;
+            }, {})
+          ).map((group) => {
+            const bizId = group.docs[0]?.business_id;
+            const open = openBiz === bizId;
+            const pendingCount = group.docs.filter((d) => d.status === "pending").length;
+            const rejectedCount = group.docs.filter((d) => d.status === "rejected" || d.status === "reopened").length;
+            const approvedCount = group.docs.filter((d) => d.status === "approved").length;
+            return (
+              <div key={bizId} style={{ ...card, display: "grid", gap: 12 }}>
+                <button
+                  onClick={() => setOpenBiz(open ? null : bizId)}
+                  style={{ background: "none", border: "none", padding: 0, cursor: "pointer", textAlign: "left", display: "flex", gap: 14, flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", color: "inherit", fontFamily: "inherit" }}
+                >
+                  <div style={{ minWidth: 220 }}>
+                    <div style={{ fontWeight: 700, fontSize: 15 }}>{group.business?.name ?? "Unknown business"}</div>
+                    <div style={{ color: T.mut, fontSize: 13, marginTop: 2 }}>
+                      {group.docs.length} document{group.docs.length === 1 ? "" : "s"}
+                      {pendingCount > 0 && <> · <span style={{ color: T.accent }}>{pendingCount} awaiting review</span></>}
+                      {rejectedCount > 0 && <> · <span style={{ color: "#F87171" }}>{rejectedCount} need{rejectedCount === 1 ? "s" : ""} resubmission</span></>}
+                      {approvedCount > 0 && <> · {approvedCount} accepted</>}
+                    </div>
+                  </div>
+                  <span style={{ color: T.mut, fontSize: 13 }}>{open ? "Hide documents ▴" : "View documents ▾"}</span>
+                </button>
+
+                {open && group.docs.map((v: any) => (
+            <div key={v.id} style={{ border: `1px solid ${T.line}`, borderRadius: 10, padding: 14, display: "grid", gap: 12 }}>
               <div style={{ display: "flex", gap: 14, flexWrap: "wrap", alignItems: "center", justifyContent: "space-between" }}>
                 <div style={{ minWidth: 220 }}>
-                  <div style={{ fontWeight: 700 }}>{v.business?.name ?? "Unknown business"}</div>
+                  <div style={{ fontWeight: 700 }}>{v.document_label}</div>
                   <div style={{ color: T.mut, fontSize: 13 }}>
-                    {v.document_label} · version {v.version} · submitted {day(v.created_at)}
+                    version {v.version} · submitted {day(v.created_at)}
                   </div>
                   {v.status === "rejected" && (v.rejection_reason || v.notes) && (
                     <div style={{ color: "#F87171", fontSize: 13, marginTop: 4, overflowWrap: "anywhere" }}>
