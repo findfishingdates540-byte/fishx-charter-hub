@@ -54,7 +54,7 @@ const serviceInput = z.object({
   // NOT a URL: our own uploader returns a relative `/api/public/media/...` path,
   // which `z.string().url()` rejected — the reason captain hero uploads never saved.
   hero_url: z.string().max(2000).optional().nullable(),
-  water_type: z.string().max(40).optional().nullable(),
+  water_type: z.string().max(120).optional().nullable(),
   boat_id: z.string().uuid().optional().nullable(),
   base_price_cents: z.number().int().min(0),
   deposit_cents: z.number().int().min(0).default(0),
