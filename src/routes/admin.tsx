@@ -172,7 +172,7 @@ function AdminConsole() {
   const [openBiz, setOpenBiz] = useState<string | null>(null);
 
   const vStatus: VFilter = search.vstatus ?? "all";
-  const setVStatus = (k: VFilter) => navigate({ to: "/admin", search: (prev) => ({ ...prev, vstatus: k }) });
+  const setVStatus = (k: VFilter) => navigate({ to: "/admin", search: { section: tab, vstatus: k } });
 
   const vGroups = useMemo<VGroup[]>(() => {
     if (!data) return [];
