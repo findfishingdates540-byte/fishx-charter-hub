@@ -5,7 +5,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   getAdminOverview,
   decideVerification,
@@ -31,10 +31,30 @@ import { supabase } from "@/integrations/supabase/client";
 
 const SECTIONS = ["dashboard","operators","members","verifications","history","listings","bookings","calendar","payments","payouts","reconciliation","disputes","activity"] as const;
 
+/** Verification status tabs — one row per operator, grouped by where they stand. */
+export const V_FILTERS = [
+  { key: "all", label: "All" },
+  { key: "review", label: "In review" },
+  { key: "resubmit", label: "Needs resubmission" },
+  { key: "verified", label: "Verified" },
+  { key: "none", label: "Not verified" },
+] as const;
+type VFilter = (typeof V_FILTERS)[number]["key"];
+type VGroup = { business: any; docs: any[]; pending: number; rejected: number; approved: number; status: VFilter };
+export const V_KEYS: readonly string[] = V_FILTERS.map((f) => f.key);
+export const V_RANK: Record<string, number> = { review: 0, resubmit: 1, verified: 2, none: 3 };
+export const V_CHIP: Record<string, { label: string; color: string }> = {
+  review: { label: "In review", color: "#FFB86B" },
+  resubmit: { label: "Needs resubmission", color: "#F87171" },
+  verified: { label: "Verified", color: "#2DE2F2" },
+  none: { label: "Not verified", color: "#8AA2B0" },
+};
+
 export const Route = createFileRoute("/admin")({
   ssr: false,
-  validateSearch: (s: Record<string, unknown>): { section?: (typeof SECTIONS)[number] } => ({
+  validateSearch: (s: Record<string, unknown>): { section?: (typeof SECTIONS)[number]; vstatus?: VFilter } => ({
     section: (SECTIONS as readonly string[]).includes(String(s.section)) ? (s.section as any) : undefined,
+    vstatus: V_KEYS.includes(String(s.vstatus)) ? (s.vstatus as VFilter) : undefined,
   }),
   head: () => ({
     meta: [
@@ -150,6 +170,51 @@ function AdminConsole() {
   const [rejectError, setRejectError] = useState<string | null>(null);
   const [historyFor, setHistoryFor] = useState<string | null>(null);
   const [openBiz, setOpenBiz] = useState<string | null>(null);
+
+  const vStatus: VFilter = search.vstatus ?? "all";
+  const setVStatus = (k: VFilter) => navigate({ to: "/admin", search: { section: tab, vstatus: k } });
+
+  const vGroups = useMemo<VGroup[]>(() => {
+    if (!data) return [];
+    const map = new Map<string, { business: any; docs: any[] }>();
+    for (const v of data.verificationDocuments as any[]) {
+      const key = v.business_id as string | null;
+      if (!key) continue;
+      if (!map.has(key)) map.set(key, { business: v.business, docs: [] });
+      map.get(key)!.docs.push(v);
+    }
+    for (const b of data.businesses as any[]) {
+      if (!map.has(b.id)) map.set(b.id, { business: b, docs: [] });
+    }
+    return [...map.values()]
+      .map<VGroup>((g) => {
+        const pending = g.docs.filter((d: any) => d.status === "pending").length;
+        const rejected = g.docs.filter((d: any) => d.status === "rejected" || d.status === "reopened").length;
+        const approved = g.docs.filter((d: any) => d.status === "approved").length;
+        const status: VFilter =
+          g.business?.verified_at && pending === 0 && rejected === 0
+            ? "verified"
+            : pending > 0
+              ? "review"
+              : rejected > 0
+                ? "resubmit"
+                : g.docs.length === 0
+                  ? "none"
+                  : "review";
+        return { ...g, pending, rejected, approved, status };
+      })
+      .sort(
+        (a, b) =>
+          V_RANK[a.status] - V_RANK[b.status] ||
+          b.pending - a.pending ||
+          String(b.docs[0]?.created_at ?? "").localeCompare(String(a.docs[0]?.created_at ?? "")) ||
+          String(a.business?.name ?? "").localeCompare(String(b.business?.name ?? "")),
+      );
+  }, [data]);
+
+  const vVisible = vGroups.filter((g) => vStatus === "all" || g.status === vStatus);
+  const vCounts: Record<VFilter, number> = { all: vGroups.length, verified: 0, review: 0, resubmit: 0, none: 0 };
+  for (const g of vGroups) vCounts[g.status] += 1;
 
   const fetchRecon = useServerFn(getPayoutReconciliation);
   const rerunRecon = useServerFn(runPayoutReconciliation);
@@ -274,38 +339,83 @@ function AdminConsole() {
       {tab === "history" && <AdminHistory businesses={data.businesses as any} />}
 
       {tab === "verifications" && (
-        <div style={{ display: "grid", gap: 12 }}>
-          {data.verificationDocuments.length === 0 && <div style={{ ...card, color: T.mut }}>No verification documents yet.</div>}
-          {Object.values(
-            (data.verificationDocuments as any[]).reduce((acc: Record<string, { business: any; docs: any[] }>, v: any) => {
-              const key = v.business_id ?? v.id;
-              if (!acc[key]) acc[key] = { business: v.business, docs: [] };
-              acc[key].docs.push(v);
-              return acc;
-            }, {})
-          ).map((group) => {
-            const bizId = group.docs[0]?.business_id;
-            const open = openBiz === bizId;
-            const pendingCount = group.docs.filter((d) => d.status === "pending").length;
-            const rejectedCount = group.docs.filter((d) => d.status === "rejected" || d.status === "reopened").length;
-            const approvedCount = group.docs.filter((d) => d.status === "approved").length;
-            return (
+        <>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 16 }}>
+            {V_FILTERS.map((f) => {
+              const active = vStatus === f.key;
+              return (
+                <button
+                  key={f.key}
+                  onClick={() => setVStatus(f.key)}
+                  style={{
+                    ...ghost,
+                    padding: "7px 12px",
+                    background: active ? "rgba(45,226,242,.14)" : "transparent",
+                    color: active ? T.accent : T.ink,
+                    borderColor: active ? T.accent : T.line,
+                    display: "inline-flex", alignItems: "center", gap: 7,
+                  }}
+                >
+                  {f.label}
+                  <span style={{ fontSize: 11.5, fontWeight: 700, color: active ? T.accent : T.mut }}>{vCounts[f.key]}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          <div style={{ display: "grid", gap: 12 }}>
+            {vVisible.length === 0 && (
+              <div style={{ ...card, color: T.mut }}>
+                No operators in this group.
+              </div>
+            )}
+            {vVisible.map((group) => {
+              const bizId = group.business?.id ?? group.docs[0]?.business_id;
+              const open = openBiz === bizId;
+              const pendingCount = group.pending;
+              const rejectedCount = group.rejected;
+              const approvedCount = group.approved;
+              return (
               <div key={bizId} style={{ ...card, display: "grid", gap: 12 }}>
                 <button
                   onClick={() => setOpenBiz(open ? null : bizId)}
                   style={{ background: "none", border: "none", padding: 0, cursor: "pointer", textAlign: "left", display: "flex", gap: 14, flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", color: "inherit", fontFamily: "inherit" }}
                 >
                   <div style={{ minWidth: 220 }}>
-                    <div style={{ fontWeight: 700, fontSize: 15 }}>{group.business?.name ?? "Unknown business"}</div>
-                    <div style={{ color: T.mut, fontSize: 13, marginTop: 2 }}>
-                      {group.docs.length} document{group.docs.length === 1 ? "" : "s"}
-                      {pendingCount > 0 && <> · <span style={{ color: T.accent }}>{pendingCount} awaiting review</span></>}
-                      {rejectedCount > 0 && <> · <span style={{ color: "#F87171" }}>{rejectedCount} need{rejectedCount === 1 ? "s" : ""} resubmission</span></>}
-                      {approvedCount > 0 && <> · {approvedCount} accepted</>}
+                    <div style={{ display: "flex", alignItems: "center", gap: 9, flexWrap: "wrap" }}>
+                      <span style={{ fontWeight: 700, fontSize: 15 }}>{group.business?.name ?? "Unknown business"}</span>
+                      <span
+                        style={{
+                          fontSize: 10.5, fontWeight: 700, letterSpacing: ".07em", textTransform: "uppercase",
+                          color: V_CHIP[group.status]?.color, border: `1px solid ${V_CHIP[group.status]?.color}`,
+                          borderRadius: 999, padding: "2px 8px",
+                        }}
+                      >
+                        {V_CHIP[group.status]?.label}
+                      </span>
+                    </div>
+                    <div style={{ color: T.mut, fontSize: 13, marginTop: 4 }}>
+                      {group.docs.length === 0 ? (
+                        "No documents submitted yet"
+                      ) : (
+                        <>
+                          {group.docs.length} document{group.docs.length === 1 ? "" : "s"}
+                          {pendingCount > 0 && <> · <span style={{ color: "#FFB86B" }}>{pendingCount} awaiting review</span></>}
+                          {rejectedCount > 0 && <> · <span style={{ color: "#F87171" }}>{rejectedCount} need{rejectedCount === 1 ? "s" : ""} resubmission</span></>}
+                          {approvedCount > 0 && <> · {approvedCount} accepted</>}
+                        </>
+                      )}
+                      {group.business?.verified_at && <> · verified {day(group.business.verified_at)}</>}
                     </div>
                   </div>
-                  <span style={{ color: T.mut, fontSize: 13 }}>{open ? "Hide documents ▴" : "View documents ▾"}</span>
+                  <span style={{ color: T.mut, fontSize: 13 }}>{open ? "Hide documents ▴" : group.docs.length === 0 ? "Details ▾" : "View documents ▾"}</span>
                 </button>
+
+                {open && group.docs.length === 0 && (
+                  <div style={{ border: `1px dashed ${T.line}`, borderRadius: 10, padding: 14, color: T.mut, fontSize: 13 }}>
+                    This operator hasn&rsquo;t uploaded any verification documents yet.
+                  </div>
+                )}
 
                 {open && group.docs.map((v: any) => (
             <div key={v.id} style={{ border: `1px solid ${T.line}`, borderRadius: 10, padding: 14, display: "grid", gap: 12 }}>
@@ -411,8 +521,9 @@ function AdminConsole() {
                 ))}
               </div>
             );
-          })}
-        </div>
+            })}
+          </div>
+        </>
       )}
 
 
