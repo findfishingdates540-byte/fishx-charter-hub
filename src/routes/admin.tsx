@@ -151,6 +151,51 @@ function AdminConsole() {
   const [historyFor, setHistoryFor] = useState<string | null>(null);
   const [openBiz, setOpenBiz] = useState<string | null>(null);
 
+  const vStatus: VFilter = search.vstatus ?? "all";
+  const setVStatus = (k: VFilter) => navigate({ to: "/admin", search: (prev) => ({ ...prev, vstatus: k }) });
+
+  const vGroups = useMemo<VGroup[]>(() => {
+    if (!data) return [];
+    const map = new Map<string, { business: any; docs: any[] }>();
+    for (const v of data.verificationDocuments as any[]) {
+      const key = v.business_id as string | null;
+      if (!key) continue;
+      if (!map.has(key)) map.set(key, { business: v.business, docs: [] });
+      map.get(key)!.docs.push(v);
+    }
+    for (const b of data.businesses as any[]) {
+      if (!map.has(b.id)) map.set(b.id, { business: b, docs: [] });
+    }
+    return [...map.values()]
+      .map<VGroup>((g) => {
+        const pending = g.docs.filter((d: any) => d.status === "pending").length;
+        const rejected = g.docs.filter((d: any) => d.status === "rejected" || d.status === "reopened").length;
+        const approved = g.docs.filter((d: any) => d.status === "approved").length;
+        const status: VFilter =
+          g.business?.verified_at && pending === 0 && rejected === 0
+            ? "verified"
+            : pending > 0
+              ? "review"
+              : rejected > 0
+                ? "resubmit"
+                : g.docs.length === 0
+                  ? "none"
+                  : "review";
+        return { ...g, pending, rejected, approved, status };
+      })
+      .sort(
+        (a, b) =>
+          V_RANK[a.status] - V_RANK[b.status] ||
+          b.pending - a.pending ||
+          String(b.docs[0]?.created_at ?? "").localeCompare(String(a.docs[0]?.created_at ?? "")) ||
+          String(a.business?.name ?? "").localeCompare(String(b.business?.name ?? "")),
+      );
+  }, [data]);
+
+  const vVisible = vGroups.filter((g) => vStatus === "all" || g.status === vStatus);
+  const vCounts: Record<VFilter, number> = { all: vGroups.length, verified: 0, review: 0, resubmit: 0, none: 0 };
+  for (const g of vGroups) vCounts[g.status] += 1;
+
   const fetchRecon = useServerFn(getPayoutReconciliation);
   const rerunRecon = useServerFn(runPayoutReconciliation);
   const recon = useQuery({
