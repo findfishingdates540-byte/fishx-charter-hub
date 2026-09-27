@@ -263,6 +263,11 @@ function AuthPage() {
       if (pw.length < 8) return setError("Password must be at least 8 characters.");
       if (!val("bizName")) return setError("Please enter your business name.");
       if (!val("location")) return setError("Please add your location.");
+      if (form.querySelector('input[type="checkbox"][name="detail"]')) {
+        const picks = new FormData(form).getAll("detail").map(String);
+        if (picks.length === 0) return setError("Please tick at least one option.");
+        if (picks.includes("Other") && !val("detail_other")) return setError("Please describe your 'Other' option.");
+      }
       if (!checked("terms")) return setError("Please accept the terms to continue.");
       kind = "business";
     }
@@ -309,7 +314,7 @@ function AuthPage() {
             data: {
               intended_role: intendedRole, full_name: val("name"),
               vertical, business_name: val("bizName"),
-              location: val("location"), vertical_detail: val("detail"),
+              location: val("location"), vertical_detail: detailValue(form, val),
             },
           },
         });
@@ -713,6 +718,44 @@ function VerticalCard({ label, sub, onClick, svg }: { label: string; sub: string
   );
 }
 
+function detailValue(form: HTMLFormElement, val: (n: string) => string): string {
+  if (!form.querySelector('input[type="checkbox"][name="detail"]')) return val("detail");
+  return new FormData(form).getAll("detail").map(String)
+    .map((p) => (p === "Other" ? val("detail_other") : p))
+    .filter(Boolean).join(", ");
+}
+
+function MultiDetail({ label, options }: { label: string; options: string[] }) {
+  const [sel, setSel] = useState<string[]>([]);
+  const all = [...options, "Other"];
+  const toggle = (o: string) => setSel((s) => (s.includes(o) ? s.filter((x) => x !== o) : [...s, o]));
+  return (
+    <fieldset style={{ border: 0, padding: 0, margin: 0 }}>
+      <legend style={{ ...labelSpan, padding: 0 }}>{label} <span style={{ textTransform: "none", letterSpacing: 0, fontWeight: 500 }}>— tick all that apply</span></legend>
+      <div style={{ display: "grid", gap: 8 }}>
+        {all.map((o) => {
+          const on = sel.includes(o);
+          return (
+            <label key={o} style={{
+              display: "flex", alignItems: "center", gap: 12, minHeight: 46, padding: "10px 14px",
+              background: "var(--card)", borderRadius: 11, cursor: "pointer", fontSize: 15, color: "var(--ink)",
+              border: `1px solid ${on ? "#2DE2F2" : "var(--line)"}`,
+              boxShadow: on ? "0 0 0 2px rgba(45,226,242,.18)" : "none",
+            }}>
+              <input type="checkbox" name="detail" value={o} checked={on} onChange={() => toggle(o)}
+                style={{ width: 18, height: 18, accentColor: "#2DE2F2", margin: 0, flexShrink: 0 }} />
+              <span>{o}</span>
+            </label>
+          );
+        })}
+        {sel.includes("Other") && (
+          <input name="detail_other" placeholder="e.g. Wreck fishing, night trips" style={inputStyle} autoFocus />
+        )}
+      </div>
+    </fieldset>
+  );
+}
+
 function VerticalDetail({ vertical }: { vertical: Exclude<Vertical, ""> }) {
   const select = (label: string, options: string[]) => (
     <label style={{ display: "block" }}>
@@ -722,7 +765,8 @@ function VerticalDetail({ vertical }: { vertical: Exclude<Vertical, ""> }) {
       </select>
     </label>
   );
-  if (vertical === "captain") return select("Waters you fish", ["Offshore / bluewater", "Inshore", "Nearshore & reef", "Fly & light tackle"]);
+  const multi = (label: string, options: string[]) => <MultiDetail label={label} options={options} />;
+  if (vertical === "captain") return multi("Waters you fish", ["Offshore / bluewater", "Inshore", "Nearshore & reef", "Fly & light tackle"]);
   if (vertical === "tackle") return select("Sales channel", ["In-store & online", "In-store only", "Online only"]);
   if (vertical === "marina") return (
     <label style={{ display: "block" }}>
@@ -730,7 +774,7 @@ function VerticalDetail({ vertical }: { vertical: Exclude<Vertical, ""> }) {
       <input name="detail" type="number" min={0} placeholder="e.g. 120" style={inputStyle} />
     </label>
   );
-  if (vertical === "manufacturer") return select("Product category", ["Rods & reels", "Terminal tackle & lures", "Electronics & sonar", "Boats & motors", "Other"]);
-  if (vertical === "apparel") return select("Product focus", ["Performance fishing wear", "Casual & lifestyle", "Outerwear & foul-weather", "Accessories"]);
-  return select("Type of guiding", ["Fly fishing", "Bass & freshwater", "Inshore / flats", "Offshore", "Ice fishing"]);
+  if (vertical === "manufacturer") return multi("Product category", ["Rods & reels", "Terminal tackle & lures", "Electronics & sonar", "Boats & motors"]);
+  if (vertical === "apparel") return multi("Product focus", ["Performance fishing wear", "Casual & lifestyle", "Outerwear & foul-weather", "Accessories"]);
+  return multi("Type of guiding", ["Fly fishing", "Bass & freshwater", "Inshore / flats", "Offshore", "Ice fishing"]);
 }
