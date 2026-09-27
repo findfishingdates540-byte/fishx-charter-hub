@@ -480,21 +480,47 @@ export function CharterForm({
 
         </label>
 
-        <label>
-          <span style={labelStyle}>Water type</span>
-          <select
-            style={inputStyle}
-            value={draft.water_type}
-            onChange={(e) => onChange({ ...draft, water_type: e.target.value })}
-          >
-            <option value="">Select…</option>
-            {WATER_TYPES.map((w) => (
-              <option key={w} value={w}>
-                {w}
-              </option>
-            ))}
-          </select>
-        </label>
+        <fieldset style={{ border: "none", margin: 0, padding: 0 }}>
+          <span style={labelStyle}>Water types — tick all that apply</span>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+            {WATER_TYPES.map((w) => {
+              const selected = splitWaterTypes(draft.water_type);
+              const checked = selected.includes(w);
+              return (
+                <label
+                  key={w}
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 7,
+                    padding: "7px 12px",
+                    borderRadius: 999,
+                    border: `1px solid ${checked ? "var(--sandsoft, rgba(45,226,242,.4))" : "var(--line)"}`,
+                    background: checked ? "var(--sandsoft, rgba(45,226,242,.14))" : "transparent",
+                    color: checked ? "var(--goldtext, #2DE2F2)" : "inherit",
+                    fontSize: 13,
+                    cursor: "pointer",
+                  }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={checked}
+                    onChange={() =>
+                      onChange({
+                        ...draft,
+                        water_type: joinWaterTypes(
+                          checked ? selected.filter((t) => t !== w) : [...selected, w],
+                        ),
+                      })
+                    }
+                    style={{ accentColor: "#2DE2F2" }}
+                  />
+                  {w}
+                </label>
+              );
+            })}
+          </div>
+        </fieldset>
 
         <label>
           <span style={labelStyle}>Target species</span>
