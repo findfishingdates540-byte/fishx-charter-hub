@@ -14,6 +14,7 @@ import {
   toggleBookingReaction,
 } from "@/lib/messages.functions";
 import { BusinessInbox } from "@/components/messages/BusinessInbox";
+import { useCompactMessages } from "@/hooks/use-compact-messages";
 import {
   ChatAvatar,
   ChatComposer,
@@ -142,6 +143,7 @@ export function CaptainMessages({
 }
 
 function BookingThreads({ fullHeight = false }: { fullHeight?: boolean }) {
+  const isCompact = useCompactMessages();
   const listFn = useServerFn(listCaptainConversations);
   const { data, isLoading } = useQuery({
     queryKey: ["captain-conversations"],
@@ -152,9 +154,8 @@ function BookingThreads({ fullHeight = false }: { fullHeight?: boolean }) {
   const [mobileThreadOpen, setMobileThreadOpen] = useState(false);
 
   useEffect(() => {
-    const compact = window.matchMedia("(max-width: 1024px)").matches;
-    if (!compact && !activeId && rows.length) setActiveId(rows[0].booking_id);
-  }, [rows, activeId]);
+    if (!isCompact && !activeId && rows.length) setActiveId(rows[0].booking_id);
+  }, [rows, activeId, isCompact]);
 
   const select = (id: string) => {
     setActiveId(id);
@@ -305,7 +306,11 @@ function BookingThreads({ fullHeight = false }: { fullHeight?: boolean }) {
         )}
       </aside>
 
-      {activeId ? <CaptainThread key={activeId} bookingId={activeId} onBack={() => setMobileThreadOpen(false)} /> : <Placeholder />}
+      {activeId ? (
+        <CaptainThread key={activeId} bookingId={activeId} onBack={() => setMobileThreadOpen(false)} />
+      ) : isCompact ? null : (
+        <Placeholder />
+      )}
     </div>
   );
 }
