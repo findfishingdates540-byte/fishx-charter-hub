@@ -981,6 +981,7 @@ export function BookingFlow({
 
                 {[
                   ["Duration", durLabel],
+                  ...(option ? [["Trip type", option.label] as [string, string]] : []),
                   ["Date", slot ? dateLabel : "Not selected"],
                   ["Departure", slot ? timeBlock(slot) : "Not selected"],
                   isSlip ? ["Nights", `${nights}`] : ["Party size", `${party}`],
@@ -1119,6 +1120,7 @@ export function BookingFlow({
                 <div style={{ fontSize: 13, color: V.tmut, margin: "4px 0 14px" }}>{businessLine}</div>
                 <div style={{ fontSize: 13, color: V.tmut, paddingBottom: 12, borderBottom: `1px solid ${V.line}` }}>
                   {slot ? `${dateLabel} · ${timeBlock(slot)}` : "No departure selected"} · {party} aboard
+                  {option ? ` · ${option.label}` : ""}
                 </div>
                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13.5, padding: "10px 0 7px", color: V.tmut }}>
                   <span>Trip fee</span><span style={{ color: V.ink }}>{money(price)}</span>
@@ -1252,7 +1254,7 @@ export function BookingFlow({
                       <div style={{ display: "flex", gap: 16 }}>
                         <MediaImg src={heroUrl} alt="" style={{ width: 96, height: 74, borderRadius: 12, objectFit: "cover", flex: "none" }} />
                         <div style={{ flex: 1 }}>
-                          <div style={{ fontSize: 15, fontWeight: 600 }}>{svc.title}</div>
+                          <div style={{ fontSize: 15, fontWeight: 600 }}>{svc.title}{option ? ` — ${option.label}` : ""}</div>
                           <div style={{ fontSize: 13, color: V.tmut, marginTop: 3 }}>{businessLine}</div>
                           <div style={{ fontSize: 13, color: V.tmut, marginTop: 6 }}>{dateLabel} · {time} · {party} anglers</div>
                           {addonLines.length > 0 && (
