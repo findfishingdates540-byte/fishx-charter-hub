@@ -443,7 +443,17 @@ export function OperatorProfile({
               </section>
             )}
 
+            {/* Products first for goods sellers */}
+            {isShop && productsSection}
+
+            {isShop && products.length === 0 && storefrontServices.length === 0 && (
+              <section style={{ background: "#14202B", border: "1px dashed rgba(255,255,255,.12)", borderRadius: 18, padding: 32, textAlign: "center", color: "#92A0AB" }}>
+                No products listed yet — check back soon.
+              </section>
+            )}
+
             {/* Services / Trips */}
+            {(!isShop || storefrontServices.length > 0) && (
             <section>
               <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 16 }}>
                 <h2 style={{ ...sectionTitle, margin: 0 }}>{labels.services}</h2>
