@@ -1307,8 +1307,8 @@ body.dc-body { margin:0; background:#072057; }
 }
 .fx-msg-round-action:active { transform: scale(.94); }
 
-/* Captain messages — mobile single scrollable screen */
-@media (max-width: 900px) {
+/* Operator messages — phones and tablets use one list-to-thread flow. */
+@media (max-width: 1024px) {
   .fx-msg-fullscreen-header {
     gap: 8px !important;
     padding: calc(7px + env(safe-area-inset-top)) 8px 7px !important;
@@ -1343,7 +1343,7 @@ body.dc-body { margin:0; background:#072057; }
     flex-direction: column;
     gap: 0 !important;
     min-height: unset !important;
-    height: calc(100vh - 180px);
+    height: calc(100dvh - 116px);
   }
   .fx-msg-fullscreen .fx-msg-grid {
     height: auto;
@@ -1368,6 +1368,21 @@ body.dc-body { margin:0; background:#072057; }
     min-height: 0;
     overflow-y: auto;
   }
+  .fx-msg-modes {
+    gap: 6px !important;
+    margin: 0;
+    padding: 10px 12px;
+    overflow-x: auto;
+    border-bottom: 1px solid var(--line);
+    scrollbar-width: none;
+  }
+  .fx-msg-modes::-webkit-scrollbar { display: none; }
+  .fx-msg-modes > button { flex: 0 0 auto; }
+}
+
+@media (min-width: 1025px) {
+  .fx-msg-modes { margin: 14px 16px 16px; }
+  .fx-msg-grid { margin-inline: 16px; }
 }
 
 /* Captain charter trips — mobile layout */

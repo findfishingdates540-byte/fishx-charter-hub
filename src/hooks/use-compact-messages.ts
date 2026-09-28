@@ -1,6 +1,6 @@
 import * as React from "react";
 
-const COMPACT_MESSAGES_BREAKPOINT = 901;
+const COMPACT_MESSAGES_BREAKPOINT = 1025;
 
 /** Phone and tablet messaging use the same list-to-thread flow. */
 export function useCompactMessages() {
