@@ -647,6 +647,62 @@ export function BookingFlow({
                   </section>
                 )}
 
+                {/* Trip options — the angler picks ONE choice at booking */}
+                {tripOptions.length > 0 && (
+                  <section style={cardLight}>
+                    <h2 style={h2Light}>Choose your trip type</h2>
+                    <p style={{ fontSize: 13.5, color: V.tmut, margin: "-8px 0 16px" }}>
+                      This captain offers a few ways to fish — pick the one you want. The price updates instantly.
+                    </p>
+                    <div style={{ display: "grid", gap: 12 }}>
+                      {tripOptions.map((o) => {
+                        const active = o.id === optionId;
+                        return (
+                          <button
+                            key={o.id}
+                            onClick={() => setOptionId(active ? null : o.id)}
+                            style={{
+                              textAlign: "left",
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 16,
+                              background: active ? "rgba(45,226,242,.16)" : V.paper,
+                              border: `1px solid ${active ? "rgba(45,226,242,.55)" : V.line}`,
+                              borderRadius: 14,
+                              padding: "16px 18px",
+                              cursor: "pointer",
+                              color: V.ink,
+                            }}
+                          >
+                            <span
+                              style={{
+                                width: 18, height: 18, borderRadius: "50%", flex: "none",
+                                border: `2px solid ${active ? V.sand : V.line}`,
+                                background: active ? V.sand : "transparent",
+                              }}
+                            />
+                            <span style={{ flex: 1, minWidth: 0 }}>
+                              <span style={{ display: "block", fontFamily: V.serif, fontSize: 19, fontWeight: 700, color: V.ink }}>{o.label}</span>
+                              <span style={{ display: "block", fontFamily: MONO, fontSize: 12.5, color: V.cyan, marginTop: 4 }}>
+                                {o.duration_minutes ? `${Math.round(o.duration_minutes / 60)} hrs` : durLabel}
+                                {o.description ? ` · ${o.description}` : ""}
+                              </span>
+                            </span>
+                            <span style={{ fontFamily: MONO, fontSize: 18, fontWeight: 700, color: V.ink, whiteSpace: "nowrap" }}>
+                              {money(o.price_cents)}<span style={{ fontSize: 11.5, color: V.tmut }}> / trip</span>
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                    {!option && (
+                      <div style={{ fontSize: 12.5, color: V.tmut, marginTop: 10 }}>
+                        No selection keeps the standard trip at {money(svc.base_price_cents ?? 0)}.
+                      </div>
+                    )}
+                  </section>
+                )}
+
                 {/* Charter overview */}
 
                 <section style={cardLight}>
@@ -745,12 +801,24 @@ export function BookingFlow({
               {/* BOOKING RAIL */}
               <div className="fx-booking-rail" style={{ position: "sticky", top: 84, background: V.card, border: `1px solid ${V.line}`, borderRadius: 20, padding: 24, boxShadow: "0 24px 50px -34px rgba(13,34,54,.4)" }}>
                 <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: 10, marginBottom: 18 }}>
-                  <span style={{ fontFamily: "ui-monospace,SFMono-Regular,Menlo,monospace", fontSize: 32, fontWeight: 700, color: V.ink }}>{money(slot?.priceCents ?? svc.base_price_cents ?? 0)}</span>
+                  <span style={{ fontFamily: "ui-monospace,SFMono-Regular,Menlo,monospace", fontSize: 32, fontWeight: 700, color: V.ink }}>{money(nightlyPrice)}</span>
                   <span style={{ fontSize: 13, color: V.tmut }}>/ trip · {durLabel}</span>
                   <span style={{ marginLeft: "auto", fontSize: 10, fontWeight: 700, letterSpacing: ".12em", textTransform: "uppercase", color: V.green, background: "rgba(78,201,142,.12)", border: "1px solid rgba(78,201,142,.35)", borderRadius: 6, padding: "6px 9px", whiteSpace: "nowrap" }}>
                     Escrow guaranteed
                   </span>
                 </div>
+                {option && (
+                  <div style={{ marginBottom: 14, display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(45,226,242,.12)", border: "1px solid rgba(45,226,242,.4)", borderRadius: 999, padding: "6px 12px", fontSize: 12.5, fontWeight: 700, color: V.goldtext }}>
+                    {option.label}
+                    <button
+                      onClick={() => setOptionId(null)}
+                      aria-label="Clear trip option"
+                      style={{ background: "transparent", border: 0, color: V.tmut, cursor: "pointer", fontSize: 13, padding: 0, lineHeight: 1 }}
+                    >
+                      ×
+                    </button>
+                  </div>
+                )}
 
                 <div
                   style={{
