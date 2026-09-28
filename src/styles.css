@@ -1358,10 +1358,10 @@ body.dc-body { margin:0; background:#072057; }
     border-left: 0 !important;
     border-right: 0 !important;
   }
-  .fx-msg-grid > aside { display: flex; }
-  .fx-msg-grid[data-thread-open="true"] > aside { display: none; }
-  .fx-msg-grid > section { display: none; }
-  .fx-msg-grid[data-thread-open="true"] > section { display: flex; }
+  .fx-msg-grid > aside { display: flex !important; }
+  .fx-msg-grid[data-thread-open="true"] > aside { display: none !important; }
+  .fx-msg-grid > section { display: none !important; }
+  .fx-msg-grid[data-thread-open="true"] > section { display: flex !important; }
   .fx-msg-thread { height: 100%; }
   .fx-msg-thread > div:nth-of-type(2) {
     flex: 1 1 auto;
