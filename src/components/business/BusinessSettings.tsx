@@ -362,7 +362,13 @@ function VisibilityCard({
   const toggle = useServerFn(setBusinessPublished);
   const m = useMutation({
     mutationFn: (v: boolean) => toggle({ data: { businessId: business.id, isPublished: v } }),
-    onSuccess: onDone,
+    onSuccess: (r: any) => {
+      if (r && r.ok === false) {
+        toast.error(r.message || "Finish your setup before publishing.");
+        return;
+      }
+      onDone();
+    },
     onError: (e: any) => toast.error(e?.message || "We couldn't update your storefront."),
   });
 
