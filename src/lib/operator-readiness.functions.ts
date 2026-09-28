@@ -216,7 +216,8 @@ export const setStorefrontLive = createServerFn({ method: "POST" })
     // payouts connected plus an upcoming date or an in-stock product.
     if (data.live) {
       const missing: string[] = [];
-      if (!(biz.charges_enabled && biz.payouts_enabled)) missing.push("payouts");
+      const { syncPayoutStatus } = await import("./listing-publish-guard.server");
+      if (!(await syncPayoutStatus(context.supabase, biz.id, biz))) missing.push("payouts");
       if (!biz.verified_at) missing.push("verification");
 
       const { data: svc } = await context.supabase
