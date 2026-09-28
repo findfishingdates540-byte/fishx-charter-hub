@@ -171,6 +171,13 @@ export function BookingFlow({
   const packages = ((svc as any).packages ?? []) as Array<{
     id: string; title: string; duration_minutes: number | null; base_price_cents: number; capacity: number | null;
   }>;
+  // Trip options: the captain's bookable choices (Inshore 4h, Offshore 8h…).
+  // The angler picks one and its price/duration replaces the base rate.
+  const tripOptions = ((svc as any).tripOptions ?? []) as Array<{
+    id: string; label: string; description: string | null; price_cents: number; duration_minutes: number | null;
+  }>;
+  const [optionId, setOptionId] = useState<string | null>(null);
+  const option = tripOptions.find((o) => o.id === optionId) ?? null;
   const [selectedAddons, setSelectedAddons] = useState<string[]>([]);
   const [notes, setNotes] = useState("");
   const toggleAddon = (id: string) =>
@@ -216,8 +223,9 @@ export function BookingFlow({
     monthly_rate_cents?: number | null;
   } | null;
   const [nights, setNights] = useState(1);
-  /** The listed fee is the price of the whole trip — it is NOT multiplied by party size. */
-  const nightlyPrice = slot?.priceCents ?? svc.base_price_cents ?? 0;
+  /** The listed fee is the price of the whole trip — it is NOT multiplied by party size.
+   *  A chosen trip option replaces the base rate. */
+  const nightlyPrice = option ? option.price_cents : (slot?.priceCents ?? svc.base_price_cents ?? 0);
   const monthlyRate = slipInfo?.monthly_rate_cents ?? 0;
   /** 28+ nights get the monthly rate pro-rated when it beats paying nightly. */
   const monthlyPrice =
@@ -246,7 +254,8 @@ export function BookingFlow({
   const balanceDue = total - deposit;
 
 
-  const durLabel = svc.duration_minutes ? `${Math.round(svc.duration_minutes / 60)} hrs` : "half day";
+  const effDuration = option?.duration_minutes ?? svc.duration_minutes;
+  const durLabel = effDuration ? `${Math.round(effDuration / 60)} hrs` : "half day";
   const date = slot ? slot.startsAt.slice(0, 10) : "";
   const time = slot ? new Date(slot.startsAt).toISOString().slice(11, 16) : "";
   const dateLabel = useMemo(() => {
@@ -265,20 +274,22 @@ export function BookingFlow({
   // this angler's previous unpaid hold before creating the new one.
   const [attemptSeed, setAttemptSeed] = useState(() => crypto.randomUUID());
   const attemptKey = useMemo(() => {
-    const sig = [slotId, party, nights, [...selectedAddons].sort().join("|"), notes.trim()].join("~");
+    const sig = [slotId, party, nights, optionId ?? "", [...selectedAddons].sort().join("|"), notes.trim()].join("~");
     let h = 5381;
     for (let i = 0; i < sig.length; i++) h = ((h << 5) + h + sig.charCodeAt(i)) >>> 0;
     return `${attemptSeed}-${h.toString(36)}`;
-  }, [attemptSeed, slotId, party, nights, selectedAddons, notes]);
+  }, [attemptSeed, slotId, party, nights, optionId, selectedAddons, notes]);
 
   const placeMut = useMutation({
     mutationFn: () => {
       if (!slot) throw new Error("Pick an available departure first.");
+      if (tripOptions.length > 0 && !option) throw new Error("Pick a trip option first.");
       return toError(createBookingRPC({
         data: {
           slotId: slot.id,
           partySize: party,
           ...(isSlip && nights > 1 ? { nights } : {}),
+          ...(option ? { tripOptionId: option.id } : {}),
           idempotencyKey: attemptKey,
           addonIds: selectedAddons,
           notes: notes.trim() || undefined,
@@ -360,7 +371,7 @@ export function BookingFlow({
     setHoldLeft(null);
     setHoldError(null);
     setCheckoutStartedAt(null);
-  }, [slotId, party, selectedAddons, notes]);
+  }, [slotId, party, selectedAddons, notes, optionId]);
 
   // Track when checkout step is entered to start the countdown immediately
   useEffect(() => {
