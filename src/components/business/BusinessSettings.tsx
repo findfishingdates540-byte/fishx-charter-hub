@@ -127,6 +127,7 @@ export function BusinessSettings({
           business={data.business}
           canEdit={canEdit}
           onDone={() => qc.invalidateQueries({ queryKey: ["business-settings", businessId] })}
+          onNavigate={openSection}
         />
       )}
       {active === "verification" && <VerificationDocuments businessId={businessId} />}
@@ -437,6 +438,51 @@ function VisibilityCard({
           {m.isPending ? "Saving…" : business.is_published ? "Unpublish" : "Publish storefront"}
         </button>
       </div>
+      {blocked.length > 0 && (
+        <div
+          style={{
+            marginTop: 16,
+            padding: 14,
+            borderRadius: 12,
+            border: "1px solid rgba(242,163,45,.35)",
+            background: "rgba(242,163,45,.08)",
+            display: "grid",
+            gap: 10,
+          }}
+        >
+          <div style={{ fontSize: 13.5, fontWeight: 800, color: "#F2A32D" }}>
+            Before your storefront can go live:
+          </div>
+          {blocked.map((key) => {
+            const help = BLOCKER_HELP[key] ?? BLOCKER_HELP.details;
+            return (
+              <div
+                key={key}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: 12,
+                  flexWrap: "wrap",
+                }}
+              >
+                <div>
+                  <div style={{ fontSize: 13.5, fontWeight: 700, color: "#E8EEF3" }}>{help.title}</div>
+                  <div style={{ fontSize: 12.5, color: "#A9B6C1" }}>{help.detail}</div>
+                </div>
+                {onNavigate && (
+                  <button
+                    onClick={() => onNavigate(help.section)}
+                    style={btn("ghost")}
+                  >
+                    {help.cta} →
+                  </button>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
     </Card>
   );
 }
