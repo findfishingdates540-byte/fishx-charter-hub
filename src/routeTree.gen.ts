@@ -17,6 +17,7 @@ import { Route as BecomeACaptainRouteImport } from './routes/become-a-captain'
 import { Route as BrandStoryRouteImport } from './routes/brand-story'
 import { Route as DiscoverRouteImport } from './routes/discover'
 import { Route as HowItWorksRouteImport } from './routes/how-it-works'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as TrustRouteImport } from './routes/trust'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
 import { Route as AuthenticatedBookingRouteImport } from './routes/_authenticated/booking'
@@ -99,6 +100,11 @@ const DiscoverRoute = DiscoverRouteImport.update({
 const HowItWorksRoute = HowItWorksRouteImport.update({
   id: '/how-it-works',
   path: '/how-it-works',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TrustRoute = TrustRouteImport.update({
@@ -351,6 +357,7 @@ export interface FileRoutesByFullPath {
   '/brand-story': typeof BrandStoryRoute
   '/discover': typeof DiscoverRoute
   '/how-it-works': typeof HowItWorksRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/trust': typeof TrustRoute
   '/account': typeof AuthenticatedAccountRoute
   '/booking': typeof AuthenticatedBookingRoute
@@ -404,6 +411,7 @@ export interface FileRoutesByTo {
   '/brand-story': typeof BrandStoryRoute
   '/discover': typeof DiscoverRoute
   '/how-it-works': typeof HowItWorksRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/trust': typeof TrustRoute
   '/account': typeof AuthenticatedAccountRoute
   '/booking': typeof AuthenticatedBookingRoute
@@ -459,6 +467,7 @@ export interface FileRoutesById {
   '/brand-story': typeof BrandStoryRoute
   '/discover': typeof DiscoverRoute
   '/how-it-works': typeof HowItWorksRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/trust': typeof TrustRoute
   '/_authenticated/account': typeof AuthenticatedAccountRoute
   '/_authenticated/booking': typeof AuthenticatedBookingRoute
@@ -514,6 +523,7 @@ export interface FileRouteTypes {
     | '/brand-story'
     | '/discover'
     | '/how-it-works'
+    | '/reset-password'
     | '/trust'
     | '/account'
     | '/booking'
@@ -567,6 +577,7 @@ export interface FileRouteTypes {
     | '/brand-story'
     | '/discover'
     | '/how-it-works'
+    | '/reset-password'
     | '/trust'
     | '/account'
     | '/booking'
@@ -621,6 +632,7 @@ export interface FileRouteTypes {
     | '/brand-story'
     | '/discover'
     | '/how-it-works'
+    | '/reset-password'
     | '/trust'
     | '/_authenticated/account'
     | '/_authenticated/booking'
@@ -676,6 +688,7 @@ export interface RootRouteChildren {
   BrandStoryRoute: typeof BrandStoryRoute
   DiscoverRoute: typeof DiscoverRoute
   HowItWorksRoute: typeof HowItWorksRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
   TrustRoute: typeof TrustRoute
   BSlugRoute: typeof BSlugRoute
   CaptainsProfileRoute: typeof CaptainsProfileRoute
@@ -755,6 +768,13 @@ declare module '@tanstack/react-router' {
       path: '/how-it-works'
       fullPath: '/how-it-works'
       preLoaderRoute: typeof HowItWorksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/trust': {
@@ -1136,6 +1156,7 @@ const rootRouteChildren: RootRouteChildren = {
   BrandStoryRoute: BrandStoryRoute,
   DiscoverRoute: DiscoverRoute,
   HowItWorksRoute: HowItWorksRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   TrustRoute: TrustRoute,
   BSlugRoute: BSlugRoute,
   CaptainsProfileRoute: CaptainsProfileRoute,

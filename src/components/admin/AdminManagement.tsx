@@ -419,7 +419,7 @@ export function AdminMembers() {
     onError: (e: unknown) => window.alert(e instanceof Error ? e.message : "Could not update account."),
   });
   const resetMut = useMutation({
-    mutationFn: (userId: string) => reset({ data: { userId } }),
+    mutationFn: (userId: string) => reset({ data: { userId, origin: window.location.origin } }),
     onSuccess: () => window.alert("Password reset email sent."),
     onError: (e: unknown) => window.alert(e instanceof Error ? e.message : "Could not send reset email."),
   });

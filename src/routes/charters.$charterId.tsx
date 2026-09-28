@@ -1,3 +1,4 @@
+import { formatWaterTypes } from "@/lib/water-types";
 /**
  * Charter detail page — shows a charter's packages (time/duration variants),
  * lets the angler pick one and redirects to /_authenticated/booking?service_id=X&base=<charter-id>
@@ -73,7 +74,7 @@ export const Route = createFileRoute("/charters/$charterId")({
     const title = `${charter.name} · FISH-X.COM Bookings & Marketplace`;
     const description =
       charter.description?.slice(0, 160) ??
-      `Book a fishing charter — ${charter.water_type || "unknown water type"} · ${hours} · $${Math.round(
+      `Book a fishing charter — ${formatWaterTypes(charter.water_type) || "unknown water type"} · ${hours} · $${Math.round(
         charter.base_price_cents / 100,
       ).toLocaleString()}`;
     const meta: Array<Record<string, string>> = [
@@ -183,7 +184,7 @@ function CharterDetail() {
                 {charter.name}
               </h1>
               <p style={{ color: "#5c6b78", fontSize: 15, margin: 0 }}>
-                {hours ? `${hours} · ` : ""}{charter.water_type || "Unknown water type"} · {charter.capacity} anglers max
+                {hours ? `${hours} · ` : ""}{formatWaterTypes(charter.water_type) || "Unknown water type"} · {charter.capacity} anglers max
                 {charter.boat?.name ? ` · ${charter.boat.name}` : ""}
               </p>
             </div>
