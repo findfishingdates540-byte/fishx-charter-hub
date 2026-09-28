@@ -513,14 +513,29 @@ export const setUserSuspended = createServerFn({ method: "POST" })
 /** Email the member a password reset link. */
 export const sendPasswordReset = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((i: unknown) => z.object({ userId: z.string().uuid() }).parse(i))
+  .inputValidator((i: unknown) =>
+    z.object({ userId: z.string().uuid(), origin: z.string().url().optional() }).parse(i),
+  )
   .handler(async ({ data, context }) => {
     await assertAdmin(context.supabase, context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: u, error } = await supabaseAdmin.auth.admin.getUserById(data.userId);
     if (error || !u.user?.email) throw new Error("This account has no email on file");
+    const fallback = process.env["PUBLIC_APP_URL"] ?? "https://www.bookfishingtrips.com";
+    let base = fallback;
+    if (data.origin) {
+      const o = new URL(data.origin);
+      const h = o.hostname;
+      const trusted =
+        h === "localhost" ||
+        h.endsWith(".lovable.app") ||
+        h.endsWith(".lovableproject.com") ||
+        h === "bookfishingtrips.com" ||
+        h.endsWith(".bookfishingtrips.com");
+      if (trusted) base = o.origin;
+    }
     const { error: resetError } = await context.supabase.auth.resetPasswordForEmail(u.user.email, {
-      redirectTo: "https://www.bookfishingtrips.com/auth?view=reset",
+      redirectTo: `${base.replace(/\/$/, "")}/reset-password`,
     });
     if (resetError) throw new Error(resetError.message);
     await logAction(supabaseAdmin, context.userId, "user.password_reset_sent", "user", data.userId);
