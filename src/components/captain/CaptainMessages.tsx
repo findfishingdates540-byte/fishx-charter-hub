@@ -103,11 +103,11 @@ export function CaptainMessages({
     <div
       style={
         fullHeight
-          ? { height: "100%", display: "flex", flexDirection: "column", minHeight: 0, padding: "14px 16px 0" }
+          ? { height: "100%", display: "flex", flexDirection: "column", minHeight: 0 }
           : undefined
       }
     >
-      <div style={{ display: "flex", gap: 8, marginBottom: 16, flex: "none" }}>
+      <div className="fx-msg-modes" style={{ display: "flex", gap: 8, flex: "none" }}>
         {([["trips", "Trip threads"], ["direct", "Direct enquiries"]] as const).map(([k, label]) => (
           <button
             key={k}
@@ -152,7 +152,8 @@ function BookingThreads({ fullHeight = false }: { fullHeight?: boolean }) {
   const [mobileThreadOpen, setMobileThreadOpen] = useState(false);
 
   useEffect(() => {
-    if (!activeId && rows.length) setActiveId(rows[0].booking_id);
+    const compact = window.matchMedia("(max-width: 1024px)").matches;
+    if (!compact && !activeId && rows.length) setActiveId(rows[0].booking_id);
   }, [rows, activeId]);
 
   const select = (id: string) => {
