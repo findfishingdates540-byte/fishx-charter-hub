@@ -8,3 +8,5 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+- Operator messaging uses a shared compact list-to-thread layout through 1024px so every persona behaves consistently on phones and tablets.
