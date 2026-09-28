@@ -16,6 +16,8 @@ import {
   deleteCaptainCharter,
   listCharterDepartureTimes,
   upsertCharterDepartureTimes,
+  listCharterTripOptions,
+  upsertCharterTripOptions,
 } from "@/lib/captain-charters.functions";
 import {
   upsertCaptainService,
@@ -854,6 +856,8 @@ function CharterRowItem({
             </button>
           )}
 
+          <TripOptionsSection charterId={c.id} businessId={data.business?.id ?? ""} />
+
           <DepartureTimesSection charterId={c.id} businessId={data.business?.id ?? ""} />
         </div>
       )}
@@ -952,6 +956,209 @@ function PackageForm({
       <button style={ghostBtn} onClick={onCancel}>
         Cancel
       </button>
+    </div>
+  );
+}
+
+/* ---- TRIP OPTIONS SECTION (per charter) ---- */
+
+type TripOptionRow = {
+  id?: string;
+  label: string;
+  description: string;
+  price: number; // dollars in the form, cents in the DB
+  duration_hours: number;
+  is_active: boolean;
+  sort_order: number;
+};
+
+function TripOptionsSection({ charterId, businessId }: { charterId: string; businessId: string }) {
+  const qc = useQueryClient();
+  const [collapsed, setCollapsed] = useState(true);
+  const [rows, setRows] = useState<TripOptionRow[]>([]);
+  const [fetched, setFetched] = useState(false);
+
+  const listOptions = useServerFn(listCharterTripOptions);
+
+  useEffect(() => {
+    if (!fetched && charterId) {
+      listOptions({ data: { charterId } })
+        .then((data: any) => {
+          setRows(
+            (data ?? []).map((r: any) => ({
+              id: r.id,
+              label: r.label ?? "",
+              description: r.description ?? "",
+              price: (r.price_cents ?? 0) / 100,
+              duration_hours: r.duration_minutes ? r.duration_minutes / 60 : 4,
+              is_active: r.is_active ?? true,
+              sort_order: r.sort_order ?? 0,
+            })),
+          );
+          setFetched(true);
+        })
+        .catch(() => setFetched(true));
+    }
+  }, [charterId, fetched]);
+
+  const mSave = useMutation({
+    mutationFn: async () => {
+      await upsertCharterTripOptions({
+        data: {
+          charterId,
+          rows: rows
+            .filter((r) => r.label.trim().length >= 2)
+            .map((r, i) => ({
+              id: r.id,
+              label: r.label.trim(),
+              description: r.description.trim() || null,
+              price_cents: Math.max(0, Math.round(r.price * 100)),
+              duration_minutes: Math.max(30, Math.round(r.duration_hours * 60)),
+              is_active: r.is_active,
+              sort_order: i,
+            })),
+        },
+      });
+    },
+    onSuccess: () => {
+      toast.success("Trip options saved");
+      qc.invalidateQueries({ queryKey: ["captain-charters"] });
+    },
+    onError: (e: any) => toast.error(e?.message || "We couldn't save the trip options."),
+  });
+
+  const inputStyle: React.CSSProperties = {
+    width: "100%",
+    padding: "8px 11px",
+    borderRadius: 10,
+    border: "1px solid var(--line)",
+    background: "var(--card)",
+    fontSize: 13,
+    color: "var(--ink)",
+    fontFamily: "inherit",
+    outline: "none",
+    boxSizing: "border-box",
+  };
+
+  return (
+    <div style={{ border: "1px solid var(--line)", borderRadius: 14, padding: 14 }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, flexWrap: "wrap" }}>
+        <button
+          type="button"
+          onClick={() => setCollapsed((v) => !v)}
+          style={{
+            background: "transparent",
+            border: 0,
+            cursor: "pointer",
+            fontSize: 13,
+            fontWeight: 600,
+            color: "var(--cyan)",
+            padding: 0,
+          }}
+        >
+          {collapsed ? `▸ Trip options (${rows.length})` : "▾ Trip options"}
+        </button>
+        {!collapsed && (
+          <button
+            style={primaryBtn}
+            onClick={() =>
+              setRows([
+                ...rows,
+                { label: "", description: "", price: 0, duration_hours: 4, is_active: true, sort_order: rows.length },
+              ])
+            }
+          >
+            + Add option
+          </button>
+        )}
+      </div>
+
+      {!collapsed && (
+        <div style={{ marginTop: 12, display: "grid", gap: 10 }}>
+          <div style={{ fontSize: 12, color: "var(--tmut)", lineHeight: 1.5 }}>
+            The choices anglers pick between at checkout — e.g. "Inshore · 4h" vs "Offshore · 8h".
+            Each option has its own price. Leave the list empty to offer one standard trip.
+          </div>
+          {rows.map((r, i) => (
+            <div
+              key={r.id ?? `new-${i}`}
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1.4fr 1fr 0.7fr 0.7fr auto auto",
+                gap: 8,
+                alignItems: "end",
+                padding: 10,
+                border: "1px solid var(--line)",
+                borderRadius: 12,
+                background: "rgba(255,255,255,.02)",
+              }}
+              className="fx-pkg-form"
+            >
+              <label>
+                <span style={labelStyle}>Option name</span>
+                <input
+                  style={inputStyle}
+                  value={r.label}
+                  onChange={(e) => setRows(rows.map((x, j) => (j === i ? { ...x, label: e.target.value } : x)))}
+                  placeholder="Inshore"
+                />
+              </label>
+              <label>
+                <span style={labelStyle}>Short note</span>
+                <input
+                  style={inputStyle}
+                  value={r.description}
+                  onChange={(e) => setRows(rows.map((x, j) => (j === i ? { ...x, description: e.target.value } : x)))}
+                  placeholder="Calm waters, great for kids"
+                />
+              </label>
+              <label>
+                <span style={labelStyle}>Rate (USD)</span>
+                <input
+                  style={inputStyle}
+                  type="number"
+                  min={0}
+                  value={r.price}
+                  onChange={(e) => setRows(rows.map((x, j) => (j === i ? { ...x, price: Math.max(0, Number(e.target.value)) } : x)))}
+                />
+              </label>
+              <label>
+                <span style={labelStyle}>Hours</span>
+                <input
+                  style={inputStyle}
+                  type="number"
+                  min={0.5}
+                  step={0.5}
+                  value={r.duration_hours}
+                  onChange={(e) => setRows(rows.map((x, j) => (j === i ? { ...x, duration_hours: Math.max(0.5, Number(e.target.value)) } : x)))}
+                />
+              </label>
+              <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "var(--tmut)", paddingBottom: 8 }}>
+                <input
+                  type="checkbox"
+                  checked={r.is_active}
+                  onChange={(e) => setRows(rows.map((x, j) => (j === i ? { ...x, is_active: e.target.checked } : x)))}
+                  style={{ accentColor: "#2DE2F2" }}
+                />
+                Active
+              </label>
+              <button
+                style={{ ...ghostBtn, color: "#F87171", fontSize: 12 }}
+                onClick={() => setRows(rows.filter((_, j) => j !== i))}
+              >
+                Remove
+              </button>
+            </div>
+          ))}
+          {rows.length > 0 && (
+            <div style={{ display: "flex", gap: 8, marginTop: 4 }}>
+              <button style={primaryBtn} disabled={mSave.isPending} onClick={() => mSave.mutate()}>
+                {mSave.isPending ? "Saving…" : "Save trip options"}
+              </button>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

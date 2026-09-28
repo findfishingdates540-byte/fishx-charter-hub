@@ -483,6 +483,8 @@ export type Database = {
           template_id: string | null
           total_cents: number
           trip_date: string
+          trip_option_id: string | null
+          trip_option_label: string | null
           updated_at: string
         }
         Insert: {
@@ -523,6 +525,8 @@ export type Database = {
           template_id?: string | null
           total_cents?: number
           trip_date: string
+          trip_option_id?: string | null
+          trip_option_label?: string | null
           updated_at?: string
         }
         Update: {
@@ -563,6 +567,8 @@ export type Database = {
           template_id?: string | null
           total_cents?: number
           trip_date?: string
+          trip_option_id?: string | null
+          trip_option_label?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -606,6 +612,13 @@ export type Database = {
             columns: ["template_id"]
             isOneToOne: false
             referencedRelation: "trip_templates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bookings_trip_option_id_fkey"
+            columns: ["trip_option_id"]
+            isOneToOne: false
+            referencedRelation: "charter_trip_options"
             referencedColumns: ["id"]
           },
         ]
@@ -1236,6 +1249,63 @@ export type Database = {
           },
           {
             foreignKeyName: "charter_departure_times_charter_id_fkey"
+            columns: ["charter_id"]
+            isOneToOne: false
+            referencedRelation: "charters"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      charter_trip_options: {
+        Row: {
+          business_id: string
+          charter_id: string
+          created_at: string
+          description: string | null
+          duration_minutes: number | null
+          id: string
+          is_active: boolean
+          label: string
+          price_cents: number
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          business_id: string
+          charter_id: string
+          created_at?: string
+          description?: string | null
+          duration_minutes?: number | null
+          id?: string
+          is_active?: boolean
+          label: string
+          price_cents?: number
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          business_id?: string
+          charter_id?: string
+          created_at?: string
+          description?: string | null
+          duration_minutes?: number | null
+          id?: string
+          is_active?: boolean
+          label?: string
+          price_cents?: number
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "charter_trip_options_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "charter_trip_options_charter_id_fkey"
             columns: ["charter_id"]
             isOneToOne: false
             referencedRelation: "charters"
@@ -3743,6 +3813,8 @@ export type Database = {
           template_id: string | null
           total_cents: number
           trip_date: string
+          trip_option_id: string | null
+          trip_option_label: string | null
           updated_at: string
         }
         SetofOptions: {
@@ -3802,6 +3874,8 @@ export type Database = {
           template_id: string | null
           total_cents: number
           trip_date: string
+          trip_option_id: string | null
+          trip_option_label: string | null
           updated_at: string
         }
         SetofOptions: {
@@ -3819,6 +3893,7 @@ export type Database = {
           _notes?: string
           _party_size: number
           _slot_id: string
+          _trip_option_id?: string
         }
         Returns: {
           accept_deadline_at: string | null
@@ -3858,6 +3933,8 @@ export type Database = {
           template_id: string | null
           total_cents: number
           trip_date: string
+          trip_option_id: string | null
+          trip_option_label: string | null
           updated_at: string
         }
         SetofOptions: {
@@ -3945,6 +4022,8 @@ export type Database = {
           template_id: string | null
           total_cents: number
           trip_date: string
+          trip_option_id: string | null
+          trip_option_label: string | null
           updated_at: string
         }
         SetofOptions: {

@@ -79,22 +79,41 @@ export const getCheckoutContext = createServerFn({ method: "GET" })
         .order("sort_order", { ascending: true }),
     ]);
 
-    // Marina slips price by the night and can switch to a monthly rate on
-    // long stays, so the booking screen needs the slip's rate card too.
-    const slipRes =
-      svc.kind === "slip_rental"
-        ? await supabase
-            .from("marina_slips")
-            .select("slip_number,length_ft,beam_ft,amperage,nightly_rate_cents,monthly_rate_cents")
-            .eq("service_id", data.serviceId)
-            .maybeSingle()
-        : { data: null };
+  // Marina slips price by the night and can switch to a monthly rate on
+  // long stays, so the booking screen needs the slip's rate card too.
+  const slipRes =
+    svc.kind === "slip_rental"
+      ? await supabase
+          .from("marina_slips")
+          .select("slip_number,length_ft,beam_ft,amperage,nightly_rate_cents,monthly_rate_cents")
+          .eq("service_id", data.serviceId)
+          .maybeSingle()
+      : { data: null };
 
-    return {
-      ...svc,
-      openSlots,
-      slip: slipRes.data ?? null,
-      packages: packagesRes.data ?? [],
+  // Trip options: the choices an angler picks between at checkout (e.g.
+  // Inshore 4h vs Offshore 8h). They belong to the charter, so every package
+  // under it offers the same list.
+  const optionsRes = svc.charter_id
+    ? await (supabase as any)
+        .from("charter_trip_options")
+        .select("id,label,description,price_cents,duration_minutes,sort_order")
+        .eq("charter_id", svc.charter_id)
+        .eq("is_active", true)
+        .order("sort_order", { ascending: true })
+    : { data: [] };
+
+  return {
+    ...svc,
+    openSlots,
+    slip: slipRes.data ?? null,
+    packages: packagesRes.data ?? [],
+    tripOptions: (optionsRes.data ?? []) as Array<{
+      id: string;
+      label: string;
+      description: string | null;
+      price_cents: number;
+      duration_minutes: number | null;
+    }>,
 
       addons: (addonsRes.data ?? []) as Array<{
         id: string;
@@ -169,6 +188,8 @@ const CreateBookingInput = z.object({
    * arrival night. Anything above 1 books the whole stay atomically.
    */
   nights: z.number().int().min(1).max(120).optional(),
+  /** The trip option the angler picked (charters with multiple choices). */
+  tripOptionId: z.string().uuid().optional(),
   /** Client-generated; a retry returns the original booking. */
   idempotencyKey: z.string().min(8).max(120),
 });
@@ -258,6 +279,7 @@ export const createBookingFromService = createServerFn({ method: "POST" })
         _notes: data.notes ?? undefined,
         _hold_minutes: 15,
         _addon_cents: addonCents,
+        _trip_option_id: data.tripOptionId ?? undefined,
       } as never);
       booking = res.data;
       rpcErr = res.error;
@@ -281,6 +303,7 @@ export const createBookingFromService = createServerFn({ method: "POST" })
       service_id: string | null;
       stripe_payment_intent_id: string | null;
       hold_expires_at: string | null;
+      trip_option_label: string | null;
     };
 
     // 1b) Claim the add-on lines atomically (re-validates every rule under a
@@ -324,6 +347,7 @@ export const createBookingFromService = createServerFn({ method: "POST" })
       vendorCents: row.payout_cents,
       instantBook: row.instant_book,
       holdExpiresAt: row.hold_expires_at,
+      tripOptionLabel: row.trip_option_label ?? null,
     };
 
     // 2) Without Stripe configured (preview), settle immediately so the flow
@@ -359,7 +383,7 @@ export const createBookingFromService = createServerFn({ method: "POST" })
               currency: "usd",
               unit_amount: chargeCents,
               product_data: {
-                name: `Deposit — ${svc?.title ?? "Fishing charter"}`,
+                name: `Deposit — ${svc?.title ?? "Fishing charter"}${row.trip_option_label ? ` (${row.trip_option_label})` : ""}`,
                 description:
                   `${row.trip_date}${row.start_time ? ` · ${row.start_time.slice(0, 5)}` : ""} · ${row.party_size} angler(s)` +
                   (balanceCents > 0

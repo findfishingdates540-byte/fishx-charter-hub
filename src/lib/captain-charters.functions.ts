@@ -296,3 +296,81 @@ export const deleteCaptainCharter = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { ok: true };
   });
+
+/**
+ * Charter trip options — the bookable choices an angler picks between at
+ * checkout (e.g. "Inshore · 4h · $400" vs "Offshore · 8h · $900"). Scoped to a
+ * charter_id so every package under the charter offers the same choices.
+ */
+const tripOptionInput = z.object({
+  id: z.string().uuid().optional(),
+  label: z.string().min(2).max(80),
+  description: blank(z.string().max(500)),
+  price_cents: z.number().int().min(0).max(10_000_000),
+  duration_minutes: z.number().int().min(30).max(1440).nullable().optional(),
+  is_active: z.boolean().default(true),
+  sort_order: z.number().int().min(0).default(0),
+});
+
+export const listCharterTripOptions = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: unknown) => z.object({ charterId: z.string().uuid() }).parse(i))
+  .handler(async ({ data, context }) => {
+    const { data: rows, error } = await (context.supabase as any)
+      .from("charter_trip_options")
+      .select("id,charter_id,label,description,price_cents,duration_minutes,is_active,sort_order,created_at")
+      .eq("charter_id", data.charterId)
+      .order("sort_order", { ascending: true });
+    if (error) throw new Error(error.message);
+    return rows ?? [];
+  });
+
+export const upsertCharterTripOptions = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: unknown) =>
+    z.object({
+      charterId: z.string().uuid(),
+      rows: z.array(tripOptionInput).max(12),
+    }).parse(i),
+  )
+  .handler(async ({ data, context }) => {
+    const businessId = await pickBusinessId(context.supabase, context.userId);
+    if (!businessId) throw new Error("No business found");
+    const { charterId, rows } = data;
+
+    // Verify the charter belongs to this business.
+    const { data: charter } = await context.supabase
+      .from("charters")
+      .select("id")
+      .eq("id", charterId)
+      .eq("business_id", businessId)
+      .maybeSingle();
+    if (!charter) throw new Error("Charter not found or not in your business");
+
+    // Full-replace: bookings keep their chosen option's label, so removing a
+    // choice here never rewrites history.
+    const { error: delErr } = await (context.supabase as any)
+      .from("charter_trip_options")
+      .delete()
+      .eq("charter_id", charterId)
+      .eq("business_id", businessId);
+    if (delErr) throw new Error(delErr.message);
+
+    const toInsert = rows.map((r, i) => ({
+      charter_id: charterId,
+      business_id: businessId,
+      label: r.label.trim(),
+      description: r.description ?? null,
+      price_cents: r.price_cents,
+      duration_minutes: r.duration_minutes ?? null,
+      is_active: r.is_active,
+      sort_order: r.sort_order ?? i,
+    }));
+    if (toInsert.length) {
+      const { error: insErr } = await (context.supabase as any)
+        .from("charter_trip_options")
+        .insert(toInsert);
+      if (insErr) throw new Error(insErr.message);
+    }
+    return { ok: true, count: toInsert.length };
+  });

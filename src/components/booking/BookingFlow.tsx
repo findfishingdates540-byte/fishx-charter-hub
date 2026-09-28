@@ -171,6 +171,13 @@ export function BookingFlow({
   const packages = ((svc as any).packages ?? []) as Array<{
     id: string; title: string; duration_minutes: number | null; base_price_cents: number; capacity: number | null;
   }>;
+  // Trip options: the captain's bookable choices (Inshore 4h, Offshore 8h…).
+  // The angler picks one and its price/duration replaces the base rate.
+  const tripOptions = ((svc as any).tripOptions ?? []) as Array<{
+    id: string; label: string; description: string | null; price_cents: number; duration_minutes: number | null;
+  }>;
+  const [optionId, setOptionId] = useState<string | null>(null);
+  const option = tripOptions.find((o) => o.id === optionId) ?? null;
   const [selectedAddons, setSelectedAddons] = useState<string[]>([]);
   const [notes, setNotes] = useState("");
   const toggleAddon = (id: string) =>
@@ -216,8 +223,9 @@ export function BookingFlow({
     monthly_rate_cents?: number | null;
   } | null;
   const [nights, setNights] = useState(1);
-  /** The listed fee is the price of the whole trip — it is NOT multiplied by party size. */
-  const nightlyPrice = slot?.priceCents ?? svc.base_price_cents ?? 0;
+  /** The listed fee is the price of the whole trip — it is NOT multiplied by party size.
+   *  A chosen trip option replaces the base rate. */
+  const nightlyPrice = option ? option.price_cents : (slot?.priceCents ?? svc.base_price_cents ?? 0);
   const monthlyRate = slipInfo?.monthly_rate_cents ?? 0;
   /** 28+ nights get the monthly rate pro-rated when it beats paying nightly. */
   const monthlyPrice =
@@ -246,7 +254,8 @@ export function BookingFlow({
   const balanceDue = total - deposit;
 
 
-  const durLabel = svc.duration_minutes ? `${Math.round(svc.duration_minutes / 60)} hrs` : "half day";
+  const effDuration = option?.duration_minutes ?? svc.duration_minutes;
+  const durLabel = effDuration ? `${Math.round(effDuration / 60)} hrs` : "half day";
   const date = slot ? slot.startsAt.slice(0, 10) : "";
   const time = slot ? new Date(slot.startsAt).toISOString().slice(11, 16) : "";
   const dateLabel = useMemo(() => {
@@ -265,20 +274,22 @@ export function BookingFlow({
   // this angler's previous unpaid hold before creating the new one.
   const [attemptSeed, setAttemptSeed] = useState(() => crypto.randomUUID());
   const attemptKey = useMemo(() => {
-    const sig = [slotId, party, nights, [...selectedAddons].sort().join("|"), notes.trim()].join("~");
+    const sig = [slotId, party, nights, optionId ?? "", [...selectedAddons].sort().join("|"), notes.trim()].join("~");
     let h = 5381;
     for (let i = 0; i < sig.length; i++) h = ((h << 5) + h + sig.charCodeAt(i)) >>> 0;
     return `${attemptSeed}-${h.toString(36)}`;
-  }, [attemptSeed, slotId, party, nights, selectedAddons, notes]);
+  }, [attemptSeed, slotId, party, nights, optionId, selectedAddons, notes]);
 
   const placeMut = useMutation({
     mutationFn: () => {
       if (!slot) throw new Error("Pick an available departure first.");
+      if (tripOptions.length > 0 && !option) throw new Error("Pick a trip option first.");
       return toError(createBookingRPC({
         data: {
           slotId: slot.id,
           partySize: party,
           ...(isSlip && nights > 1 ? { nights } : {}),
+          ...(option ? { tripOptionId: option.id } : {}),
           idempotencyKey: attemptKey,
           addonIds: selectedAddons,
           notes: notes.trim() || undefined,
@@ -360,7 +371,7 @@ export function BookingFlow({
     setHoldLeft(null);
     setHoldError(null);
     setCheckoutStartedAt(null);
-  }, [slotId, party, selectedAddons, notes]);
+  }, [slotId, party, selectedAddons, notes, optionId]);
 
   // Track when checkout step is entered to start the countdown immediately
   useEffect(() => {
@@ -636,6 +647,62 @@ export function BookingFlow({
                   </section>
                 )}
 
+                {/* Trip options — the angler picks ONE choice at booking */}
+                {tripOptions.length > 0 && (
+                  <section style={cardLight}>
+                    <h2 style={h2Light}>Choose your trip type</h2>
+                    <p style={{ fontSize: 13.5, color: V.tmut, margin: "-8px 0 16px" }}>
+                      This captain offers a few ways to fish — pick the one you want. The price updates instantly.
+                    </p>
+                    <div style={{ display: "grid", gap: 12 }}>
+                      {tripOptions.map((o) => {
+                        const active = o.id === optionId;
+                        return (
+                          <button
+                            key={o.id}
+                            onClick={() => setOptionId(active ? null : o.id)}
+                            style={{
+                              textAlign: "left",
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 16,
+                              background: active ? "rgba(45,226,242,.16)" : V.paper,
+                              border: `1px solid ${active ? "rgba(45,226,242,.55)" : V.line}`,
+                              borderRadius: 14,
+                              padding: "16px 18px",
+                              cursor: "pointer",
+                              color: V.ink,
+                            }}
+                          >
+                            <span
+                              style={{
+                                width: 18, height: 18, borderRadius: "50%", flex: "none",
+                                border: `2px solid ${active ? V.sand : V.line}`,
+                                background: active ? V.sand : "transparent",
+                              }}
+                            />
+                            <span style={{ flex: 1, minWidth: 0 }}>
+                              <span style={{ display: "block", fontFamily: V.serif, fontSize: 19, fontWeight: 700, color: V.ink }}>{o.label}</span>
+                              <span style={{ display: "block", fontFamily: MONO, fontSize: 12.5, color: V.cyan, marginTop: 4 }}>
+                                {o.duration_minutes ? `${Math.round(o.duration_minutes / 60)} hrs` : durLabel}
+                                {o.description ? ` · ${o.description}` : ""}
+                              </span>
+                            </span>
+                            <span style={{ fontFamily: MONO, fontSize: 18, fontWeight: 700, color: V.ink, whiteSpace: "nowrap" }}>
+                              {money(o.price_cents)}<span style={{ fontSize: 11.5, color: V.tmut }}> / trip</span>
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                    {!option && (
+                      <div style={{ fontSize: 12.5, color: V.tmut, marginTop: 10 }}>
+                        No selection keeps the standard trip at {money(svc.base_price_cents ?? 0)}.
+                      </div>
+                    )}
+                  </section>
+                )}
+
                 {/* Charter overview */}
 
                 <section style={cardLight}>
@@ -734,12 +801,24 @@ export function BookingFlow({
               {/* BOOKING RAIL */}
               <div className="fx-booking-rail" style={{ position: "sticky", top: 84, background: V.card, border: `1px solid ${V.line}`, borderRadius: 20, padding: 24, boxShadow: "0 24px 50px -34px rgba(13,34,54,.4)" }}>
                 <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: 10, marginBottom: 18 }}>
-                  <span style={{ fontFamily: "ui-monospace,SFMono-Regular,Menlo,monospace", fontSize: 32, fontWeight: 700, color: V.ink }}>{money(slot?.priceCents ?? svc.base_price_cents ?? 0)}</span>
+                  <span style={{ fontFamily: "ui-monospace,SFMono-Regular,Menlo,monospace", fontSize: 32, fontWeight: 700, color: V.ink }}>{money(nightlyPrice)}</span>
                   <span style={{ fontSize: 13, color: V.tmut }}>/ trip · {durLabel}</span>
                   <span style={{ marginLeft: "auto", fontSize: 10, fontWeight: 700, letterSpacing: ".12em", textTransform: "uppercase", color: V.green, background: "rgba(78,201,142,.12)", border: "1px solid rgba(78,201,142,.35)", borderRadius: 6, padding: "6px 9px", whiteSpace: "nowrap" }}>
                     Escrow guaranteed
                   </span>
                 </div>
+                {option && (
+                  <div style={{ marginBottom: 14, display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(45,226,242,.12)", border: "1px solid rgba(45,226,242,.4)", borderRadius: 999, padding: "6px 12px", fontSize: 12.5, fontWeight: 700, color: V.goldtext }}>
+                    {option.label}
+                    <button
+                      onClick={() => setOptionId(null)}
+                      aria-label="Clear trip option"
+                      style={{ background: "transparent", border: 0, color: V.tmut, cursor: "pointer", fontSize: 13, padding: 0, lineHeight: 1 }}
+                    >
+                      ×
+                    </button>
+                  </div>
+                )}
 
                 <div
                   style={{
@@ -902,6 +981,7 @@ export function BookingFlow({
 
                 {[
                   ["Duration", durLabel],
+                  ...(option ? [["Trip type", option.label] as [string, string]] : []),
                   ["Date", slot ? dateLabel : "Not selected"],
                   ["Departure", slot ? timeBlock(slot) : "Not selected"],
                   isSlip ? ["Nights", `${nights}`] : ["Party size", `${party}`],
@@ -1040,6 +1120,7 @@ export function BookingFlow({
                 <div style={{ fontSize: 13, color: V.tmut, margin: "4px 0 14px" }}>{businessLine}</div>
                 <div style={{ fontSize: 13, color: V.tmut, paddingBottom: 12, borderBottom: `1px solid ${V.line}` }}>
                   {slot ? `${dateLabel} · ${timeBlock(slot)}` : "No departure selected"} · {party} aboard
+                  {option ? ` · ${option.label}` : ""}
                 </div>
                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13.5, padding: "10px 0 7px", color: V.tmut }}>
                   <span>Trip fee</span><span style={{ color: V.ink }}>{money(price)}</span>
@@ -1173,7 +1254,7 @@ export function BookingFlow({
                       <div style={{ display: "flex", gap: 16 }}>
                         <MediaImg src={heroUrl} alt="" style={{ width: 96, height: 74, borderRadius: 12, objectFit: "cover", flex: "none" }} />
                         <div style={{ flex: 1 }}>
-                          <div style={{ fontSize: 15, fontWeight: 600 }}>{svc.title}</div>
+                          <div style={{ fontSize: 15, fontWeight: 600 }}>{svc.title}{option ? ` — ${option.label}` : ""}</div>
                           <div style={{ fontSize: 13, color: V.tmut, marginTop: 3 }}>{businessLine}</div>
                           <div style={{ fontSize: 13, color: V.tmut, marginTop: 6 }}>{dateLabel} · {time} · {party} anglers</div>
                           {addonLines.length > 0 && (
