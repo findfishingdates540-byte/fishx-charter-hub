@@ -32,16 +32,54 @@ export async function publishBlockers(
 ): Promise<PublishBlocker[]> {
   const { data: biz, error } = await supabase
     .from("businesses")
-    .select("charges_enabled,payouts_enabled,verified_at,name,city,phone,email")
+    .select("charges_enabled,payouts_enabled,verified_at,name,city,phone,email,stripe_account_id")
     .eq("id", businessId)
     .maybeSingle();
   if (error || !biz) return ["payouts"];
 
+  const payoutsOk = await syncPayoutStatus(supabase, businessId, biz);
+
   const missing: PublishBlocker[] = [];
-  if (!(biz.charges_enabled && biz.payouts_enabled)) missing.push("payouts");
+  if (!payoutsOk) missing.push("payouts");
   if (!biz.verified_at) missing.push("verification");
   if (!(biz.name && biz.city && (biz.phone || biz.email))) missing.push("details");
   return missing;
+}
+
+/**
+ * Stored Stripe flags can lag behind reality (missed webhook, operator just
+ * finished onboarding). When they say "not connected" but an account exists,
+ * ask Stripe directly and persist the fresh result.
+ */
+export async function syncPayoutStatus(
+  supabase: any,
+  businessId: string,
+  biz: { charges_enabled?: boolean | null; payouts_enabled?: boolean | null; stripe_account_id?: string | null },
+): Promise<boolean> {
+  if (biz.charges_enabled && biz.payouts_enabled) return true;
+  if (!biz.stripe_account_id) return false;
+  try {
+    const { getStripe } = await import("./stripe.server");
+    const stripe = getStripe();
+    if (!stripe) return false;
+    const acct = await stripe.accounts.retrieve(biz.stripe_account_id);
+    const ok = Boolean(acct.charges_enabled && acct.payouts_enabled);
+    const update = {
+      charges_enabled: acct.charges_enabled,
+      payouts_enabled: acct.payouts_enabled,
+      ...(ok ? { onboarding_completed_at: new Date().toISOString() } : {}),
+    };
+    let { error } = await supabase.from("businesses").update(update).eq("id", businessId);
+    if (error) {
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      ({ error } = await supabaseAdmin.from("businesses").update(update).eq("id", businessId));
+      if (error) console.error("[publish-guard] payout sync failed", error.message);
+    }
+    return ok;
+  } catch (e) {
+    console.error("[publish-guard] stripe retrieve failed", e);
+    return false;
+  }
 }
 
 
