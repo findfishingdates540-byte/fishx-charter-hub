@@ -34,10 +34,8 @@ function ResetPasswordPage() {
     supabase.auth.getSession().then(({ data }) => {
       if (data.session) setReady(true);
     });
-    const t = setTimeout(() => setReady((r) => r), 0);
     return () => {
       sub.subscription.unsubscribe();
-      clearTimeout(t);
     };
   }, []);
 
