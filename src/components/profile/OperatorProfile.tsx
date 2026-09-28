@@ -184,7 +184,7 @@ const CARD: React.CSSProperties = {
 const LABEL_BY_CATEGORY: Record<string, { services: string; blurb: string }> = {
   charter: { services: "Charters offered", blurb: "All escrow-protected" },
   guide_service: { services: "Guided trips", blurb: "All escrow-protected" },
-  tackle_shop: { services: "Services & clinics", blurb: "Book in-store services" },
+  tackle_shop: { services: "In-store services & clinics", blurb: "Book ahead" },
   bait_shop: { services: "Services", blurb: "Book ahead" },
   marina: { services: "Dockage & services", blurb: "Reserve ahead" },
   lodge: { services: "Stays & packages", blurb: "Escrow-protected" },
@@ -351,9 +351,10 @@ export function OperatorProfile({
           </div>
           <FollowButton businessId={b.id} />
           <div style={{ display: "flex", gap: 26, padding: "16px 22px", background: "#14202B", border: "1px solid rgba(255,255,255,.07)", borderRadius: 16, flex: "none", flexWrap: "wrap" }}>
-            <Stat n={storefrontServices.length} label={isShop ? "services" : "trips"} />
+            {isShop && products.length > 0 && <Stat n={products.length} label="products" />}
+            <Stat n={storefrontServices.length} label={isShop ? "services" : "trips"} divider={isShop && products.length > 0} />
             {boats.length > 0 && <Stat n={boats.length} label={boats.length === 1 ? "boat" : "boats"} divider />}
-            {products.length > 0 && <Stat n={products.length} label="products" divider />}
+            {!isShop && products.length > 0 && <Stat n={products.length} label="products" divider />}
             {slips.length > 0 && <Stat n={slips.length} label="slips" divider />}
             <Stat n={ratingSummary.count} label="reviews" divider />
             <Stat n={b.verified_at ? "✓" : "—"} label={b.verified_at ? "verified" : "pending"} divider />
