@@ -1,3 +1,4 @@
+import { formatWaterTypes } from "@/lib/water-types";
 /**
  * Angler booking flow, pixel-ported from public/dashboards/booking.html.
  * Real DB write: `Place booking` calls createBookingFromService which inserts a
@@ -483,7 +484,7 @@ export function BookingFlow({
     svc.departure_location || [business?.city, business?.region].filter(Boolean).join(" · ") || "Coastal marina";
   const capacity = svc.capacity ?? cap;
   const targetSpecies = (svc as any).target_species as string[] | null;
-  const waterType = (svc as any).water_type as string | null;
+  const waterType = formatWaterTypes((svc as any).water_type as string | null) || null;
   const specs = [
     { k: "Duration", v: svc.duration_minutes ? `${Math.round(svc.duration_minutes / 60)} Hours` : "Full day" },
     { k: "Max capacity", v: `${capacity} Anglers` },
