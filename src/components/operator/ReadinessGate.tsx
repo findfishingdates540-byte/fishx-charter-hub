@@ -43,8 +43,14 @@ export function ReadinessGate({
       goLiveFn({ data: { ...(businessId ? { businessId } : {}), live } }),
     onSuccess: (res: any) => {
       if (res && res.ok === false) {
-        toast.error("Finish setup before going live", {
-          description: "Connect payouts, get verified, and add an upcoming date or an in-stock product first.",
+        const labels: Record<string, string> = {
+          payouts: "Stripe payouts aren't fully enabled yet",
+          verification: "verification isn't approved yet",
+          availability: "no upcoming dates or in-stock products",
+        };
+        const why = ((res.missing ?? []) as string[]).map((m) => labels[m] ?? m).join(" · ");
+        toast.error("Can't go live yet", {
+          description: why || "Finish the remaining setup steps first.",
         });
       }
       qc.invalidateQueries({ queryKey: ["operator-readiness"] });
