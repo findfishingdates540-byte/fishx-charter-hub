@@ -6,7 +6,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { getOwnedBusiness } from "./stripe-connect.server";
+import { getOwnedBusiness, findOwnedBusiness } from "./stripe-connect.server";
 
 export type ReadinessItem = {
   key: "payouts" | "listings" | "availability" | "profile" | "verification";
@@ -23,7 +23,9 @@ export const getOperatorReadiness = createServerFn({ method: "GET" })
     z.object({ businessId: z.string().uuid().optional() }).parse(i ?? {}),
   )
   .handler(async ({ data, context }) => {
-    const biz = await getOwnedBusiness(context.supabase, context.userId, data.businessId);
+    // Staff-only members or accounts without a business yet: nothing to show.
+    const biz = await findOwnedBusiness(context.supabase, context.userId, data.businessId);
+    if (!biz) return null;
     const { supabase } = context;
 
     let chargesEnabled = Boolean(biz.charges_enabled);
