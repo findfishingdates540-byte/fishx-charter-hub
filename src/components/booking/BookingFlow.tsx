@@ -284,7 +284,8 @@ export function BookingFlow({
   const placeMut = useMutation({
     mutationFn: () => {
       if (!slot) throw new Error("Pick an available departure first.");
-      if (tripOptions.length > 0 && !option) throw new Error("Pick a trip option first.");
+      // No trip option selected = the standard trip. reserve_slot prices it
+      // with COALESCE(option, slot, base), so a null optionId is valid.
       return toError(createBookingRPC({
         data: {
           slotId: slot.id,
