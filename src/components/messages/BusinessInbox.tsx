@@ -336,6 +336,7 @@ export function BusinessInbox({
             padding: isMobile ? "10px 8px" : 18,
             display: "flex",
             flexDirection: "column",
+            flexWrap: "nowrap",
             gap: 12,
             background: c.canvas,
           }}
@@ -356,7 +357,7 @@ export function BusinessInbox({
             lastDay = day;
             const quoted = m.reply_to_id ? byId.get(m.reply_to_id) : null;
             return (
-              <div key={m.id} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              <div key={m.id} style={{ display: "flex", flexDirection: "column", gap: 12, flexShrink: 0, width: "100%", minWidth: 0 }}>
                 {showDay && <DaySeparator label={day} c={c} />}
                 <MessageBubble
                   c={c}
