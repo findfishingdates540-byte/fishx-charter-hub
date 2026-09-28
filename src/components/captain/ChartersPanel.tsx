@@ -16,6 +16,8 @@ import {
   deleteCaptainCharter,
   listCharterDepartureTimes,
   upsertCharterDepartureTimes,
+  listCharterTripOptions,
+  upsertCharterTripOptions,
 } from "@/lib/captain-charters.functions";
 import {
   upsertCaptainService,
@@ -853,6 +855,8 @@ function CharterRowItem({
               + Add package
             </button>
           )}
+
+          <TripOptionsSection charterId={c.id} businessId={data.business?.id ?? ""} />
 
           <DepartureTimesSection charterId={c.id} businessId={data.business?.id ?? ""} />
         </div>
