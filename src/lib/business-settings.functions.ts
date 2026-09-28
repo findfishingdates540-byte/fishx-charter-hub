@@ -184,15 +184,23 @@ export const setBusinessPublished = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     await assertMember(context.supabase, context.userId, data.businessId);
     {
-      const { assertCanPublish } = await import("./listing-publish-guard.server");
-      await assertCanPublish(context.supabase, data.businessId, data.isPublished);
+      const { assertCanPublish, PublishBlockedError } = await import("./listing-publish-guard.server");
+      try {
+        await assertCanPublish(context.supabase, data.businessId, data.isPublished);
+      } catch (e) {
+        // Expected setup gap — report it, don't crash the page.
+        if (e instanceof PublishBlockedError) {
+          return { ok: false as const, message: e.message, missing: e.missing };
+        }
+        throw e;
+      }
     }
     const { error } = await context.supabase
       .from("businesses")
       .update({ is_published: data.isPublished })
       .eq("id", data.businessId);
     if (error) throw new Response(error.message, { status: 400 });
-    return { ok: true as const };
+    return { ok: true as const, message: null, missing: [] as string[] };
   });
 
 /** Add an existing Fish-X user to the team by their sign-in email. Owners only. */
