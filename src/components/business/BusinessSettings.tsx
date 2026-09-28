@@ -127,6 +127,7 @@ export function BusinessSettings({
           business={data.business}
           canEdit={canEdit}
           onDone={() => qc.invalidateQueries({ queryKey: ["business-settings", businessId] })}
+          onNavigate={openSection}
         />
       )}
       {active === "verification" && <VerificationDocuments businessId={businessId} />}
@@ -141,11 +142,11 @@ export function BusinessSettings({
     </>
   );
 
-  const openSection = (key: string) => {
+  function openSection(key: string) {
     setActive(key);
     setOpenOnPhone(true);
     onSectionChange?.(key);
-  };
+  }
 
   const closeSection = () => {
     setOpenOnPhone(false);
@@ -350,23 +351,50 @@ export function BusinessSettings({
 
 /* ------------------------------- visibility ------------------------------ */
 
+const BLOCKER_HELP: Record<string, { title: string; detail: string; section: string; cta: string }> = {
+  payouts: {
+    title: "Connect payouts (Stripe)",
+    detail: "Anglers can't pay you until your bank details are connected through Stripe.",
+    section: "payouts",
+    cta: "Connect payouts",
+  },
+  verification: {
+    title: "Get verified",
+    detail: "Submit your credentials and wait for our team to approve them.",
+    section: "verification",
+    cta: "Open verification",
+  },
+  details: {
+    title: "Complete your business details",
+    detail: "Add your city and a phone number or email so anglers can reach you.",
+    section: "profile",
+    cta: "Edit business profile",
+  },
+};
+
 function VisibilityCard({
   business,
   canEdit,
   onDone,
+  onNavigate,
 }: {
   business: any;
   canEdit: boolean;
   onDone: () => void;
+  onNavigate?: (section: string) => void;
 }) {
   const toggle = useServerFn(setBusinessPublished);
+  const [blocked, setBlocked] = useState<string[]>([]);
   const m = useMutation({
     mutationFn: (v: boolean) => toggle({ data: { businessId: business.id, isPublished: v } }),
     onSuccess: (r: any) => {
       if (r && r.ok === false) {
-        toast.error(r.message || "Finish your setup before publishing.");
+        const missing = Array.isArray(r.missing) && r.missing.length ? r.missing : ["details"];
+        setBlocked(missing);
+        toast.error("Your storefront can't go live yet — see what's missing below.");
         return;
       }
+      setBlocked([]);
       onDone();
     },
     onError: (e: any) => toast.error(e?.message || "We couldn't update your storefront."),
@@ -410,6 +438,51 @@ function VisibilityCard({
           {m.isPending ? "Saving…" : business.is_published ? "Unpublish" : "Publish storefront"}
         </button>
       </div>
+      {blocked.length > 0 && (
+        <div
+          style={{
+            marginTop: 16,
+            padding: 14,
+            borderRadius: 12,
+            border: "1px solid rgba(242,163,45,.35)",
+            background: "rgba(242,163,45,.08)",
+            display: "grid",
+            gap: 10,
+          }}
+        >
+          <div style={{ fontSize: 13.5, fontWeight: 800, color: "#F2A32D" }}>
+            Before your storefront can go live:
+          </div>
+          {blocked.map((key) => {
+            const help = BLOCKER_HELP[key] ?? BLOCKER_HELP.details;
+            return (
+              <div
+                key={key}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: 12,
+                  flexWrap: "wrap",
+                }}
+              >
+                <div>
+                  <div style={{ fontSize: 13.5, fontWeight: 700, color: "#E8EEF3" }}>{help.title}</div>
+                  <div style={{ fontSize: 12.5, color: "#A9B6C1" }}>{help.detail}</div>
+                </div>
+                {onNavigate && (
+                  <button
+                    onClick={() => onNavigate(help.section)}
+                    style={btn("ghost")}
+                  >
+                    {help.cta} →
+                  </button>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
     </Card>
   );
 }
