@@ -4,6 +4,7 @@ import { cachedMediaUrl } from "@/lib/media-url";
 import { BrandLogo } from "@/components/brand/BrandLogo";
 import { MarinaServiceRequest } from "@/components/profile/MarinaServiceRequest";
 import { StorefrontBooking } from "@/components/profile/StorefrontBooking";
+import { ShopProducts, type ShopProduct } from "@/components/profile/ShopProducts";
 import { ArrowLeft } from "lucide-react";
 
 import { useEffect, useMemo, useState } from "react";
@@ -275,41 +276,7 @@ export function OperatorProfile({
   const heroFallback = "linear-gradient(135deg,#F0F2F5,#031029)";
 
   const productsSection = products.length > 0 && (
-    <section style={CARD}>
-      <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 14 }}>
-        <h2 style={{ ...sectionTitle, margin: 0 }}>{isShop ? "Products" : "From the shop"}</h2>
-        <Link to="/marketplace" style={{ fontSize: 13, color: "#2DE2F2", textDecoration: "none" }}>All products →</Link>
-      </div>
-      <div style={{ display: "grid", gridTemplateColumns: isShop ? "repeat(auto-fill,minmax(200px,1fr))" : "repeat(auto-fill,minmax(180px,1fr))", gap: 14 }}>
-        {products.map((p) => (
-          <Link
-            key={p.id}
-            to="/marketplace/$productId"
-            params={{ productId: p.id }}
-            style={{ textDecoration: "none", color: "#F0F2F5", background: "#1C2936", border: "1px solid rgba(255,255,255,.07)", borderRadius: 16, overflow: "hidden", display: "block" }}
-          >
-            {p.image ? (
-              <MediaImg src={p.image} alt={p.title} style={{ width: "100%", height: isShop ? 160 : 130, objectFit: "cover", display: "block" }} />
-            ) : (
-              <div style={{ height: isShop ? 160 : 130, background: "linear-gradient(135deg,#0D161F,#1C2936)" }} />
-            )}
-            <div style={{ padding: 12 }}>
-              <div style={{ fontSize: 13.5, fontWeight: 600, lineHeight: 1.3 }}>{p.title}</div>
-              {p.category && <div style={{ fontSize: 11.5, color: "#92A0AB", marginTop: 3 }}>{p.category}</div>}
-              <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginTop: 8 }}>
-                <span style={{ color: "#2DE2F2", fontWeight: 700 }}>{fmtPrice(p.price_cents)}</span>
-                {p.compare_at_cents && p.compare_at_cents > p.price_cents && (
-                  <span style={{ fontSize: 12, color: "#92A0AB", textDecoration: "line-through" }}>{fmtPrice(p.compare_at_cents)}</span>
-                )}
-              </div>
-              <div style={{ fontSize: 11.5, color: p.stock_qty > 0 ? "#22C55E" : "#92A0AB", marginTop: 4 }}>
-                {p.stock_qty > 0 ? `${p.stock_qty} in stock` : "Out of stock"}
-              </div>
-            </div>
-          </Link>
-        ))}
-      </div>
-    </section>
+    <ShopProducts businessId={b.id} products={products as ShopProduct[]} isShop={isShop} card={CARD} titleStyle={sectionTitle} />
   );
 
 
