@@ -595,8 +595,9 @@ export function OperatorProfile({
                         </article>
                       );
                     })}
-              </div>
-            </section>
+               </div>
+             </section>
+            )}
 
             {/* Fleet */}
             {boats.length > 0 && (
