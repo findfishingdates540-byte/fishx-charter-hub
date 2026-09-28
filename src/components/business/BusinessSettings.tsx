@@ -142,11 +142,11 @@ export function BusinessSettings({
     </>
   );
 
-  const openSection = (key: string) => {
+  function openSection(key: string) {
     setActive(key);
     setOpenOnPhone(true);
     onSectionChange?.(key);
-  };
+  }
 
   const closeSection = () => {
     setOpenOnPhone(false);
