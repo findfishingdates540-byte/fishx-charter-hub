@@ -184,7 +184,7 @@ const CARD: React.CSSProperties = {
 const LABEL_BY_CATEGORY: Record<string, { services: string; blurb: string }> = {
   charter: { services: "Charters offered", blurb: "All escrow-protected" },
   guide_service: { services: "Guided trips", blurb: "All escrow-protected" },
-  tackle_shop: { services: "Services & clinics", blurb: "Book in-store services" },
+  tackle_shop: { services: "In-store services & clinics", blurb: "Book ahead" },
   bait_shop: { services: "Services", blurb: "Book ahead" },
   marina: { services: "Dockage & services", blurb: "Reserve ahead" },
   lodge: { services: "Stays & packages", blurb: "Escrow-protected" },
@@ -274,6 +274,45 @@ export function OperatorProfile({
   const roleLabel = variant === "captain" ? "Verified captain" : "Verified guide";
   const heroFallback = "linear-gradient(135deg,#F0F2F5,#031029)";
 
+  const productsSection = products.length > 0 && (
+    <section style={CARD}>
+      <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 14 }}>
+        <h2 style={{ ...sectionTitle, margin: 0 }}>{isShop ? "Products" : "From the shop"}</h2>
+        <Link to="/marketplace" style={{ fontSize: 13, color: "#2DE2F2", textDecoration: "none" }}>All products →</Link>
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: isShop ? "repeat(auto-fill,minmax(200px,1fr))" : "repeat(auto-fill,minmax(180px,1fr))", gap: 14 }}>
+        {products.map((p) => (
+          <Link
+            key={p.id}
+            to="/marketplace/$productId"
+            params={{ productId: p.id }}
+            style={{ textDecoration: "none", color: "#F0F2F5", background: "#1C2936", border: "1px solid rgba(255,255,255,.07)", borderRadius: 16, overflow: "hidden", display: "block" }}
+          >
+            {p.image ? (
+              <MediaImg src={p.image} alt={p.title} style={{ width: "100%", height: isShop ? 160 : 130, objectFit: "cover", display: "block" }} />
+            ) : (
+              <div style={{ height: isShop ? 160 : 130, background: "linear-gradient(135deg,#0D161F,#1C2936)" }} />
+            )}
+            <div style={{ padding: 12 }}>
+              <div style={{ fontSize: 13.5, fontWeight: 600, lineHeight: 1.3 }}>{p.title}</div>
+              {p.category && <div style={{ fontSize: 11.5, color: "#92A0AB", marginTop: 3 }}>{p.category}</div>}
+              <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginTop: 8 }}>
+                <span style={{ color: "#2DE2F2", fontWeight: 700 }}>{fmtPrice(p.price_cents)}</span>
+                {p.compare_at_cents && p.compare_at_cents > p.price_cents && (
+                  <span style={{ fontSize: 12, color: "#92A0AB", textDecoration: "line-through" }}>{fmtPrice(p.compare_at_cents)}</span>
+                )}
+              </div>
+              <div style={{ fontSize: 11.5, color: p.stock_qty > 0 ? "#22C55E" : "#92A0AB", marginTop: 4 }}>
+                {p.stock_qty > 0 ? `${p.stock_qty} in stock` : "Out of stock"}
+              </div>
+            </div>
+          </Link>
+        ))}
+      </div>
+    </section>
+  );
+
+
 
   return (
     <div className="fx-shell" style={{ background: "#0D161F", minHeight: "100vh", fontFamily: "'Outfit', system-ui, sans-serif", color: "#F0F2F5" }}>
@@ -351,9 +390,10 @@ export function OperatorProfile({
           </div>
           <FollowButton businessId={b.id} />
           <div style={{ display: "flex", gap: 26, padding: "16px 22px", background: "#14202B", border: "1px solid rgba(255,255,255,.07)", borderRadius: 16, flex: "none", flexWrap: "wrap" }}>
-            <Stat n={storefrontServices.length} label={isShop ? "services" : "trips"} />
+            {isShop && products.length > 0 && <Stat n={products.length} label="products" />}
+            <Stat n={storefrontServices.length} label={isShop ? "services" : "trips"} divider={isShop && products.length > 0} />
             {boats.length > 0 && <Stat n={boats.length} label={boats.length === 1 ? "boat" : "boats"} divider />}
-            {products.length > 0 && <Stat n={products.length} label="products" divider />}
+            {!isShop && products.length > 0 && <Stat n={products.length} label="products" divider />}
             {slips.length > 0 && <Stat n={slips.length} label="slips" divider />}
             <Stat n={ratingSummary.count} label="reviews" divider />
             <Stat n={b.verified_at ? "✓" : "—"} label={b.verified_at ? "verified" : "pending"} divider />
@@ -403,7 +443,17 @@ export function OperatorProfile({
               </section>
             )}
 
+            {/* Products first for goods sellers */}
+            {isShop && productsSection}
+
+            {isShop && products.length === 0 && storefrontServices.length === 0 && (
+              <section style={{ background: "#14202B", border: "1px dashed rgba(255,255,255,.12)", borderRadius: 18, padding: 32, textAlign: "center", color: "#92A0AB" }}>
+                No products listed yet — check back soon.
+              </section>
+            )}
+
             {/* Services / Trips */}
+            {(!isShop || storefrontServices.length > 0) && (
             <section>
               <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 16 }}>
                 <h2 style={{ ...sectionTitle, margin: 0 }}>{labels.services}</h2>
@@ -545,8 +595,9 @@ export function OperatorProfile({
                         </article>
                       );
                     })}
-              </div>
-            </section>
+               </div>
+             </section>
+            )}
 
             {/* Fleet */}
             {boats.length > 0 && (
@@ -593,44 +644,8 @@ export function OperatorProfile({
               </section>
             )}
 
-            {/* Shop */}
-            {products.length > 0 && (
-              <section style={CARD}>
-                <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 14 }}>
-                  <h2 style={{ ...sectionTitle, margin: 0 }}>From the shop</h2>
-                  <Link to="/marketplace" style={{ fontSize: 13, color: "#2DE2F2", textDecoration: "none" }}>All products →</Link>
-                </div>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(180px,1fr))", gap: 14 }}>
-                  {products.map((p) => (
-                    <Link
-                      key={p.id}
-                      to="/marketplace/$productId"
-                      params={{ productId: p.id }}
-                      style={{ textDecoration: "none", color: "#F0F2F5", background: "#1C2936", border: "1px solid rgba(255,255,255,.07)", borderRadius: 16, overflow: "hidden", display: "block" }}
-                    >
-                      {p.image ? (
-                        <MediaImg src={p.image} alt={p.title} style={{ width: "100%", height: 130, objectFit: "cover", display: "block" }} />
-                      ) : (
-                        <div style={{ height: 130, background: "linear-gradient(135deg,#0D161F,#1C2936)" }} />
-                      )}
-                      <div style={{ padding: 12 }}>
-                        <div style={{ fontSize: 13.5, fontWeight: 600, lineHeight: 1.3 }}>{p.title}</div>
-                        {p.category && <div style={{ fontSize: 11.5, color: "#92A0AB", marginTop: 3 }}>{p.category}</div>}
-                        <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginTop: 8 }}>
-                          <span style={{ color: "#2DE2F2", fontWeight: 700 }}>{fmtPrice(p.price_cents)}</span>
-                          {p.compare_at_cents && p.compare_at_cents > p.price_cents && (
-                            <span style={{ fontSize: 12, color: "#92A0AB", textDecoration: "line-through" }}>{fmtPrice(p.compare_at_cents)}</span>
-                          )}
-                        </div>
-                        <div style={{ fontSize: 11.5, color: p.stock_qty > 0 ? "#22C55E" : "#92A0AB", marginTop: 4 }}>
-                          {p.stock_qty > 0 ? `${p.stock_qty} in stock` : "Out of stock"}
-                        </div>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              </section>
-            )}
+            {/* Shop (below services for non-shop businesses) */}
+            {!isShop && productsSection}
 
             {/* Marina slips */}
             {slips.length > 0 && (
