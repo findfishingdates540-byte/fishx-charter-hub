@@ -207,7 +207,7 @@ export function ChatAvatar({
 
 export function DaySeparator({ label, c }: { label: string; c: ChatPalette }) {
   return (
-    <div style={{ display: "flex", justifyContent: "center", position: "sticky", top: 0, zIndex: 2 }}>
+    <div style={{ display: "flex", justifyContent: "center", width: "100%", flexShrink: 0, position: "sticky", top: 0, zIndex: 2 }}>
       <span
         style={{
           background: c.surface,
@@ -493,6 +493,8 @@ export function MessageBubble({
         alignItems: "flex-end",
         gap: 9,
         maxWidth: "84%",
+        flexShrink: 0,
+        alignSelf: mine ? "flex-end" : "flex-start",
         marginLeft: mine ? "auto" : 0,
         marginRight: mine ? 0 : "auto",
       }}

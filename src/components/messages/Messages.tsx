@@ -596,7 +596,7 @@ function ThreadView({ bookingId, mobile = false }: { bookingId: string; mobile?:
           lastDay = day;
           const quoted = m.reply_to_id ? byId.get(m.reply_to_id) : null;
           return (
-            <div key={m.id} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            <div key={m.id} style={{ display: "flex", flexDirection: "column", gap: 12, flexShrink: 0, width: "100%", minWidth: 0 }}>
               {showDay && <DaySeparator label={day} c={c} />}
               <MessageBubble
                 c={c}
