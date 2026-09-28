@@ -350,23 +350,50 @@ export function BusinessSettings({
 
 /* ------------------------------- visibility ------------------------------ */
 
+const BLOCKER_HELP: Record<string, { title: string; detail: string; section: string; cta: string }> = {
+  payouts: {
+    title: "Connect payouts (Stripe)",
+    detail: "Anglers can't pay you until your bank details are connected through Stripe.",
+    section: "payouts",
+    cta: "Connect payouts",
+  },
+  verification: {
+    title: "Get verified",
+    detail: "Submit your credentials and wait for our team to approve them.",
+    section: "verification",
+    cta: "Open verification",
+  },
+  details: {
+    title: "Complete your business details",
+    detail: "Add your city and a phone number or email so anglers can reach you.",
+    section: "profile",
+    cta: "Edit business profile",
+  },
+};
+
 function VisibilityCard({
   business,
   canEdit,
   onDone,
+  onNavigate,
 }: {
   business: any;
   canEdit: boolean;
   onDone: () => void;
+  onNavigate?: (section: string) => void;
 }) {
   const toggle = useServerFn(setBusinessPublished);
+  const [blocked, setBlocked] = useState<string[]>([]);
   const m = useMutation({
     mutationFn: (v: boolean) => toggle({ data: { businessId: business.id, isPublished: v } }),
     onSuccess: (r: any) => {
       if (r && r.ok === false) {
-        toast.error(r.message || "Finish your setup before publishing.");
+        const missing = Array.isArray(r.missing) && r.missing.length ? r.missing : ["details"];
+        setBlocked(missing);
+        toast.error("Your storefront can't go live yet — see what's missing below.");
         return;
       }
+      setBlocked([]);
       onDone();
     },
     onError: (e: any) => toast.error(e?.message || "We couldn't update your storefront."),
