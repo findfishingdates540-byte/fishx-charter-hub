@@ -1,3 +1,4 @@
+import { toast } from "sonner";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -98,7 +99,8 @@ function EditProductPage() {
           setSaving(true);
           setError(null);
           try {
-            await upsertProduct({ data: { ...v, businessId, id: product.id } });
+            const row = await upsertProduct({ data: { ...v, businessId, id: product.id } });
+            if (row.publishBlocked) toast.warning("Saved as a draft — not live yet", { description: row.publishBlocked.message, duration: 9000 });
             await qc.invalidateQueries({ queryKey: ["shop-overview", businessId] });
             backToCatalog();
           } catch (err: any) {

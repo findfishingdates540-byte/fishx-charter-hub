@@ -1,3 +1,4 @@
+import { toast } from "sonner";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -68,6 +69,7 @@ function NewProductPage() {
           setError(null);
           try {
             const row = await upsertProduct({ data: { ...v, businessId } });
+            if (row.publishBlocked) toast.warning("Saved as a draft — not live yet", { description: row.publishBlocked.message, duration: 9000 });
             await qc.invalidateQueries({ queryKey: ["shop-overview", businessId] });
             // Land on the new product's editor so the owner can preview it.
             navigate({ to: "/shop/products/$productId/edit", params: { productId: row.id }, search: { biz: businessId } });
