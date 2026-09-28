@@ -122,9 +122,16 @@ export const upsertProduct = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     await assertMember(context, data.businessId);
-    {
-      const { assertCanPublish } = await import("./listing-publish-guard.server");
-      await assertCanPublish(context.supabase, data.businessId, data.isPublished);
+    // If the shop isn't ready to go live, keep the product as a draft instead
+    // of failing — the owner never loses their work.
+    let publishBlocked: { message: string; missing: string[] } | null = null;
+    if (data.isPublished) {
+      const { publishBlockers, PublishBlockedError } = await import("./listing-publish-guard.server");
+      const missing = await publishBlockers(context.supabase, data.businessId);
+      if (missing.length) {
+        publishBlocked = { message: new PublishBlockedError(missing).message, missing };
+        data = { ...data, isPublished: false };
+      }
     }
 
     // Tags live in the product `metadata` blob; merge so nothing else is lost.
@@ -172,7 +179,7 @@ export const upsertProduct = createServerFn({ method: "POST" })
           .single();
     const { data: row, error } = await q;
     if (error) throw new Response(error.message, { status: 400 });
-    return row;
+    return { ...row, publishBlocked };
   });
 
 export const deleteProduct = createServerFn({ method: "POST" })
