@@ -132,6 +132,16 @@ function Shell({ children }: { children: React.ReactNode }) {
   );
 }
 
+function AccountWrap({
+  embedded,
+  children,
+}: {
+  embedded: boolean;
+  children: React.ReactNode;
+}) {
+  return embedded ? <>{children}</> : <Shell>{children}</Shell>;
+}
+
 const label = (s: string, colors = V) => (
   <span
     style={{
@@ -247,12 +257,8 @@ export function AnglerAccount({
     color: C.ink,
   };
 
-  const Wrap = embedded
-    ? ({ children }: { children: React.ReactNode }) => <>{children}</>
-    : Shell;
-
   return (
-    <Wrap>
+    <AccountWrap embedded={embedded}>
       {!embedded && (
         <>
           <h1
@@ -479,6 +485,6 @@ export function AnglerAccount({
         </div>
       </div>
       <Toast toast={toast} />
-    </Wrap>
+    </AccountWrap>
   );
 }
