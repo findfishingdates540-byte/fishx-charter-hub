@@ -48,7 +48,7 @@ function BookingError({ error }: ErrorComponentProps) {
           We couldn’t load this trip
         </h1>
         <p style={{ color: "#5c6b78", fontSize: 14, margin: "0 0 18px" }}>
-          {error?.message || "Something went wrong. Nothing was charged."}
+          {(error instanceof Error && error.message) || "Something went wrong. Nothing was charged."}
         </p>
         <button
           onClick={() => window.location.reload()}
