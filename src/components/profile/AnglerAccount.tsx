@@ -229,6 +229,7 @@ export function AnglerAccount({
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["my-account-profile"] });
+      queryClient.invalidateQueries({ queryKey: ["my-profile"] });
       showToast("Profile saved");
     },
     onError: (e) => showToast(e instanceof Error ? e.message : "Couldn't save your profile"),
