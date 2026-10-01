@@ -99,8 +99,11 @@ export const Route = createFileRoute("/charters/$charterId")({
   },
   component: CharterDetail,
   errorComponent: CharterUnavailable,
-  notFoundComponent: CharterUnavailable,
+  notFoundComponent: CharterNotFound,
 });
+function CharterNotFound() {
+  return <CharterUnavailable />;
+}
 
 function CharterUnavailable() {
   return (
