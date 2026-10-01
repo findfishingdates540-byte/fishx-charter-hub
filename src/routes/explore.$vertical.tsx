@@ -62,7 +62,7 @@ export const Route = createFileRoute("/explore/$vertical")({
     };
   },
   component: VerticalPage,
-  errorComponent: ({ error }) => <div className="p-10">Couldn't load this page: {error.message}</div>,
+  errorComponent: ({ error }) => <div className="p-10">Couldn't load this page: {error instanceof Error ? error.message : String(error)}</div>,
   notFoundComponent: () => <div className="p-10">That part of Explore doesn't exist.</div>,
 });
 
