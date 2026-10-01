@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { MediaImg } from "@/components/media/MediaImg";
 import { cachedMediaUrl } from "@/lib/media-url";
-import { BrandLogo } from "@/components/brand/BrandLogo";
+import { PublicHeader } from "@/components/public/PublicHeader";
 import { MarinaServiceRequest } from "@/components/profile/MarinaServiceRequest";
 import { StorefrontBooking } from "@/components/profile/StorefrontBooking";
 import { ShopProducts, type ShopProduct } from "@/components/profile/ShopProducts";
@@ -283,12 +283,8 @@ export function OperatorProfile({
 
   return (
     <div className="fx-shell" style={{ background: "#0D161F", minHeight: "100vh", fontFamily: "'Outfit', system-ui, sans-serif", color: "#F0F2F5" }}>
-      {/* Nav */}
-      <header style={{ position: "sticky", top: 0, zIndex: 40, background: "rgba(9,27,44,.94)", backdropFilter: "saturate(140%) blur(12px)", borderBottom: "1px solid rgba(255,255,255,.1)", color: "#F0F2F5" }}>
-        <div style={{ maxWidth: 1160, margin: "0 auto", padding: "0 28px", height: 62, display: "flex", alignItems: "center", gap: 24 }}>
-          <Link to="/" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none", color: "#F0F2F5" }}>
-            <BrandLogo size="md" accent="#2DE2F2" color="#F0F2F5" />
-          </Link>
+      <PublicHeader
+        actions={
           <Link
             to={backDestination}
             style={{
@@ -297,10 +293,10 @@ export function OperatorProfile({
               alignItems: "center",
               gap: 8,
               padding: "0 13px",
-              border: "1px solid rgba(255,255,255,.14)",
+              border: "1px solid rgba(3,16,41,.14)",
               borderRadius: 6,
-              background: "rgba(255,255,255,.06)",
-              color: "#D5E1E8",
+              background: "rgba(3,16,41,.05)",
+              color: "#031029",
               textDecoration: "none",
               fontSize: 13,
               fontWeight: 600,
@@ -310,8 +306,8 @@ export function OperatorProfile({
             <ArrowLeft size={16} strokeWidth={1.8} aria-hidden="true" />
             Back to results
           </Link>
-        </div>
-      </header>
+        }
+      />
 
       {/* Cover */}
       <div style={{ position: "relative", height: 280, overflow: "hidden", background: b.hero_url ? `#0D161F url(${cachedMediaUrl(b.hero_url)}) center/cover` : heroFallback }}>

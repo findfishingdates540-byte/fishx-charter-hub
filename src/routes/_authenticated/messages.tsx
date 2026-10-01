@@ -7,6 +7,7 @@ import { BusinessInbox } from "@/components/messages/BusinessInbox";
 import { startBusinessConversation } from "@/lib/business-messages.functions";
 import { getThread, listMessageThreads } from "@/lib/messages.functions";
 import { useCompactMessages } from "@/hooks/use-compact-messages";
+import { AuthenticatedHeader } from "@/components/auth/AuthenticatedHeader";
 
 const searchSchema = z.object({
   booking: z.string().uuid().optional(),
@@ -84,21 +85,9 @@ function MessagesPage() {
       }}
     >
       {/* The open thread owns the compact phone/tablet header. */}
-      {!(compact && (booking || business)) && <header style={{ flex: "none", background: "#072057", color: "#eaf1f6" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 12px 8px" }}>
-          <Link
-            to="/dashboard"
-            aria-label="Back to dashboard"
-            style={{
-              width: 36, height: 36, borderRadius: "50%", display: "grid", placeItems: "center",
-              color: "#eaf1f6", textDecoration: "none", fontSize: 20, lineHeight: 1,
-              background: "rgba(255,255,255,.08)", flexShrink: 0,
-            }}
-          >
-            ←
-          </Link>
-          <span style={{ fontSize: 20, fontWeight: 600 }}>Messages</span>
-        </div>
+      {!(compact && (booking || business)) && <>
+        <AuthenticatedHeader />
+        <header style={{ flex: "none", background: "#072057", color: "#eaf1f6" }}>
         <div style={{ padding: "0 12px 10px" }}>
           <div
             role="tablist"
@@ -131,7 +120,8 @@ function MessagesPage() {
             ))}
           </div>
         </div>
-      </header>}
+        </header>
+      </>}
 
       <main className="fx-messages-main" style={{ flex: 1, minHeight: 0, overflow: "hidden" }}>
         {active === "trips" ? (

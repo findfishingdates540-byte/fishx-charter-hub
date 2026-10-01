@@ -7,6 +7,7 @@ import { useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
+import { AuthenticatedHeader } from "@/components/auth/AuthenticatedHeader";
 import {
   listNotificationCenter,
   markNotificationRead,
@@ -102,11 +103,8 @@ export function NotificationCenter() {
 
   return (
     <div style={{ background: "#f6f9fb", minHeight: "100vh", fontFamily: V.sans }}>
+      <AuthenticatedHeader />
       <div style={{ maxWidth: 860, margin: "0 auto", padding: "28px 18px 64px" }}>
-        <Link to="/dashboard" style={{ color: V.cyan, fontSize: 14, fontWeight: 600 }}>
-          ← Back to dashboard
-        </Link>
-
         <header
           style={{
             display: "flex",
@@ -114,7 +112,6 @@ export function NotificationCenter() {
             justifyContent: "space-between",
             gap: 14,
             flexWrap: "wrap",
-            marginTop: 14,
           }}
         >
           <div>
