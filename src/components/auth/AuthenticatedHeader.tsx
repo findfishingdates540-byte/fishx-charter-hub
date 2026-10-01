@@ -5,25 +5,28 @@ import { BrandLogo } from "@/components/brand/BrandLogo";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { supabase } from "@/integrations/supabase/client";
 
-export type AuthenticatedHeaderTab = { key: string; label: string };
-
 type Props = {
   displayName?: string | null;
-  tabs?: AuthenticatedHeaderTab[];
-  activeTab?: string;
-  onTabChange?: (key: string) => void;
   actions?: ReactNode;
 };
 
-const BROWSE_LINKS = [
-  { to: "/dashboard", label: "Dashboard" },
-  { to: "/charters/search", label: "Charters" },
-  { to: "/services/search", label: "Explore" },
-  { to: "/marketplace", label: "Marketplace" },
+const MEMBER_LINKS = [
+  { to: "/dashboard", tab: "home", label: "Home" },
+  { to: "/dashboard", tab: "trips", label: "My Trips" },
+  { to: "/dashboard", tab: "history", label: "History" },
+  { to: "/dashboard", tab: "explore", label: "Explore" },
+  { to: "/dashboard", tab: "wallet", label: "Wallet" },
+  { to: "/dashboard", tab: "orders", label: "Orders" },
 ] as const;
 
-export function AuthenticatedHeader({ displayName, tabs, activeTab, onTabChange, actions }: Props) {
+export function AuthenticatedHeader({ displayName, actions }: Props) {
   const pathname = useRouterState({ select: (state) => state.location.pathname });
+  const currentTab = useRouterState({
+    select: (state) => {
+      const tab = (state.location.search as { tab?: unknown } | undefined)?.tab;
+      return typeof tab === "string" ? tab : "home";
+    },
+  });
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const name = displayName?.trim() || "Account";
@@ -35,17 +38,16 @@ export function AuthenticatedHeader({ displayName, tabs, activeTab, onTabChange,
     navigate({ to: "/", replace: true });
   }
 
-  function tabButton(tab: AuthenticatedHeaderTab) {
+  function memberLink(item: (typeof MEMBER_LINKS)[number]) {
+    const active = pathname === "/dashboard" && currentTab === item.tab;
     return (
-      <button key={tab.key} type="button" className={activeTab === tab.key ? "is-active" : undefined} onClick={() => { onTabChange?.(tab.key); setOpen(false); }}>
-        {tab.label}
-      </button>
-    );
-  }
-
-  function browseLink(item: (typeof BROWSE_LINKS)[number]) {
-    return (
-      <Link key={item.to} to={item.to} className={pathname.startsWith(item.to) ? "is-active" : undefined} onClick={() => setOpen(false)}>
+      <Link
+        key={item.tab}
+        to={item.to}
+        search={{ tab: item.tab }}
+        className={active ? "is-active" : undefined}
+        onClick={() => setOpen(false)}
+      >
         {item.label}
       </Link>
     );
@@ -58,9 +60,9 @@ export function AuthenticatedHeader({ displayName, tabs, activeTab, onTabChange,
           <BrandLogo size="md" accent="var(--sand)" color="var(--ond)" />
         </Link>
         <nav className="fx-member-nav" aria-label="Signed-in navigation">
-          {tabs ? tabs.map(tabButton) : BROWSE_LINKS.map(browseLink)}
+          {MEMBER_LINKS.map(memberLink)}
           <Link to="/messages" className={pathname.startsWith("/messages") ? "is-active" : undefined}>Messages</Link>
-          {tabs && <Link to="/marketplace" className={pathname.startsWith("/marketplace") ? "is-active" : undefined}>Marketplace</Link>}
+          <Link to="/marketplace" className={pathname.startsWith("/marketplace") ? "is-active" : undefined}>Marketplace</Link>
         </nav>
         <div className="fx-member-actions">
           {actions && <div className="fx-member-custom-actions">{actions}</div>}
@@ -76,7 +78,7 @@ export function AuthenticatedHeader({ displayName, tabs, activeTab, onTabChange,
       <div className="fx-member-drawer">
         <div className="fx-member-drawer-profile"><span>{initial}</span><div><strong>{name}</strong><small>Signed in</small></div></div>
         <nav aria-label="Mobile signed-in navigation">
-          {tabs ? tabs.map(tabButton) : BROWSE_LINKS.map(browseLink)}
+          {MEMBER_LINKS.map(memberLink)}
           <Link to="/messages" onClick={() => setOpen(false)}><MessageCircle size={17} /> Messages</Link>
           <Link to="/notifications" onClick={() => setOpen(false)}><Bell size={17} /> Notifications</Link>
           <Link to="/settings" onClick={() => setOpen(false)}><Settings size={17} /> Account & settings</Link>

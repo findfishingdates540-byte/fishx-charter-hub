@@ -111,12 +111,6 @@ export function AnglerDashboard() {
     <div id="ang-dash" style={styleVars}>
       <AuthenticatedHeader
         displayName={home.profile?.display_name || home.profile?.full_name}
-        tabs={(["home", "trips", "history", "explore", "wallet", "orders"] as Tab[]).map((key) => ({
-          key,
-          label: key === "home" ? "Home" : key === "trips" ? "My Trips" : key.charAt(0).toUpperCase() + key.slice(1),
-        }))}
-        activeTab={tab}
-        onTabChange={(key) => goTab(key as Tab)}
       />
 
 

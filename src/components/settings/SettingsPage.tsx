@@ -21,6 +21,7 @@ import {
 import { BusinessSettings } from "@/components/business/BusinessSettings";
 import { AnglerNotifications } from "@/components/settings/AnglerNotifications";
 import { supabase } from "@/integrations/supabase/client";
+import { AuthenticatedHeader } from "@/components/auth/AuthenticatedHeader";
 
 const V = {
   serif: "'Outfit',Georgia,serif",
@@ -132,54 +133,7 @@ export function SettingsPage({
 
   return (
     <div className="fx-shell" style={{ minHeight: "100vh", background: V.paper, color: V.ink, fontFamily: V.sans }}>
-      <header style={{ position: "sticky", top: 0, zIndex: 30, background: V.navy, color: V.ond }}>
-        <div
-          style={{
-            maxWidth: 1120,
-            margin: "0 auto",
-            padding: "0 24px",
-            height: 62,
-            display: "flex",
-            alignItems: "center",
-            gap: 22,
-          }}
-        >
-          <Link
-            to="/dashboard"
-            style={{ color: V.ondmut, textDecoration: "none", fontSize: 13, fontWeight: 600 }}
-          >
-            ← Back
-          </Link>
-          <div style={{ display: "flex", alignItems: "center", gap: 10, margin: "0 auto" }}>
-            <span
-              style={{
-                width: 10,
-                height: 10,
-                background: V.sand,
-                transform: "rotate(45deg)",
-                display: "inline-block",
-                borderRadius: 1,
-              }}
-            />
-            <span style={{ fontFamily: V.serif, fontWeight: 600, fontSize: 19, whiteSpace: "nowrap" }}>
-              FISH-X.COM
-            </span>
-            <span
-              style={{
-                fontSize: 11,
-                fontWeight: 700,
-                letterSpacing: ".16em",
-                textTransform: "uppercase",
-                color: V.sand,
-                marginLeft: 4,
-              }}
-            >
-              Settings
-            </span>
-          </div>
-          <span style={{ width: 52 }} />
-        </div>
-      </header>
+      <AuthenticatedHeader />
 
       <main
         className="fx-settings"

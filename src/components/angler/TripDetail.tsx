@@ -8,6 +8,7 @@ import { Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { cancelTrip, getRescheduleOptions, getTripDetail, rescheduleTrip, sendTripMessage } from "@/lib/trip-detail.functions";
+import { AuthenticatedHeader } from "@/components/auth/AuthenticatedHeader";
 import { DEFAULT_HERO } from "@/lib/platform-photos";
 
 type Reason = "Weather concerns" | "Plans changed" | "Booked by mistake" | "Something else";
@@ -186,21 +187,7 @@ export function TripDetail({ bookingId }: { bookingId: string }) {
         fontFamily: V.sans,
       }}
     >
-      {/* NAV */}
-      <header style={{ position: "sticky", top: 0, zIndex: 30, background: V.navy, color: V.ond }}>
-        <div style={{ width: "100%", padding: "0 clamp(16px,5vw,80px)", height: 62, display: "flex", alignItems: "center", gap: 22 }}>
-          <Link to="/dashboard" style={{ display: "inline-flex", alignItems: "center", gap: 8, color: V.ondmut, textDecoration: "none", fontSize: 13, fontWeight: 600 }}>
-            <span>←</span> My Trips
-          </Link>
-          <div style={{ display: "flex", alignItems: "center", gap: 10, margin: "0 auto" }}>
-            <span style={{ width: 10, height: 10, background: V.sand, transform: "rotate(45deg)", display: "inline-block", borderRadius: 1 }} />
-            <span style={{ fontFamily: V.serif, fontWeight: 600, fontSize: 19, letterSpacing: ".02em", whiteSpace: "nowrap" }}>FISH-X.COM</span>
-          </div>
-          <span style={{ display: "inline-flex", alignItems: "center", gap: 7, border: `1px solid ${V.lined}`, borderRadius: 30, padding: "8px 14px", fontSize: 11.5, fontWeight: 600, color: V.ond }}>
-            <span style={{ width: 7, height: 7, borderRadius: "50%", background: V.cyan }} /> Escrow-protected
-          </span>
-        </div>
-      </header>
+      <AuthenticatedHeader />
 
       <main style={{ width: "100%", padding: "28px clamp(16px,5vw,80px) 60px" }}>
         {/* CANCELED BANNER */}
