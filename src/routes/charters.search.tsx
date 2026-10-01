@@ -56,7 +56,7 @@ export const Route = createFileRoute("/charters/search")({
   loaderDeps: ({ search }) => search,
   loader: ({ context, deps }) => context.queryClient.ensureQueryData(charterSearchQO(deps)),
   component: CharterResults,
-  errorComponent: ({ error }) => <div className="p-10">Couldn't load results: {error.message}</div>,
+  errorComponent: ({ error }) => <div className="p-10">Couldn't load results: {error instanceof Error ? error.message : String(error)}</div>,
 });
 
 const serif = "'Outfit', Georgia, serif";

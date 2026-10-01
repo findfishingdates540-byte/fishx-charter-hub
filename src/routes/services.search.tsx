@@ -52,7 +52,7 @@ export const Route = createFileRoute("/services/search")({
   loaderDeps: ({ search }) => search,
   loader: ({ context, deps }) => context.queryClient.ensureQueryData(servicesSearchQO(deps)),
   component: ServiceResults,
-  errorComponent: ({ error }) => <div className="p-10">Couldn't load results: {error.message}</div>,
+  errorComponent: ({ error }) => <div className="p-10">Couldn't load results: {error instanceof Error ? error.message : String(error)}</div>,
   notFoundComponent: () => <div className="p-10">Not found.</div>,
 });
 

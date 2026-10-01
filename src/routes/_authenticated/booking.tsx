@@ -1,3 +1,4 @@
+import type { ErrorComponentProps } from "@tanstack/react-router";
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 import { BookingFlow, checkoutQuery } from "@/components/booking/BookingFlow";
@@ -39,7 +40,7 @@ export const Route = createFileRoute("/_authenticated/booking")({
   component: RouteComponent,
 });
 
-function BookingError({ error }: { error: Error }) {
+function BookingError({ error }: ErrorComponentProps) {
   return (
     <div style={{ minHeight: "60vh", display: "grid", placeItems: "center", padding: 24, textAlign: "center" }}>
       <div style={{ maxWidth: 460 }}>

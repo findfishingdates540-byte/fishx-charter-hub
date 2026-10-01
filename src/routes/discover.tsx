@@ -43,7 +43,7 @@ export const Route = createFileRoute("/discover")({
   },
   component: DiscoverPage,
   errorComponent: ({ error }) => (
-    <div className="p-10">Couldn't load directory: {error.message}</div>
+    <div className="p-10">Couldn't load directory: {error instanceof Error ? error.message : String(error)}</div>
   ),
   notFoundComponent: () => <div className="p-10">Not found.</div>,
 });

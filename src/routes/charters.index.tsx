@@ -37,7 +37,7 @@ export const Route = createFileRoute("/charters/")({
     context.queryClient.ensureQueryData(charterDirectoryQO);
   },
   component: ChartersLanding,
-  errorComponent: ({ error }) => <div className="p-10">Couldn't load charters: {error.message}</div>,
+  errorComponent: ({ error }) => <div className="p-10">Couldn't load charters: {error instanceof Error ? error.message : String(error)}</div>,
 });
 
 const money = (c: number | null) =>
