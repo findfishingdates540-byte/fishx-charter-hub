@@ -98,9 +98,13 @@ export const Route = createFileRoute("/charters/$charterId")({
     return { meta };
   },
   component: CharterDetail,
-  errorComponent: CharterUnavailable,
+  errorComponent: CharterError,
   notFoundComponent: CharterNotFound,
 });
+function CharterError() {
+  return <CharterUnavailable />;
+}
+
 function CharterNotFound() {
   return <CharterUnavailable />;
 }
