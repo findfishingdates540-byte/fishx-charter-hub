@@ -16,7 +16,7 @@ export const Route = createFileRoute("/_authenticated/account")({
       throw redirect({ to: "/dashboard", search: { tab: "settings", biz: business.id } });
     }
     return context.queryClient.ensureQueryData({
-      queryKey: ["my-profile"],
+      queryKey: ["my-account-profile"],
       queryFn: () => getMyProfile(),
     });
   },
