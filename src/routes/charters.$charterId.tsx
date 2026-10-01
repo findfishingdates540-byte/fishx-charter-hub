@@ -5,8 +5,8 @@ import { formatWaterTypes } from "@/lib/water-types";
  * so the BookingFlow stays stable when switching between packages.
  */
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useSuspenseQuery, queryOptions } from "@tanstack/react-query";
-import { getCharterPackages } from "@/lib/charters.functions";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { charterDetailQO } from "@/lib/charter-detail.query";
 import { PublicHeader } from "@/components/public/PublicHeader";
 import { DEFAULT_HERO } from "@/lib/platform-photos";
 import { CharterCard } from "./charters.index";
@@ -49,11 +49,6 @@ type CharterDetailData = {
   }[];
 };
 
-const charterDetailQO = (charterId: string) =>
-  queryOptions({
-    queryKey: ["charter-detail", charterId],
-    queryFn: () => getCharterPackages({ data: { charterId } }),
-  });
 
 export const Route = createFileRoute("/charters/$charterId")({
   loader: ({ context, params }) =>
