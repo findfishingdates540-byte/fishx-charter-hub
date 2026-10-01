@@ -187,7 +187,7 @@ export function AnglerAccount({
   theme?: "light" | "operator";
 } = {}) {
   const { data } = useSuspenseQuery({
-    queryKey: ["my-profile"],
+    queryKey: ["my-account-profile"],
     queryFn: () => getMyProfile(),
   });
   const queryClient = useQueryClient();
@@ -228,7 +228,7 @@ export function AnglerAccount({
         },
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["my-profile"] });
+      queryClient.invalidateQueries({ queryKey: ["my-account-profile"] });
       showToast("Profile saved");
     },
     onError: (e) => showToast(e instanceof Error ? e.message : "Couldn't save your profile"),
