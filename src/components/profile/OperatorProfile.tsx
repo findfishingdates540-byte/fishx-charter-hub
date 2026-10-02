@@ -287,21 +287,7 @@ export function OperatorProfile({
         actions={
           <Link
             to={backDestination}
-            style={{
-              display: "inline-flex",
-              minHeight: 38,
-              alignItems: "center",
-              gap: 8,
-              padding: "0 13px",
-              border: "1px solid rgba(3,16,41,.14)",
-              borderRadius: 6,
-              background: "rgba(3,16,41,.05)",
-              color: "#031029",
-              textDecoration: "none",
-              fontSize: 13,
-              fontWeight: 600,
-              whiteSpace: "nowrap",
-            }}
+            className="fx-member-context-link"
           >
             <ArrowLeft size={16} strokeWidth={1.8} aria-hidden="true" />
             Back to results

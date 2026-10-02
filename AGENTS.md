@@ -10,4 +10,4 @@
 <!-- LOVABLE:END -->
 
 - Operator messaging uses a shared compact list-to-thread layout through 1024px so every persona behaves consistently on phones and tablets.
-- Public browsing pages render the canonical authenticated member header whenever a session exists, so signed-in navigation never changes between pages.
+- Public browsing pages render one account-aware authenticated header whenever a session exists; anglers retain member links while operators retain their console links.
