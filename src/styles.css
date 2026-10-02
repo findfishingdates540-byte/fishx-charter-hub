@@ -1267,6 +1267,8 @@ body.dc-body { margin:0; background:#072057; }
 .fx-member-nav > .is-active { background: rgba(255,255,255,.1); color: var(--ond, #eaf1f6); }
 .fx-member-actions { display: flex; align-items: center; gap: 10px; min-width: 0; }
 .fx-member-custom-actions { display: flex; align-items: center; gap: 10px; }
+.fx-member-context-link { display: inline-flex; min-height: 38px; align-items: center; gap: 8px; padding: 0 13px; border: 1px solid color-mix(in oklab, var(--ond, #eaf1f6) 24%, transparent); border-radius: 6px; background: color-mix(in oklab, var(--ond, #eaf1f6) 10%, transparent); color: var(--ond, #eaf1f6); text-decoration: none; font-size: 13px; font-weight: 600; white-space: nowrap; }
+.fx-member-drawer-actions { display: none; }
 .fx-member-icon, .fx-member-menu { width: 40px; height: 40px; border-radius: 50%; border: 1px solid rgba(255,255,255,.14); background: rgba(255,255,255,.06); color: var(--ond, #eaf1f6); display: grid; place-items: center; text-decoration: none; cursor: pointer; }
 .fx-member-account { display: flex; align-items: center; gap: 8px; color: var(--ond, #eaf1f6); text-decoration: none; }
 .fx-member-account > span, .fx-member-drawer-profile > span { width: 38px; height: 38px; border-radius: 50%; background: rgba(45,226,242,.16); color: var(--sand, #2DE2F2); display: grid; place-items: center; font-weight: 700; }
@@ -1289,6 +1291,8 @@ body.dc-body { margin:0; background:#072057; }
   .fx-member-drawer-profile div { display: grid; min-width: 0; }
   .fx-member-drawer-profile strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .fx-member-drawer-profile small { color: var(--ondmut, #93a7b7); }
+  .fx-member-drawer-actions { display: flex; padding: 4px 4px 12px; }
+  .fx-member-drawer-actions .fx-member-context-link { width: 100%; justify-content: center; }
   .fx-member-drawer nav { display: grid; }
   .fx-member-drawer nav > a, .fx-member-drawer nav > button { min-height: 46px; display: flex; align-items: center; gap: 10px; border: 0; border-top: 1px solid rgba(255,255,255,.08); background: transparent; color: var(--ond, #eaf1f6); padding: 0 6px; font: 600 14px/1 var(--sans, 'Outfit', system-ui, sans-serif); text-decoration: none; text-align: left; cursor: pointer; }
   .fx-member-drawer nav > .is-active { color: var(--sand, #2DE2F2); }
