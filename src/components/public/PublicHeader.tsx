@@ -80,6 +80,13 @@ export function PublicHeader({
     >
       <style>{`
         .fx-public-header .fx-ph-toggle { display: none; }
+        /* Signed-in themed actions (e.g. fx-member-context-link) are light-on-dark;
+           restyle them for this white signed-out header so they stay visible. */
+        .fx-public-header .fx-member-context-link {
+          color: #031029;
+          border: 1px solid rgba(3,16,41,.24);
+          background: rgba(3,16,41,.06);
+        }
         @media (max-width: 900px) {
           .fx-public-header .fx-ph-nav,
           .fx-public-header .fx-ph-actions { display: none !important; }
@@ -217,6 +224,11 @@ export function PublicHeader({
             {n.label}
           </Link>
         ))}
+        {actions && (
+          <div style={{ display: "flex", marginTop: 4, paddingBottom: 8 }}>
+            {actions}
+          </div>
+        )}
         <div style={{ display: "flex", gap: 10, marginTop: 12 }}>
           {(
             <>
