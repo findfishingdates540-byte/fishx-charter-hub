@@ -15,6 +15,7 @@ import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-q
 import { useServerFn } from "@tanstack/react-start";
 import { getMyProfile, updateMyProfile } from "@/lib/angler-profile.functions";
 import { AvatarUpload } from "@/components/profile/AvatarUpload";
+import { DeleteAccountCard } from "@/components/profile/DeleteAccountCard";
 
 
 const V = {
@@ -486,6 +487,7 @@ export function AnglerAccount({
         </div>
       </div>
       <Toast toast={toast} />
+      <DeleteAccountCard dark={theme === "operator"} />
     </AccountWrap>
   );
 }
