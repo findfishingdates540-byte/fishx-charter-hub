@@ -553,7 +553,7 @@ function AuthPage() {
                 {pwField("new-password", "At least 8 characters")}
                 <label style={{ display: "flex", alignItems: "flex-start", gap: 10, cursor: "pointer" }}>
                   <input name="terms" type="checkbox" style={{ width: 18, height: 18, marginTop: 1, accentColor: "#1F9FBE", flex: "none", cursor: "pointer" }} />
-                  <span style={{ fontSize: 13, lineHeight: 1.5, color: "var(--tmut)" }}>I agree to the <a href="#" style={{ color: "var(--goldtext)", textDecoration: "none", fontWeight: 600 }}>Terms</a> and <a href="#" style={{ color: "var(--goldtext)", textDecoration: "none", fontWeight: 600 }}>Privacy Policy</a>.</span>
+                  <span style={{ fontSize: 13, lineHeight: 1.5, color: "var(--tmut)" }}>I agree to the <a href="/terms" target="_blank" style={{ color: "var(--goldtext)", textDecoration: "none", fontWeight: 600 }}>Terms</a> and <a href="/privacy" target="_blank" style={{ color: "var(--goldtext)", textDecoration: "none", fontWeight: 600 }}>Privacy Policy</a>.</span>
                 </label>
                 {error && <ErrorBox msg={error} />}
                 <button type="submit" disabled={isSubmitting} style={{ ...primaryBtn, opacity: isSubmitting ? 0.7 : 1, cursor: isSubmitting ? "wait" : "pointer" }}>{isSubmitting ? "Creating account…" : "Create account →"}</button>
@@ -610,7 +610,7 @@ function AuthPage() {
 
                 <label style={{ display: "flex", alignItems: "flex-start", gap: 10, cursor: "pointer" }}>
                   <input name="terms" type="checkbox" style={{ width: 18, height: 18, marginTop: 1, accentColor: "#1F9FBE", flex: "none", cursor: "pointer" }} />
-                  <span style={{ fontSize: 13, lineHeight: 1.5, color: "var(--tmut)" }}>I agree to the <a href="#" style={{ color: "var(--goldtext)", textDecoration: "none", fontWeight: 600 }}>Terms</a>, <a href="#" style={{ color: "var(--goldtext)", textDecoration: "none", fontWeight: 600 }}>Privacy Policy</a> and seller agreement.</span>
+                  <span style={{ fontSize: 13, lineHeight: 1.5, color: "var(--tmut)" }}>I agree to the <a href="/terms" target="_blank" style={{ color: "var(--goldtext)", textDecoration: "none", fontWeight: 600 }}>Terms</a>, <a href="/privacy" target="_blank" style={{ color: "var(--goldtext)", textDecoration: "none", fontWeight: 600 }}>Privacy Policy</a> and seller agreement.</span>
                 </label>
                 {error && <ErrorBox msg={error} />}
                 <button type="submit" disabled={isSubmitting} style={{ ...primaryBtn, opacity: isSubmitting ? 0.7 : 1, cursor: isSubmitting ? "wait" : "pointer" }}>{isSubmitting ? "Creating workspace…" : "Create workspace →"}</button>
