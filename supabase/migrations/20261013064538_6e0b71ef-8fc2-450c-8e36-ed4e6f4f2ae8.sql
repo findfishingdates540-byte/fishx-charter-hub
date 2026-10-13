@@ -1,0 +1,1 @@
+DROP POLICY IF EXISTS "listing metrics are public" ON public.listing_metrics;
