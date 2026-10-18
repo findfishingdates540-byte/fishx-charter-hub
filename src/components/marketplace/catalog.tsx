@@ -62,7 +62,9 @@ export function iconFromCategory(cat: Cat, title: string): IconKind {
 }
 
 
-export const CATALOG: Product[] = [
+/** Sample catalog removed — the marketplace only lists real vendor inventory. */
+export const CATALOG: Product[] = [];
+const _REMOVED_SAMPLES: Product[] = [
   { id: "p1", name: "Apex 7'0\" Inshore Spinning Rod", seller: "Apex Rod Co.", sellerType: "Gear maker", price: 189, rating: "4.9", reviews: 214, cat: "rods", badge: "Bestseller", icon: "rod",
     description: "Tournament-grade inshore spinning rod hand-built in Tampa. IM8 graphite blank tuned for redfish, snook, and speckled trout — light in the hand, ruthless on the hookset.",
     specs: [{label:"Length",value:"7'0\""},{label:"Power",value:"Medium"},{label:"Action",value:"Fast"},{label:"Line",value:"8–17 lb"},{label:"Lure",value:"1/4–3/4 oz"}] },
