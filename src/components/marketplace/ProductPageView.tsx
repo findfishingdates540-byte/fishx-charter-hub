@@ -245,7 +245,7 @@ function ProductDetail({
         cart[key] = Math.min(maxQty, Math.max(cart[key] ?? 0, qty));
         window.localStorage.setItem("fx-cart", JSON.stringify(cart));
         if (variantId) {
-          const v = data.variants.find((x) => x.id === variantId);
+          const v = variants.find((x: ProductVariant) => x.id === variantId);
           const labels = JSON.parse(window.localStorage.getItem("fx-cart-labels") || "{}");
           if (v) labels[key] = { label: `${v.option_name}: ${v.option_value}`, deltaCents: v.price_delta_cents };
           window.localStorage.setItem("fx-cart-labels", JSON.stringify(labels));
