@@ -249,6 +249,25 @@ const CheckoutInput = z.object({
   origin: z.string().url().optional(),
   discountCode: z.string().trim().max(40).optional(),
   marketingConsent: z.boolean().optional(),
+  /** Filled on the /checkout page; when present Stripe skips address collection. */
+  contact: z
+    .object({
+      name: z.string().trim().min(1).max(100),
+      email: z.string().trim().email().max(255),
+      phone: z.string().trim().max(30).optional(),
+    })
+    .optional(),
+  shippingAddress: z
+    .object({
+      line1: z.string().trim().min(1).max(200),
+      line2: z.string().trim().max(200).optional(),
+      city: z.string().trim().min(1).max(100),
+      state: z.string().trim().max(100).optional(),
+      postal_code: z.string().trim().min(1).max(20),
+      country: z.string().trim().length(2),
+    })
+    .optional(),
+  note: z.string().trim().max(500).optional(),
 });
 
 export const createProductCheckout = createServerFn({ method: "POST" })

@@ -74,10 +74,12 @@ export const Route = createFileRoute("/api/public/stripe-webhook")({
           for (const orderId of orderIds) {
             const { data: order } = await supabaseAdmin
               .from("product_orders")
-              .select("id,business_id,total_cents,payout_cents,paid_at,stripe_transfer_id,discount_code")
+              .select("id,business_id,total_cents,payout_cents,paid_at,stripe_transfer_id,discount_code,shipping_address")
               .eq("id", orderId)
               .maybeSingle();
             if (!order || order.paid_at) continue;
+            // Checkout page already saved the address/contact; keep it.
+            const hasAddress = !!order.shipping_address;
 
             await supabaseAdmin
               .from("product_orders")
@@ -85,9 +87,9 @@ export const Route = createFileRoute("/api/public/stripe-webhook")({
                 status: "paid",
                 paid_at: new Date().toISOString(),
                 ...(paymentIntentId ? { stripe_payment_intent_id: paymentIntentId } : {}),
-                ...(buyer?.shippingAddress ? { shipping_address: buyer.shippingAddress as never } : {}),
-                ...(buyer?.email ? { buyer_email: buyer.email } : {}),
-                ...(buyer?.name ? { buyer_name: buyer.name } : {}),
+                ...(!hasAddress && buyer?.shippingAddress ? { shipping_address: buyer.shippingAddress as never } : {}),
+                ...(!hasAddress && buyer?.email ? { buyer_email: buyer.email } : {}),
+                ...(!hasAddress && buyer?.name ? { buyer_name: buyer.name } : {}),
               })
               .eq("id", orderId);
 

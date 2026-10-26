@@ -893,6 +893,9 @@ function OrderList({
                 ) : (
                   <div>No delivery address on this order yet.</div>
                 )}
+                {o.notes && (
+                  <div style={{ marginTop: 2, color: "#EAF1F6" }}>Buyer note: “{o.notes}”</div>
+                )}
                 <div style={{ marginTop: 2 }}>
                   {[
                     o.paid_at ? `Paid ${dayOf(o.paid_at)}` : null,
