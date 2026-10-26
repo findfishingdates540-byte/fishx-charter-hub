@@ -27,7 +27,19 @@ export type MyOrder = {
   trackingNumber: string | null;
   sellerName: string;
   businessId: string;
-  items: Array<{ id: string; title: string; quantity: number; unitPriceCents: number }>;
+  discountCents: number;
+  paidAt: string | null;
+  shippedAt: string | null;
+  deliveredAt: string | null;
+  shippingAddress: Record<string, string | null> | null;
+  items: Array<{
+    id: string;
+    title: string;
+    quantity: number;
+    unitPriceCents: number;
+    productId: string | null;
+    image: string | null;
+  }>;
 };
 
 export const listMyOrders = createServerFn({ method: "GET" })
@@ -37,7 +49,7 @@ export const listMyOrders = createServerFn({ method: "GET" })
     const { data, error } = await supabase
       .from("product_orders")
       .select(
-        "id,status,total_cents,shipping_cents,subtotal_cents,created_at,tracking_number,business_id,business:businesses(name),items:product_order_items(id,title,quantity,unit_price_cents)",
+        "id,status,total_cents,shipping_cents,subtotal_cents,created_at,paid_at,shipped_at,delivered_at,discount_cents,shipping_address,tracking_number,business_id,business:businesses(name),items:product_order_items(id,title,quantity,unit_price_cents,product_id,product:inventory_products(images))",
       )
       .eq("buyer_id", userId)
       .order("created_at", { ascending: false })
@@ -52,6 +64,11 @@ export const listMyOrders = createServerFn({ method: "GET" })
       subtotalCents: o.subtotal_cents ?? 0,
       createdAt: o.created_at,
       trackingNumber: o.tracking_number ?? null,
+      discountCents: o.discount_cents ?? 0,
+      paidAt: o.paid_at ?? null,
+      shippedAt: o.shipped_at ?? null,
+      deliveredAt: o.delivered_at ?? null,
+      shippingAddress: o.shipping_address ?? null,
       businessId: o.business_id,
       sellerName: o.business?.name ?? "Fish-X vendor",
       items: (o.items ?? []).map((i: any) => ({
@@ -59,6 +76,8 @@ export const listMyOrders = createServerFn({ method: "GET" })
         title: i.title,
         quantity: i.quantity,
         unitPriceCents: i.unit_price_cents ?? 0,
+        productId: i.product_id ?? null,
+        image: firstImage(i.product?.images),
       })),
     }));
   });

@@ -17,6 +17,7 @@ import { ExploreHub } from "./ExploreHub";
 import { TripsTab } from "./TripsTab";
 import { DEFAULT_HERO } from "@/lib/platform-photos";
 import { AnglerBookingHistory, AnglerPayments } from "./AnglerConsole";
+import { MyOrdersSection } from "@/components/shopping/ShoppingSections";
 
 const anglerHomeQO = queryOptions({
   queryKey: ["angler-dashboard"],
@@ -140,7 +141,7 @@ export function AnglerDashboard() {
           {tab === "history" && <AnglerBookingHistory />}
           {tab === "explore" && <ExploreHub />}
           {tab === "wallet" && <AnglerPayments />}
-          {tab === "orders" && <AnglerPayments />}
+          {tab === "orders" && <MyOrdersSection />}
         </Suspense>
       </main>
     </div>
