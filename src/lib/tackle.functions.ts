@@ -240,6 +240,11 @@ export const updateOrderStatus = createServerFn({ method: "POST" })
       .select()
       .single();
     if (error) throw new Response(error.message, { status: 400 });
+    if (["shipped", "delivered", "refunded", "cancelled"].includes(data.status)) {
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      const { notifyOrderEvent } = await import("./notifications.server");
+      await notifyOrderEvent(supabaseAdmin as never, data.id, `order.${data.status}`);
+    }
     return row;
   });
 
@@ -373,6 +378,8 @@ export const refundProductOrder = createServerFn({ method: "POST" })
       .eq("id", order.id);
     if (upErr) throw new Response(upErr.message, { status: 400 });
 
+    const { notifyOrderEvent } = await import("./notifications.server");
+    await notifyOrderEvent(supabaseAdmin as never, order.id, "order.refunded");
     return { ok: true };
   });
 
