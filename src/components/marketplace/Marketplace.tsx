@@ -109,6 +109,11 @@ export function Marketplace() {
   );
 
   const [step, setStep] = useState<"cart" | "checkout" | "done">("cart");
+  // The full cart lives on its own page now.
+  useEffect(() => {
+    if (cartOpen && openCartParam?.cart) navigate({ to: "/cart", replace: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const [orderId, setOrderId] = useState("");
   const [paidTotal, setPaidTotal] = useState<number | null>(null);
   const [toast, setToast] = useState("");
@@ -370,7 +375,7 @@ export function Marketplace() {
               />
             </label>
             <button
-              onClick={() => setCartOpen(true)}
+              onClick={() => navigate({ to: "/cart" })}
               style={{ position: "relative", display: "inline-flex", alignItems: "center", gap: 9, background: V.sand, color: "#04121B", border: 0, borderRadius: 30, padding: "11px 18px", fontFamily: V.sans, fontSize: 12.5, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }}
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.9}>

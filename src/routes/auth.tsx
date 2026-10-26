@@ -113,6 +113,10 @@ function AuthPage() {
   const navigate = useNavigate();
   const search = useSearch({ from: "/auth" });
   const continueAfterSignIn = () => {
+    if (search.redirect?.startsWith("/checkout") || search.redirect?.startsWith("/cart")) {
+      void navigate({ to: search.redirect.startsWith("/cart") ? "/cart" : "/checkout", replace: true });
+      return;
+    }
     if (search.productId) {
       void navigate({
         to: "/marketplace/$productId",
