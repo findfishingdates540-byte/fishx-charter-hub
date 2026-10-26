@@ -1573,3 +1573,15 @@ body.dc-body { margin:0; background:#072057; }
 .fx-legal{max-width:720px;margin:0 auto;padding:32px 20px;line-height:1.6}
 .fx-legal h1{font-size:32px;margin:12px 0 4px}.fx-legal h2{font-size:18px;margin-top:24px}
 .fx-legal-note{color:var(--muted-foreground);font-size:13px}
+
+/* Cart & checkout pages */
+.fx-checkout-grid { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 18px; align-items: start; }
+.fx-checkout-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.fx-checkout-mobile-summary { display: none; }
+@media (max-width: 860px) {
+  .fx-checkout-grid { grid-template-columns: 1fr; }
+  .fx-checkout-fields { grid-template-columns: 1fr; }
+  .fx-checkout-mobile-summary { display: block; }
+  .fx-checkout-desktop-summary { display: none; }
+  .fx-checkout-grid > aside { position: static !important; }
+}
