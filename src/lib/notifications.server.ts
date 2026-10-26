@@ -180,7 +180,7 @@ export async function draftsForEvent(
     if (!orderId) return [];
     const { data: order } = await admin
       .from("product_orders")
-      .select("id,business_id,buyer_id,total_cents")
+      .select("id,business_id,buyer_id,total_cents,tracking_number,business:businesses(name)")
       .eq("id", orderId)
       .maybeSingle();
     if (!order) return [];
@@ -193,6 +193,7 @@ export async function draftsForEvent(
       for (const m of members ?? []) staff.add(m.user_id as string);
     }
     const ref = String(order.id).slice(0, 8).toUpperCase();
+    const shopName = ((order as any).business?.name as string) || "The shop";
     if (topic === "payout.released") {
       return [...staff].map((userId) => ({
         userId,
@@ -209,14 +210,40 @@ export async function draftsForEvent(
         .select("quantity")
         .eq("order_id", orderId);
       const count = (items ?? []).reduce((n, i) => n + ((i.quantity as number) ?? 0), 0);
-      return [...staff].map((userId) => ({
+      const buyerNote: NotificationDraft[] = order.buyer_id
+        ? [{
+            userId: order.buyer_id as string,
+            category: "order",
+            title: `Order ${ref} confirmed`,
+            body: `${shopName} received your payment of ${money(order.total_cents as number)}. We'll let you know when it ships.`,
+            link: "/dashboard?tab=orders",
+            severity: "success",
+          }]
+        : [];
+      return [...buyerNote, ...[...staff].map((userId) => ({
         userId,
         category: "order",
         title: `New order ${ref}`,
         body: `${count || 1} item${count === 1 ? "" : "s"} · ${money(order.total_cents as number)} paid. Ready to pack and ship.`,
         link: "/shop/orders",
         severity: "success" as const,
-      }));
+      }))];
+    }
+    /* Buyer-facing updates when the shop moves the order along. */
+    if (topic === "order.shipped" || topic === "order.delivered" || topic === "order.refunded" || topic === "order.cancelled") {
+      if (!order.buyer_id) return [];
+      const copy: Record<string, [string, string, NotificationDraft["severity"]]> = {
+        "order.shipped": [
+          `Order ${ref} has shipped`,
+          `${shopName} sent your order${order.tracking_number ? ` · tracking ${order.tracking_number}` : ""}.`,
+          "info",
+        ],
+        "order.delivered": [`Order ${ref} delivered`, `${shopName} marked your order as delivered. Enjoy your gear!`, "success"],
+        "order.refunded": [`Order ${ref} refunded`, `${shopName} refunded ${money(order.total_cents as number)} to your card.`, "warning"],
+        "order.cancelled": [`Order ${ref} cancelled`, `${shopName} cancelled this order.`, "warning"],
+      };
+      const [title, body, severity] = copy[topic]!;
+      return [{ userId: order.buyer_id as string, category: "order", title, body, link: "/dashboard?tab=orders", severity }];
     }
     if (topic === "order.cancelled_by_buyer") {
       return [...staff].map((userId) => ({
@@ -656,4 +683,20 @@ export async function handleDomainEvent(admin: Admin, evt: DomainEvent) {
   }
 
   return { created, emailed };
+}
+
+
+/** Fire-and-forget order notification (each call is its own event). */
+export async function notifyOrderEvent(admin: Admin, orderId: string, topic: string) {
+  try {
+    await handleDomainEvent(admin, {
+      id: crypto.randomUUID(),
+      topic,
+      aggregate_type: "product_order",
+      aggregate_id: orderId,
+      payload: { order_id: orderId },
+    });
+  } catch (e) {
+    console.error(`[notify] ${topic} failed`, e);
+  }
 }
