@@ -50,6 +50,7 @@ import { Route as AuthenticatedShopSectionRouteImport } from './routes/_authenti
 import { Route as AuthenticatedTripsDetailRouteImport } from './routes/_authenticated/trips.detail'
 import { Route as ApiPublicFishxWebhookRouteImport } from './routes/api/public/fishx-webhook'
 import { Route as ApiPublicStripeWebhookRouteImport } from './routes/api/public/stripe-webhook'
+import { Route as MarketplaceShopSlugProductSlugRouteImport } from './routes/marketplace.$shopSlug.$productSlug'
 import { Route as AuthenticatedCaptainChartersNewRouteImport } from './routes/_authenticated/captain.charters.new'
 import { Route as AuthenticatedCaptainPackagesPackageIdRouteImport } from './routes/_authenticated/captain.packages.$packageId'
 import { Route as AuthenticatedMarinaReservationsReservationIdRouteImport } from './routes/_authenticated/marina.reservations.$reservationId'
@@ -279,6 +280,12 @@ const ApiPublicStripeWebhookRoute = ApiPublicStripeWebhookRouteImport.update({
   path: '/api/public/stripe-webhook',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MarketplaceShopSlugProductSlugRoute =
+  MarketplaceShopSlugProductSlugRouteImport.update({
+    id: '/marketplace/$shopSlug/$productSlug',
+    path: '/marketplace/$shopSlug/$productSlug',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AuthenticatedCaptainChartersNewRoute =
   AuthenticatedCaptainChartersNewRouteImport.update({
     id: '/captain/charters/new',
@@ -408,6 +415,7 @@ export interface FileRoutesByFullPath {
   '/trips/detail': typeof AuthenticatedTripsDetailRoute
   '/api/public/fishx-webhook': typeof ApiPublicFishxWebhookRoute
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
+  '/marketplace/$shopSlug/$productSlug': typeof MarketplaceShopSlugProductSlugRoute
   '/captain/charters/new': typeof AuthenticatedCaptainChartersNewRoute
   '/captain/packages/$packageId': typeof AuthenticatedCaptainPackagesPackageIdRoute
   '/marina/reservations/$reservationId': typeof AuthenticatedMarinaReservationsReservationIdRoute
@@ -465,6 +473,7 @@ export interface FileRoutesByTo {
   '/trips/detail': typeof AuthenticatedTripsDetailRoute
   '/api/public/fishx-webhook': typeof ApiPublicFishxWebhookRoute
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
+  '/marketplace/$shopSlug/$productSlug': typeof MarketplaceShopSlugProductSlugRoute
   '/captain/charters/new': typeof AuthenticatedCaptainChartersNewRoute
   '/captain/packages/$packageId': typeof AuthenticatedCaptainPackagesPackageIdRoute
   '/marina/reservations/$reservationId': typeof AuthenticatedMarinaReservationsReservationIdRoute
@@ -524,6 +533,7 @@ export interface FileRoutesById {
   '/_authenticated/trips/detail': typeof AuthenticatedTripsDetailRoute
   '/api/public/fishx-webhook': typeof ApiPublicFishxWebhookRoute
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
+  '/marketplace/$shopSlug/$productSlug': typeof MarketplaceShopSlugProductSlugRoute
   '/_authenticated/captain/charters/new': typeof AuthenticatedCaptainChartersNewRoute
   '/_authenticated/captain/packages/$packageId': typeof AuthenticatedCaptainPackagesPackageIdRoute
   '/_authenticated/marina/reservations/$reservationId': typeof AuthenticatedMarinaReservationsReservationIdRoute
@@ -583,6 +593,7 @@ export interface FileRouteTypes {
     | '/trips/detail'
     | '/api/public/fishx-webhook'
     | '/api/public/stripe-webhook'
+    | '/marketplace/$shopSlug/$productSlug'
     | '/captain/charters/new'
     | '/captain/packages/$packageId'
     | '/marina/reservations/$reservationId'
@@ -640,6 +651,7 @@ export interface FileRouteTypes {
     | '/trips/detail'
     | '/api/public/fishx-webhook'
     | '/api/public/stripe-webhook'
+    | '/marketplace/$shopSlug/$productSlug'
     | '/captain/charters/new'
     | '/captain/packages/$packageId'
     | '/marina/reservations/$reservationId'
@@ -698,6 +710,7 @@ export interface FileRouteTypes {
     | '/_authenticated/trips/detail'
     | '/api/public/fishx-webhook'
     | '/api/public/stripe-webhook'
+    | '/marketplace/$shopSlug/$productSlug'
     | '/_authenticated/captain/charters/new'
     | '/_authenticated/captain/packages/$packageId'
     | '/_authenticated/marina/reservations/$reservationId'
@@ -741,6 +754,7 @@ export interface RootRouteChildren {
   MarketplaceIndexRoute: typeof MarketplaceIndexRoute
   ApiPublicFishxWebhookRoute: typeof ApiPublicFishxWebhookRoute
   ApiPublicStripeWebhookRoute: typeof ApiPublicStripeWebhookRoute
+  MarketplaceShopSlugProductSlugRoute: typeof MarketplaceShopSlugProductSlugRoute
   ApiPublicAvatarsSplatRoute: typeof ApiPublicAvatarsSplatRoute
   ApiPublicHooksBookingTimersRoute: typeof ApiPublicHooksBookingTimersRoute
   ApiPublicHooksDispatchEventsRoute: typeof ApiPublicHooksDispatchEventsRoute
@@ -1040,6 +1054,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicStripeWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/marketplace/$shopSlug/$productSlug': {
+      id: '/marketplace/$shopSlug/$productSlug'
+      path: '/marketplace/$shopSlug/$productSlug'
+      fullPath: '/marketplace/$shopSlug/$productSlug'
+      preLoaderRoute: typeof MarketplaceShopSlugProductSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/captain/charters/new': {
       id: '/_authenticated/captain/charters/new'
       path: '/captain/charters/new'
@@ -1233,6 +1254,7 @@ const rootRouteChildren: RootRouteChildren = {
   MarketplaceIndexRoute: MarketplaceIndexRoute,
   ApiPublicFishxWebhookRoute: ApiPublicFishxWebhookRoute,
   ApiPublicStripeWebhookRoute: ApiPublicStripeWebhookRoute,
+  MarketplaceShopSlugProductSlugRoute: MarketplaceShopSlugProductSlugRoute,
   ApiPublicAvatarsSplatRoute: ApiPublicAvatarsSplatRoute,
   ApiPublicHooksBookingTimersRoute: ApiPublicHooksBookingTimersRoute,
   ApiPublicHooksDispatchEventsRoute: ApiPublicHooksDispatchEventsRoute,

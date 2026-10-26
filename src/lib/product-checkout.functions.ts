@@ -27,7 +27,23 @@ export type StoreProduct = {
   sellerCategory: string | null;
   variants?: ProductVariant[];
   wholesaleOnly?: boolean;
+  /** Pretty URL parts: /marketplace/<shopSlug>/<productSlug>. */
+  shopSlug?: string | null;
+  productSlug?: string;
 };
+
+/** URL-safe slug from a product title. */
+export function slugifyTitle(t: string): string {
+  return (
+    t
+      .toLowerCase()
+      .normalize("NFKD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 80) || "product"
+  );
+}
 
 export type ProductVariant = {
   id: string;
@@ -524,7 +540,7 @@ export const previewStoreProduct = createServerFn({ method: "GET" })
     const { data: p, error } = await supabase
       .from("inventory_products")
       .select(
-        "id,title,description,category,price_cents,compare_at_cents,stock_qty,images,business_id,is_published,business:businesses(name,category_key)",
+        "id,title,description,category,price_cents,compare_at_cents,stock_qty,images,business_id,is_published,business:businesses(name,category_key,slug)",
       )
       .eq("id", data.productId)
       .maybeSingle();
@@ -563,7 +579,18 @@ export const previewStoreProduct = createServerFn({ method: "GET" })
       sellerCategory: (p.business as { category_key?: string } | null)?.category_key ?? null,
       variants: variants ?? [],
       wholesaleOnly: wholesale?.wholesale_only ?? false,
+      shopSlug: (p.business as { slug?: string } | null)?.slug ?? null,
     };
+    // Product slug is the title; add a short id only when two products in
+    // the same shop share a title.
+    const base = slugifyTitle(p.title ?? "");
+    const { data: siblings } = await supabase
+      .from("inventory_products")
+      .select("id,title")
+      .eq("business_id", p.business_id)
+      .eq("is_published", true);
+    const clash = (siblings ?? []).some((x: { id: string; title: string | null }) => x.id !== p.id && slugifyTitle(x.title ?? "") === base);
+    product.productSlug = clash ? `${base}-${p.id.slice(0, 8)}` : base;
     return product;
   });
 
@@ -575,7 +602,7 @@ export const getStoreProduct = createServerFn({ method: "GET" })
     const { data: p, error } = await supabaseAdmin
       .from("inventory_products")
       .select(
-        "id,title,description,category,price_cents,compare_at_cents,stock_qty,images,business_id,is_published,business:businesses(name,category_key)",
+        "id,title,description,category,price_cents,compare_at_cents,stock_qty,images,business_id,is_published,business:businesses(name,category_key,slug)",
       )
       .eq("id", data.productId)
       .maybeSingle();
@@ -608,6 +635,42 @@ export const getStoreProduct = createServerFn({ method: "GET" })
       sellerCategory: (p.business as { category_key?: string } | null)?.category_key ?? null,
       variants: variants ?? [],
       wholesaleOnly: wholesale?.wholesale_only ?? false,
+      shopSlug: (p.business as { slug?: string } | null)?.slug ?? null,
     };
+    const base = slugifyTitle(p.title ?? "");
+    const { data: siblings } = await supabaseAdmin
+      .from("inventory_products")
+      .select("id,title")
+      .eq("business_id", p.business_id)
+      .eq("is_published", true);
+    const clash = (siblings ?? []).some((x: { id: string; title: string | null }) => x.id !== p.id && slugifyTitle(x.title ?? "") === base);
+    product.productSlug = clash ? `${base}-${p.id.slice(0, 8)}` : base;
     return product;
+  });
+
+
+/** Resolves /marketplace/<shop>/<product> back to a product id. */
+export const resolveProductSlug = createServerFn({ method: "GET" })
+  .inputValidator((i: unknown) =>
+    z.object({ shopSlug: z.string().min(1).max(120), productSlug: z.string().min(1).max(120) }).parse(i),
+  )
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: biz } = await supabaseAdmin
+      .from("businesses")
+      .select("id")
+      .eq("slug", data.shopSlug)
+      .maybeSingle();
+    if (!biz) return null;
+    const { data: rows } = await supabaseAdmin
+      .from("inventory_products")
+      .select("id,title")
+      .eq("business_id", biz.id)
+      .eq("is_published", true);
+    const list = rows ?? [];
+    const slug = data.productSlug.toLowerCase();
+    const exact = list.filter((r) => slugifyTitle(r.title ?? "") === slug);
+    if (exact.length >= 1) return exact[0].id as string;
+    const withId = list.find((r) => `${slugifyTitle(r.title ?? "")}-${String(r.id).slice(0, 8)}` === slug);
+    return (withId?.id as string | undefined) ?? null;
   });
