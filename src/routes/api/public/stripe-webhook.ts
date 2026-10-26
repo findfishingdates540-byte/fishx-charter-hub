@@ -144,7 +144,7 @@ export const Route = createFileRoute("/api/public/stripe-webhook")({
             try {
               const { handleDomainEvent } = await import("@/lib/notifications.server");
               await handleDomainEvent(supabaseAdmin as never, {
-                id: `order-paid-${orderId}`,
+                id: orderId,
                 topic: "order.paid",
                 aggregate_type: "product_order",
                 aggregate_id: orderId,
