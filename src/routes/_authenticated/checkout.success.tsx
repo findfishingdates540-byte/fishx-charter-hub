@@ -61,7 +61,7 @@ function SuccessPage() {
             Shipping to {a.name}, {[a.line1, a.line2, a.city, a.state, a.postal_code, a.country].filter(Boolean).join(", ")}
           </p>
         )}
-        <Link to="/dashboard" search={{ tab: "orders" } as never} style={{ ...primaryBtn(), marginTop: 16 }}>
+        <Link to="/dashboard" search={{ tab: "orders" }} style={{ ...primaryBtn(), marginTop: 16 }}>
           View my orders
         </Link>
         <Link to="/marketplace" style={{ display: "block", textAlign: "center", marginTop: 12, color: C.accent }}>

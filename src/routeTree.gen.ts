@@ -15,6 +15,7 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as BecomeACaptainRouteImport } from './routes/become-a-captain'
 import { Route as BrandStoryRouteImport } from './routes/brand-story'
+import { Route as CartRouteImport } from './routes/cart'
 import { Route as DiscoverRouteImport } from './routes/discover'
 import { Route as HowItWorksRouteImport } from './routes/how-it-works'
 import { Route as PrivacyRouteImport } from './routes/privacy'
@@ -24,6 +25,7 @@ import { Route as TrustRouteImport } from './routes/trust'
 import { Route as WelcomeRouteImport } from './routes/welcome'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
 import { Route as AuthenticatedBookingRouteImport } from './routes/_authenticated/booking'
+import { Route as AuthenticatedCheckoutRouteImport } from './routes/_authenticated/checkout'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedMessagesRouteImport } from './routes/_authenticated/messages'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
@@ -44,6 +46,7 @@ import { Route as MarketplaceProductIdRouteImport } from './routes/marketplace.$
 import { Route as ServicesSearchRouteImport } from './routes/services.search'
 import { Route as AuthenticatedBookingsDetailRouteImport } from './routes/_authenticated/bookings.detail'
 import { Route as AuthenticatedCaptainSectionRouteImport } from './routes/_authenticated/captain.$section'
+import { Route as AuthenticatedCheckoutSuccessRouteImport } from './routes/_authenticated/checkout.success'
 import { Route as AuthenticatedGuideSectionRouteImport } from './routes/_authenticated/guide.$section'
 import { Route as AuthenticatedMarinaSectionRouteImport } from './routes/_authenticated/marina.$section'
 import { Route as AuthenticatedShopSectionRouteImport } from './routes/_authenticated/shop.$section'
@@ -96,6 +99,11 @@ const BrandStoryRoute = BrandStoryRouteImport.update({
   path: '/brand-story',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CartRoute = CartRouteImport.update({
+  id: '/cart',
+  path: '/cart',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DiscoverRoute = DiscoverRouteImport.update({
   id: '/discover',
   path: '/discover',
@@ -139,6 +147,11 @@ const AuthenticatedAccountRoute = AuthenticatedAccountRouteImport.update({
 const AuthenticatedBookingRoute = AuthenticatedBookingRouteImport.update({
   id: '/booking',
   path: '/booking',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedCheckoutRoute = AuthenticatedCheckoutRouteImport.update({
+  id: '/checkout',
+  path: '/checkout',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
@@ -245,6 +258,12 @@ const AuthenticatedCaptainSectionRoute =
     id: '/captain/$section',
     path: '/captain/$section',
     getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedCheckoutSuccessRoute =
+  AuthenticatedCheckoutSuccessRouteImport.update({
+    id: '/success',
+    path: '/success',
+    getParentRoute: () => AuthenticatedCheckoutRoute,
   } as any)
 const AuthenticatedGuideSectionRoute =
   AuthenticatedGuideSectionRouteImport.update({
@@ -380,6 +399,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/become-a-captain': typeof BecomeACaptainRoute
   '/brand-story': typeof BrandStoryRoute
+  '/cart': typeof CartRoute
   '/discover': typeof DiscoverRoute
   '/how-it-works': typeof HowItWorksRoute
   '/privacy': typeof PrivacyRoute
@@ -389,6 +409,7 @@ export interface FileRoutesByFullPath {
   '/welcome': typeof WelcomeRoute
   '/account': typeof AuthenticatedAccountRoute
   '/booking': typeof AuthenticatedBookingRoute
+  '/checkout': typeof AuthenticatedCheckoutRouteWithChildren
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/messages': typeof AuthenticatedMessagesRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
@@ -409,6 +430,7 @@ export interface FileRoutesByFullPath {
   '/marketplace/': typeof MarketplaceIndexRoute
   '/bookings/detail': typeof AuthenticatedBookingsDetailRoute
   '/captain/$section': typeof AuthenticatedCaptainSectionRoute
+  '/checkout/success': typeof AuthenticatedCheckoutSuccessRoute
   '/guide/$section': typeof AuthenticatedGuideSectionRoute
   '/marina/$section': typeof AuthenticatedMarinaSectionRoute
   '/shop/$section': typeof AuthenticatedShopSectionRoute
@@ -438,6 +460,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/become-a-captain': typeof BecomeACaptainRoute
   '/brand-story': typeof BrandStoryRoute
+  '/cart': typeof CartRoute
   '/discover': typeof DiscoverRoute
   '/how-it-works': typeof HowItWorksRoute
   '/privacy': typeof PrivacyRoute
@@ -447,6 +470,7 @@ export interface FileRoutesByTo {
   '/welcome': typeof WelcomeRoute
   '/account': typeof AuthenticatedAccountRoute
   '/booking': typeof AuthenticatedBookingRoute
+  '/checkout': typeof AuthenticatedCheckoutRouteWithChildren
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/messages': typeof AuthenticatedMessagesRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
@@ -467,6 +491,7 @@ export interface FileRoutesByTo {
   '/marketplace': typeof MarketplaceIndexRoute
   '/bookings/detail': typeof AuthenticatedBookingsDetailRoute
   '/captain/$section': typeof AuthenticatedCaptainSectionRoute
+  '/checkout/success': typeof AuthenticatedCheckoutSuccessRoute
   '/guide/$section': typeof AuthenticatedGuideSectionRoute
   '/marina/$section': typeof AuthenticatedMarinaSectionRoute
   '/shop/$section': typeof AuthenticatedShopSectionRoute
@@ -498,6 +523,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/become-a-captain': typeof BecomeACaptainRoute
   '/brand-story': typeof BrandStoryRoute
+  '/cart': typeof CartRoute
   '/discover': typeof DiscoverRoute
   '/how-it-works': typeof HowItWorksRoute
   '/privacy': typeof PrivacyRoute
@@ -507,6 +533,7 @@ export interface FileRoutesById {
   '/welcome': typeof WelcomeRoute
   '/_authenticated/account': typeof AuthenticatedAccountRoute
   '/_authenticated/booking': typeof AuthenticatedBookingRoute
+  '/_authenticated/checkout': typeof AuthenticatedCheckoutRouteWithChildren
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/messages': typeof AuthenticatedMessagesRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
@@ -527,6 +554,7 @@ export interface FileRoutesById {
   '/marketplace/': typeof MarketplaceIndexRoute
   '/_authenticated/bookings/detail': typeof AuthenticatedBookingsDetailRoute
   '/_authenticated/captain/$section': typeof AuthenticatedCaptainSectionRoute
+  '/_authenticated/checkout/success': typeof AuthenticatedCheckoutSuccessRoute
   '/_authenticated/guide/$section': typeof AuthenticatedGuideSectionRoute
   '/_authenticated/marina/$section': typeof AuthenticatedMarinaSectionRoute
   '/_authenticated/shop/$section': typeof AuthenticatedShopSectionRoute
@@ -558,6 +586,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/become-a-captain'
     | '/brand-story'
+    | '/cart'
     | '/discover'
     | '/how-it-works'
     | '/privacy'
@@ -567,6 +596,7 @@ export interface FileRouteTypes {
     | '/welcome'
     | '/account'
     | '/booking'
+    | '/checkout'
     | '/dashboard'
     | '/messages'
     | '/notifications'
@@ -587,6 +617,7 @@ export interface FileRouteTypes {
     | '/marketplace/'
     | '/bookings/detail'
     | '/captain/$section'
+    | '/checkout/success'
     | '/guide/$section'
     | '/marina/$section'
     | '/shop/$section'
@@ -616,6 +647,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/become-a-captain'
     | '/brand-story'
+    | '/cart'
     | '/discover'
     | '/how-it-works'
     | '/privacy'
@@ -625,6 +657,7 @@ export interface FileRouteTypes {
     | '/welcome'
     | '/account'
     | '/booking'
+    | '/checkout'
     | '/dashboard'
     | '/messages'
     | '/notifications'
@@ -645,6 +678,7 @@ export interface FileRouteTypes {
     | '/marketplace'
     | '/bookings/detail'
     | '/captain/$section'
+    | '/checkout/success'
     | '/guide/$section'
     | '/marina/$section'
     | '/shop/$section'
@@ -675,6 +709,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/become-a-captain'
     | '/brand-story'
+    | '/cart'
     | '/discover'
     | '/how-it-works'
     | '/privacy'
@@ -684,6 +719,7 @@ export interface FileRouteTypes {
     | '/welcome'
     | '/_authenticated/account'
     | '/_authenticated/booking'
+    | '/_authenticated/checkout'
     | '/_authenticated/dashboard'
     | '/_authenticated/messages'
     | '/_authenticated/notifications'
@@ -704,6 +740,7 @@ export interface FileRouteTypes {
     | '/marketplace/'
     | '/_authenticated/bookings/detail'
     | '/_authenticated/captain/$section'
+    | '/_authenticated/checkout/success'
     | '/_authenticated/guide/$section'
     | '/_authenticated/marina/$section'
     | '/_authenticated/shop/$section'
@@ -735,6 +772,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   BecomeACaptainRoute: typeof BecomeACaptainRoute
   BrandStoryRoute: typeof BrandStoryRoute
+  CartRoute: typeof CartRoute
   DiscoverRoute: typeof DiscoverRoute
   HowItWorksRoute: typeof HowItWorksRoute
   PrivacyRoute: typeof PrivacyRoute
@@ -809,6 +847,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BrandStoryRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/cart': {
+      id: '/cart'
+      path: '/cart'
+      fullPath: '/cart'
+      preLoaderRoute: typeof CartRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/discover': {
       id: '/discover'
       path: '/discover'
@@ -870,6 +915,13 @@ declare module '@tanstack/react-router' {
       path: '/booking'
       fullPath: '/booking'
       preLoaderRoute: typeof AuthenticatedBookingRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/checkout': {
+      id: '/_authenticated/checkout'
+      path: '/checkout'
+      fullPath: '/checkout'
+      preLoaderRoute: typeof AuthenticatedCheckoutRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/dashboard': {
@@ -1011,6 +1063,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/captain/$section'
       preLoaderRoute: typeof AuthenticatedCaptainSectionRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/checkout/success': {
+      id: '/_authenticated/checkout/success'
+      path: '/success'
+      fullPath: '/checkout/success'
+      preLoaderRoute: typeof AuthenticatedCheckoutSuccessRouteImport
+      parentRoute: typeof AuthenticatedCheckoutRoute
     }
     '/_authenticated/guide/$section': {
       id: '/_authenticated/guide/$section'
@@ -1169,9 +1228,23 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthenticatedCheckoutRouteChildren {
+  AuthenticatedCheckoutSuccessRoute: typeof AuthenticatedCheckoutSuccessRoute
+}
+
+const AuthenticatedCheckoutRouteChildren: AuthenticatedCheckoutRouteChildren = {
+  AuthenticatedCheckoutSuccessRoute: AuthenticatedCheckoutSuccessRoute,
+}
+
+const AuthenticatedCheckoutRouteWithChildren =
+  AuthenticatedCheckoutRoute._addFileChildren(
+    AuthenticatedCheckoutRouteChildren,
+  )
+
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAccountRoute: typeof AuthenticatedAccountRoute
   AuthenticatedBookingRoute: typeof AuthenticatedBookingRoute
+  AuthenticatedCheckoutRoute: typeof AuthenticatedCheckoutRouteWithChildren
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedMessagesRoute: typeof AuthenticatedMessagesRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
@@ -1198,6 +1271,7 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAccountRoute: AuthenticatedAccountRoute,
   AuthenticatedBookingRoute: AuthenticatedBookingRoute,
+  AuthenticatedCheckoutRoute: AuthenticatedCheckoutRouteWithChildren,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedMessagesRoute: AuthenticatedMessagesRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
@@ -1235,6 +1309,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   BecomeACaptainRoute: BecomeACaptainRoute,
   BrandStoryRoute: BrandStoryRoute,
+  CartRoute: CartRoute,
   DiscoverRoute: DiscoverRoute,
   HowItWorksRoute: HowItWorksRoute,
   PrivacyRoute: PrivacyRoute,
