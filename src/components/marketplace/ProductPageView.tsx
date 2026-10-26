@@ -236,6 +236,27 @@ function ProductDetail({
 
   /** Live products go straight to Stripe Checkout; demo items bounce to the cart. */
   const buyNow = async () => {
+    // Live products go to the full checkout page (address, shipping, note).
+    if (product.live) {
+      try {
+        const raw = window.localStorage.getItem("fx-cart");
+        const cart: Record<string, number> = raw ? JSON.parse(raw) : {};
+        const key = variantId ? `${product.id}:${variantId}` : product.id;
+        cart[key] = Math.min(maxQty, Math.max(cart[key] ?? 0, qty));
+        window.localStorage.setItem("fx-cart", JSON.stringify(cart));
+        if (variantId) {
+          const v = data.variants.find((x) => x.id === variantId);
+          const labels = JSON.parse(window.localStorage.getItem("fx-cart-labels") || "{}");
+          if (v) labels[key] = `${v.option_name}: ${v.option_value}`;
+          window.localStorage.setItem("fx-cart-labels", JSON.stringify(labels));
+        }
+        if (discountCode.trim()) window.sessionStorage.setItem("fx-checkout-code", discountCode.trim());
+      } catch {
+        /* storage unavailable */
+      }
+      await navigate({ to: "/checkout" });
+      return;
+    }
     if (!product.live) {
       addToCart();
       window.location.href = "/marketplace?cart=1";

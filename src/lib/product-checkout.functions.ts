@@ -173,7 +173,7 @@ export const quoteShipping = createServerFn({ method: "POST" })
       .parse(i),
   )
   .handler(async ({ data }) => {
-    if (!data.items.length) return { shippingCents: 0, byVendor: [] as Array<{ businessId: string; shippingCents: number }> };
+    if (!data.items.length) return { shippingCents: 0, byVendor: [] as Array<{ businessId: string; shippingCents: number; policyNote: string | null }> };
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: products } = await supabaseAdmin
       .from("inventory_products")
@@ -195,6 +195,7 @@ export const quoteShipping = createServerFn({ method: "POST" })
     const byVendor = [...groups.entries()].map(([businessId, g]) => ({
       businessId,
       shippingCents: shippingFor(settings.get(businessId) ?? DEFAULT_SHIPPING, g.subtotal, g.units),
+      policyNote: (settings.get(businessId) ?? DEFAULT_SHIPPING).policyNote,
     }));
     return {
       shippingCents: byVendor.reduce((a, v) => a + v.shippingCents, 0),
