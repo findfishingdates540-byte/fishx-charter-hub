@@ -27,6 +27,23 @@ function WelcomePage() {
   const [err, setErr] = useState("");
 
   useEffect(() => {
+    // After the native shell's offline screen reconnects, it lands here with
+    // fx-recover=1; send the user back to the page they were on.
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("fx-recover")) {
+      window.history.replaceState(null, "", "/welcome");
+      let last: string | null = null;
+      try {
+        last = localStorage.getItem("fx-last-path");
+        localStorage.removeItem("fx-last-path");
+      } catch {
+        /* storage unavailable */
+      }
+      if (last && last.startsWith("/") && !last.startsWith("//") && !last.startsWith("/welcome")) {
+        navigate({ href: last, replace: true });
+        return;
+      }
+    }
     supabase.auth.getSession().then(({ data }) => {
       if (data.session) navigate({ to: "/dashboard", replace: true });
     });
