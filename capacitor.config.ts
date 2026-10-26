@@ -8,6 +8,9 @@ const config: CapacitorConfig = {
   server: {
     url: "https://www.bookfishingtrips.com/welcome",
     cleartext: false,
+    // Local page (bundled in webDir) shown instead of Android's raw
+    // "Webpage not available" screen when the connection fails.
+    errorPath: "cap-offline.html",
   },
 };
 

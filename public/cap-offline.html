@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="color-scheme" content="dark" />
+  <title>Fish-X — Reconnecting</title>
+  <style>
+    /* Fish-X brand: Deep Hull navy + cyan accent. Standalone page (no app CSS). */
+    :root {
+      color-scheme: dark;
+      --fx-deep: #0D161F;
+      --fx-card: #14202B;
+      --fx-cyan: #2DE2F2;
+      --fx-text: #F0F2F5;
+      --fx-muted: #92A0AB;
+      --fx-line: rgba(255, 255, 255, 0.07);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    body {
+      background: var(--fx-deep);
+      color: var(--fx-text);
+      font-family: "Outfit", -apple-system, "Segoe UI", Roboto, system-ui, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .wrap { width: 100%; max-width: 380px; }
+
+    .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 22px; }
+    .brand img { width: 34px; height: 34px; border-radius: 8px; }
+    .brand .word { font-weight: 700; letter-spacing: 0.02em; font-size: 17px; }
+    .brand .word small { display: block; font-weight: 500; font-size: 10.5px; color: var(--fx-muted); letter-spacing: 0.14em; text-transform: uppercase; }
+
+    /* Skeleton that mirrors the dashboard: header bar, title, cards, list rows */
+    .skel { position: relative; overflow: hidden; border-radius: 10px; background: var(--fx-card); }
+    .skel::after {
+      content: "";
+      position: absolute; inset: 0;
+      background: linear-gradient(100deg, transparent 20%, rgba(255,255,255,0.06) 50%, transparent 80%);
+      transform: translateX(-100%);
+      animation: shimmer 1.4s infinite;
+    }
+    @keyframes shimmer { to { transform: translateX(100%); } }
+
+    .skel-bar { height: 44px; border-radius: 22px; margin-bottom: 20px; }
+    .skel-title { height: 22px; width: 55%; margin-bottom: 8px; }
+    .skel-sub { height: 13px; width: 78%; margin-bottom: 20px; }
+    .skel-card { height: 96px; margin-bottom: 14px; }
+    .skel-row { height: 52px; margin-bottom: 10px; }
+    .skel-row:last-of-type { width: 70%; }
+
+    .status { margin-top: 24px; text-align: center; min-height: 74px; }
+    .status h2 { font-size: 16.5px; font-weight: 600; margin-bottom: 6px; }
+    .status p { font-size: 13.5px; color: var(--fx-muted); line-height: 1.45; }
+    .status .accent { color: var(--fx-cyan); }
+
+    button.retry {
+      margin-top: 14px;
+      display: none;
+      width: 100%;
+      padding: 13px 0;
+      border: 0;
+      border-radius: 999px;
+      background: var(--fx-cyan);
+      color: var(--fx-deep);
+      font: 600 15px/1 inherit;
+      font-family: inherit;
+      cursor: pointer;
+    }
+    button.retry:active { opacity: 0.85; }
+    .offline button.retry { display: block; }
+
+    /* Dots while probing */
+    .dots::after { content: ""; }
+    .probing .dots::after { content: ""; animation: dots 1.2s steps(4, end) infinite; }
+    @keyframes dots { 0% { content: ""; } 25% { content: "."; } 50% { content: ".."; } 75% { content: "..."; } }
+    @media (prefers-reduced-motion: reduce) {
+      .skel::after { animation: none; }
+      .probing .dots::after { content: "..."; animation: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap probing" id="wrap">
+    <div class="brand">
+      <img src="favicon.png" alt="Fish-X" />
+      <div class="word">FISH-X.COM<small>Bookings &amp; Marketplace</small></div>
+    </div>
+
+    <div class="skel skel-bar"></div>
+    <div class="skel skel-title"></div>
+    <div class="skel skel-sub"></div>
+    <div class="skel skel-card"></div>
+    <div class="skel skel-row"></div>
+    <div class="skel skel-row"></div>
+    <div class="skel skel-row"></div>
+
+    <div class="status">
+      <h2 id="headline">Loading your Fish-X app</h2>
+      <p id="note">Checking your connection<span class="dots"></span></p>
+      <button class="retry" id="retry" type="button">Try again</button>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      var SITE = "https://www.bookfishingtrips.com";
+      var wrap = document.getElementById("wrap");
+      var headline = document.getElementById("headline");
+      var note = document.getElementById("note");
+      var retry = document.getElementById("retry");
+      var probing = false;
+
+      function probe() {
+        if (probing) return Promise.resolve(false);
+        probing = true;
+        var ctrl = typeof AbortController !== "undefined" ? new AbortController() : null;
+        var timer = setTimeout(function () { ctrl && ctrl.abort(); }, 6000);
+        var opts = { method: "GET", mode: "no-cors", cache: "no-store" };
+        if (ctrl) opts.signal = ctrl.signal;
+        return fetch(SITE + "/favicon.png", opts)
+          .then(function () { return true; })
+          .catch(function () { return false; })
+          .then(function (ok) {
+            clearTimeout(timer);
+            probing = false;
+            return ok;
+          });
+      }
+
+      function goOnline() {
+        headline.textContent = "You\u2019re back online";
+        note.innerHTML = "Opening Fish-X<span class=\"dots\"></span>";
+        // Return the user to the page they were on (the app restores it).
+        window.location.replace(SITE + "/welcome?fx-recover=1");
+      }
+
+      function showOffline() {
+        wrap.classList.remove("probing");
+        wrap.classList.add("offline");
+        headline.innerHTML = "You\u2019re offline";
+        note.innerHTML = "Check your connection \u2014 Fish-X will reopen by itself the moment you\u2019re back online.";
+      }
+
+      function cycle() {
+        probe().then(function (ok) {
+          if (ok) { goOnline(); return; }
+          showOffline();
+        });
+      }
+
+      retry.addEventListener("click", function () {
+        retry.disabled = true;
+        note.innerHTML = "Checking your connection<span class=\"dots\"></span>";
+        probe().then(function (ok) {
+          retry.disabled = false;
+          if (ok) { goOnline(); return; }
+          showOffline();
+        });
+      });
+
+      window.addEventListener("online", function () { wrap.classList.add("probing"); cycle(); });
+      cycle();
+      // Keep probing every few seconds until the connection returns.
+      setInterval(cycle, 4000);
+    })();
+  </script>
+</body>
+</html>
