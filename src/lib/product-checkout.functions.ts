@@ -415,6 +415,7 @@ export const createProductCheckout = createServerFn({ method: "POST" })
            discount_cents: discountCents,
            buyer_marketing_consent: data.marketingConsent ?? false,
            marketing_consent_at: data.marketingConsent ? now : null,
+          buyer_email: buyerEmail,
           tax_cents: 0,
           total_cents: total,
           status: "pending_payment",
