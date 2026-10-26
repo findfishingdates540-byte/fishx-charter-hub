@@ -139,6 +139,20 @@ export const Route = createFileRoute("/api/public/stripe-webhook")({
               .update({ payout_due_at: dueAt })
               .eq("id", orderId);
             void chargeId;
+
+            // Tell the shop about the new paid order (in-app + email).
+            try {
+              const { handleDomainEvent } = await import("@/lib/notifications.server");
+              await handleDomainEvent(supabaseAdmin as never, {
+                id: orderId,
+                topic: "order.paid",
+                aggregate_type: "product_order",
+                aggregate_id: orderId,
+                payload: { order_id: orderId },
+              });
+            } catch (e) {
+              console.error("[stripe] new-order notification failed", e);
+            }
           }
         };
 
