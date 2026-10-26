@@ -350,7 +350,15 @@ export const createProductCheckout = createServerFn({ method: "POST" })
       .select("full_name,display_name")
       .eq("id", userId)
       .maybeSingle();
-    const buyerName = profile?.full_name ?? profile?.display_name ?? null;
+    let buyerEmail: string | null = null;
+    try {
+      const { data: au } = await supabaseAdmin.auth.admin.getUserById(userId);
+      buyerEmail = au?.user?.email ?? null;
+    } catch {
+      buyerEmail = null;
+    }
+    const buyerName =
+      profile?.full_name || profile?.display_name || (buyerEmail ? buyerEmail.split("@")[0] : null);
 
     // Every seller in the cart must be able to receive money before we take
     // the buyer's card — otherwise the charge lands with no payable vendor.
