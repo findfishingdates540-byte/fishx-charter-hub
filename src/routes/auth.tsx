@@ -113,6 +113,10 @@ function AuthPage() {
   const navigate = useNavigate();
   const search = useSearch({ from: "/auth" });
   const continueAfterSignIn = () => {
+    if (search.redirect === "/checkout" || search.redirect === "/cart") {
+      void navigate({ to: search.redirect, replace: true });
+      return;
+    }
     if (search.productId) {
       void navigate({
         to: "/marketplace/$productId",
