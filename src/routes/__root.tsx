@@ -144,7 +144,51 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <LastPathTracker />
+      <OfflineBanner />
       <Outlet />
     </QueryClientProvider>
+  );
+}
+
+// Remembers the last page so the native shell can return the user here after
+// the offline screen reconnects (welcome.tsx reads fx-last-path).
+function LastPathTracker() {
+  const location = useLocation();
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (location.pathname.startsWith("/welcome")) return;
+    try {
+      localStorage.setItem("fx-last-path", location.pathname + location.search);
+    } catch {
+      /* storage unavailable */
+    }
+  }, [location.pathname, location.search]);
+
+  return null;
+}
+
+// Small in-app notice while the connection is down mid-session.
+function OfflineBanner() {
+  const [offline, setOffline] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const update = () => setOffline(!navigator.onLine);
+    update();
+    window.addEventListener("online", update);
+    window.addEventListener("offline", update);
+    return () => {
+      window.removeEventListener("online", update);
+      window.removeEventListener("offline", update);
+    };
+  }, []);
+
+  if (!offline) return null;
+  return (
+    <div className="fixed inset-x-0 top-0 z-[999] bg-soft-coral py-2 text-center text-sm font-semibold text-deep-hull" role="status">
+      You're offline — trips, orders and messages will update once you're back online.
+    </div>
   );
 }
