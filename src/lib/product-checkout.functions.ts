@@ -584,12 +584,12 @@ export const previewStoreProduct = createServerFn({ method: "GET" })
     // Product slug is the title; add a short id only when two products in
     // the same shop share a title.
     const base = slugifyTitle(p.title ?? "");
-    const { data: siblings } = await supabaseAdmin
+    const { data: siblings } = await supabase
       .from("inventory_products")
       .select("id,title")
       .eq("business_id", p.business_id)
       .eq("is_published", true);
-    const clash = (siblings ?? []).some((x) => x.id !== p.id && slugifyTitle(x.title ?? "") === base);
+    const clash = (siblings ?? []).some((x: { id: string; title: string | null }) => x.id !== p.id && slugifyTitle(x.title ?? "") === base);
     product.productSlug = clash ? `${base}-${p.id.slice(0, 8)}` : base;
     return product;
   });
@@ -602,7 +602,7 @@ export const getStoreProduct = createServerFn({ method: "GET" })
     const { data: p, error } = await supabaseAdmin
       .from("inventory_products")
       .select(
-        "id,title,description,category,price_cents,compare_at_cents,stock_qty,images,business_id,is_published,business:businesses(name,category_key)",
+        "id,title,description,category,price_cents,compare_at_cents,stock_qty,images,business_id,is_published,business:businesses(name,category_key,slug)",
       )
       .eq("id", data.productId)
       .maybeSingle();
@@ -635,7 +635,16 @@ export const getStoreProduct = createServerFn({ method: "GET" })
       sellerCategory: (p.business as { category_key?: string } | null)?.category_key ?? null,
       variants: variants ?? [],
       wholesaleOnly: wholesale?.wholesale_only ?? false,
+      shopSlug: (p.business as { slug?: string } | null)?.slug ?? null,
     };
+    const base = slugifyTitle(p.title ?? "");
+    const { data: siblings } = await supabaseAdmin
+      .from("inventory_products")
+      .select("id,title")
+      .eq("business_id", p.business_id)
+      .eq("is_published", true);
+    const clash = (siblings ?? []).some((x: { id: string; title: string | null }) => x.id !== p.id && slugifyTitle(x.title ?? "") === base);
+    product.productSlug = clash ? `${base}-${p.id.slice(0, 8)}` : base;
     return product;
   });
 
