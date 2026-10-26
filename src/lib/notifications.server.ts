@@ -203,6 +203,21 @@ export async function draftsForEvent(
         severity: "success" as const,
       }));
     }
+    if (topic === "order.paid") {
+      const { data: items } = await admin
+        .from("product_order_items")
+        .select("quantity")
+        .eq("order_id", orderId);
+      const count = (items ?? []).reduce((n, i) => n + ((i.quantity as number) ?? 0), 0);
+      return [...staff].map((userId) => ({
+        userId,
+        category: "order",
+        title: `New order ${ref}`,
+        body: `${count || 1} item${count === 1 ? "" : "s"} · ${money(order.total_cents as number)} paid. Ready to pack and ship.`,
+        link: "/shop/orders",
+        severity: "success" as const,
+      }));
+    }
     if (topic === "order.cancelled_by_buyer") {
       return [...staff].map((userId) => ({
         userId,
