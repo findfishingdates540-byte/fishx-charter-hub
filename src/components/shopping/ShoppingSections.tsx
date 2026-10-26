@@ -138,7 +138,7 @@ function statusDate(o: MyOrder) {
   return `Placed ${dateOf(o.createdAt)}`;
 }
 
-function addressLines(a: Record<string, unknown> | null): string[] {
+function addressLines(a: Record<string, string | null> | null): string[] {
   if (!a) return [];
   const g = (k: string) => (typeof a[k] === "string" && a[k] ? (a[k] as string) : null);
   return [

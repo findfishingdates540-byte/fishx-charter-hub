@@ -31,7 +31,7 @@ export type MyOrder = {
   paidAt: string | null;
   shippedAt: string | null;
   deliveredAt: string | null;
-  shippingAddress: Record<string, unknown> | null;
+  shippingAddress: Record<string, string | null> | null;
   items: Array<{
     id: string;
     title: string;
