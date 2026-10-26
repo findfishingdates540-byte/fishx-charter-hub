@@ -443,14 +443,24 @@ export const createProductCheckout = createServerFn({ method: "POST" })
         .insert({
           business_id: businessId,
           buyer_id: userId,
-          buyer_name: buyerName,
+          buyer_name: data.contact?.name ?? buyerName,
+          ...(data.shippingAddress
+            ? {
+                shipping_address: {
+                  ...data.shippingAddress,
+                  name: data.contact?.name ?? buyerName,
+                  phone: data.contact?.phone ?? null,
+                } as never,
+              }
+            : {}),
+          notes: data.note || null,
           subtotal_cents: subtotal,
           shipping_cents: shipping,
            discount_code: discount?.code ?? null,
            discount_cents: discountCents,
            buyer_marketing_consent: data.marketingConsent ?? false,
            marketing_consent_at: data.marketingConsent ? now : null,
-          buyer_email: buyerEmail,
+          buyer_email: data.contact?.email ?? buyerEmail,
           tax_cents: 0,
           total_cents: total,
           status: "pending_payment",
@@ -526,13 +536,20 @@ export const createProductCheckout = createServerFn({ method: "POST" })
          ...(coupon ? { discounts: [{ coupon: coupon.id }] } : {}),
         metadata,
         payment_intent_data: { metadata },
-        // Vendors need somewhere to ship to.
-        shipping_address_collection: {
-          allowed_countries: ["US", "CA", "GB", "AU", "NZ", "IE", "MX", "ZA", "NG"],
-        },
-        phone_number_collection: { enabled: true },
-        success_url: `${origin}/marketplace?paid=1&order=${orderIds[0]}`,
-        cancel_url: `${origin}/marketplace?canceled=1`,
+        // Vendors need somewhere to ship to — collected on our checkout page
+        // when available, otherwise by Stripe.
+        ...(data.shippingAddress
+          ? { customer_email: data.contact?.email ?? buyerEmail ?? undefined }
+          : {
+              shipping_address_collection: {
+                allowed_countries: ["US", "CA", "GB", "AU", "NZ", "IE", "MX", "ZA", "NG"] as never,
+              },
+              phone_number_collection: { enabled: true },
+            }),
+        success_url: data.shippingAddress
+          ? `${origin}/checkout/success?orders=${orderIds.join(",")}`
+          : `${origin}/marketplace?paid=1&order=${orderIds[0]}`,
+        cancel_url: data.shippingAddress ? `${origin}/checkout?canceled=1` : `${origin}/marketplace?canceled=1`,
       },
       { idempotencyKey: `product-checkout-${orderIds.join("-")}` },
     );
