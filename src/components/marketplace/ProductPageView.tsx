@@ -247,7 +247,7 @@ function ProductDetail({
         if (variantId) {
           const v = data.variants.find((x) => x.id === variantId);
           const labels = JSON.parse(window.localStorage.getItem("fx-cart-labels") || "{}");
-          if (v) labels[key] = `${v.option_name}: ${v.option_value}`;
+          if (v) labels[key] = { label: `${v.option_name}: ${v.option_value}`, deltaCents: v.price_delta_cents };
           window.localStorage.setItem("fx-cart-labels", JSON.stringify(labels));
         }
         if (discountCode.trim()) window.sessionStorage.setItem("fx-checkout-code", discountCode.trim());
