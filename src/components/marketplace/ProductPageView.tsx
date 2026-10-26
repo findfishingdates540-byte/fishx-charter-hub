@@ -61,7 +61,7 @@ export function ProductPageView({
   const previewFn = useServerFn(previewStoreProduct);
   const q = useQuery({
     queryKey: ["product-preview", productId],
-    enabled: preview && !data.product,
+    enabled: !!preview && !data.product,
     queryFn: () => previewFn({ data: { productId } }),
   });
 
