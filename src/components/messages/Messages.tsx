@@ -772,9 +772,7 @@ export function Messages({ bookingId, conversationId = null }: { bookingId: stri
           <ThreadView key={bookingId} bookingId={bookingId} mobile />
         ) : (
           <ThreadList activeId={null} />
-        ))}{false && (
-          <span />
-        )}
+        ))}
       </div>
     );
   }
