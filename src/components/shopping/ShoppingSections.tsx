@@ -171,8 +171,9 @@ function OrderDetail({
   onCancel: () => void;
   cancelling: boolean;
 }) {
+  const unpaid = o.status === "pending_payment" && !o.paidAt;
   const steps = [
-    { label: "Order placed", at: o.createdAt },
+    { label: unpaid ? "Awaiting payment" : "Order placed", at: unpaid ? null : o.createdAt },
     { label: "Payment confirmed", at: o.paidAt },
     { label: "Shipped", at: o.shippedAt },
     { label: "Delivered", at: o.deliveredAt },
