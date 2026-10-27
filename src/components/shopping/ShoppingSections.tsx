@@ -263,7 +263,7 @@ function OrderDetail({
           Your payment is held safely and only released to {o.sellerName} after delivery.
         </div>
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 12 }}>
-          <Link to="/messages" style={{ background: V.cyan, color: "#031029", fontWeight: 700, fontSize: 13, padding: "9px 14px", borderRadius: 10, textDecoration: "none" }}>
+          <Link to="/messages" search={{ business: o.businessId }} style={{ background: V.cyan, color: "#031029", fontWeight: 700, fontSize: 13, padding: "9px 14px", borderRadius: 10, textDecoration: "none" }}>
             Message the shop
           </Link>
           {["pending_payment", "paid"].includes(o.status) && (
