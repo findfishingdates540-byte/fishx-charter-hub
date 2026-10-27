@@ -1,9 +1,9 @@
-import { createFileRoute, useSearch, Link } from "@tanstack/react-router";
+import { createFileRoute, useSearch, useNavigate } from "@tanstack/react-router";
+import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { Messages } from "@/components/messages/Messages";
-import { BusinessInbox } from "@/components/messages/BusinessInbox";
 import { startBusinessConversation } from "@/lib/business-messages.functions";
 import { getThread, listMessageThreads } from "@/lib/messages.functions";
 import { useCompactMessages } from "@/hooks/use-compact-messages";
@@ -12,6 +12,7 @@ import { AuthenticatedHeader } from "@/components/auth/AuthenticatedHeader";
 const searchSchema = z.object({
   booking: z.string().uuid().optional(),
   business: z.string().uuid().optional(),
+  convo: z.string().uuid().optional(),
   tab: z.enum(["trips", "shops"]).optional(),
 });
 
@@ -61,16 +62,23 @@ export const Route = createFileRoute("/_authenticated/messages")({
 });
 
 function MessagesPage() {
-  const { booking, business, tab } = useSearch({ from: "/_authenticated/messages" });
-  const active: "trips" | "shops" = tab ?? (business ? "shops" : "trips");
+  const { booking, business, convo } = useSearch({ from: "/_authenticated/messages" });
   const compact = useCompactMessages();
+  const navigate = useNavigate();
 
+  // "Message this shop" links pass the business; open (or create) that DM in the shared inbox.
   const startFn = useServerFn(startBusinessConversation);
-  const convo = useQuery({
+  const started = useQuery({
     queryKey: ["start-business-convo", business],
     queryFn: () => startFn({ data: { businessId: business! } }),
-    enabled: !!business,
+    enabled: !!business && !convo,
   });
+  const startedId = (started.data as any)?.conversationId as string | undefined;
+  useEffect(() => {
+    if (startedId) navigate({ to: "/messages", search: { convo: startedId }, replace: true });
+  }, [startedId, navigate]);
+
+  const openConvo = convo ?? null;
 
   return (
     <div
@@ -85,55 +93,15 @@ function MessagesPage() {
       }}
     >
       {/* The open thread owns the compact phone/tablet header. */}
-      {!(compact && (booking || business)) && <>
-        <AuthenticatedHeader />
-        <header style={{ flex: "none", background: "#072057", color: "#eaf1f6" }}>
-        <div style={{ padding: "0 12px 10px" }}>
-          <div
-            role="tablist"
-            style={{
-              display: "grid", gridTemplateColumns: "1fr 1fr", gap: 4, padding: 4,
-              borderRadius: 12, background: "rgba(255,255,255,.08)",
-            }}
-          >
-            {(
-              [
-                { key: "trips", label: "Trip chats" },
-                { key: "shops", label: "Businesses" },
-              ] as const
-            ).map((t) => (
-              <Link
-                key={t.key}
-                role="tab"
-                aria-selected={active === t.key}
-                to="/messages"
-                search={{ tab: t.key }}
-                style={{
-                  textDecoration: "none", textAlign: "center", borderRadius: 9,
-                  padding: "8px 10px", fontSize: 13, fontWeight: 700,
-                  background: active === t.key ? "#2DE2F2" : "transparent",
-                  color: active === t.key ? "#04121B" : "#c5d3de",
-                }}
-              >
-                {t.label}
-              </Link>
-            ))}
-          </div>
-        </div>
-        </header>
-      </>}
+      {!(compact && (booking || openConvo || business)) && <AuthenticatedHeader />}
 
       <main className="fx-messages-main" style={{ flex: 1, minHeight: 0, overflow: "hidden" }}>
-        {active === "trips" ? (
-          <Messages bookingId={booking ?? null} />
-        ) : (
-          <div style={{ height: "100%", display: "flex", flexDirection: "column", minHeight: 0, background: "#fff" }}>
-            <BusinessInbox
-              theme="light"
-              fullHeight
-              initialConversationId={(convo.data as any)?.conversationId ?? null}
-            />
+        {business && !convo ? (
+          <div style={{ padding: 28, color: "#5b6b78", fontSize: 13 }}>
+            {started.isError ? "Couldn't open this conversation. Please try again." : "Opening conversation…"}
           </div>
+        ) : (
+          <Messages bookingId={booking ?? null} conversationId={openConvo} />
         )}
       </main>
     </div>
