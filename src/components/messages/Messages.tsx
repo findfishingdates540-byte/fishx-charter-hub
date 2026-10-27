@@ -9,7 +9,10 @@ import { MediaImg } from "@/components/media/MediaImg";
 import { Link } from "@tanstack/react-router";
 import { useCompactMessages } from "@/hooks/use-compact-messages";
 import { Flag } from "lucide-react";
-import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
+import { useNavigate } from "@tanstack/react-router";
+import { BusinessInbox } from "@/components/messages/BusinessInbox";
+import { listBusinessThreads } from "@/lib/business-messages.functions";
 import { useServerFn } from "@tanstack/react-start";
 import {
   deleteBookingMessage,
@@ -183,18 +186,25 @@ function CounterpartAvatar({
 
 /* ------------------------------------------------------------- Thread list -- */
 
-function ThreadList({ activeId }: { activeId: string | null }) {
+function ThreadList({ activeId, activeConvoId = null }: { activeId: string | null; activeConvoId?: string | null }) {
   const isMobile = useCompactMessages();
   const { data } = useSuspenseQuery({
     queryKey: ["message-threads"],
     queryFn: () => listMessageThreads(),
   });
+  const bizFn = useServerFn(listBusinessThreads);
+  const biz = useQuery({ queryKey: ["business-threads", "me"], queryFn: () => bizFn({ data: {} }) });
+  // One inbox: trip chats and shop/business DMs, newest activity first.
+  const items: Array<{ kind: "trip"; t: any; ts: number } | { kind: "shop"; t: any; ts: number }> = [
+    ...data.threads.map((t: any) => ({ kind: "trip" as const, t, ts: Date.parse(t.lastMessage?.created_at ?? t.booking?.trip_date ?? 0) || 0 })),
+    ...(((biz.data as any)?.threads ?? []) as any[]).map((t) => ({ kind: "shop" as const, t, ts: Date.parse(t.lastMessage?.created_at ?? t.lastMessageAt ?? 0) || 0 })),
+  ].sort((a, b) => b.ts - a.ts);
   // Conversations stream in as the list is scrolled — no "show more" button.
   const {
     count: listCount,
     sentinelRef: listSentinel,
     hasMore: moreThreads,
-  } = useGrowOnScroll(data.threads.length, 15);
+  } = useGrowOnScroll(items.length, 15);
 
   return (
     <aside
@@ -210,7 +220,7 @@ function ThreadList({ activeId }: { activeId: string | null }) {
       }}
     >
 
-      {data.threads.length === 0 ? (
+      {items.length === 0 ? (
         <div style={{ padding: "48px 26px", textAlign: "center" }}>
           <div
             style={{
@@ -230,7 +240,7 @@ function ThreadList({ activeId }: { activeId: string | null }) {
             No messages yet
           </div>
           <p style={{ fontSize: 13.5, color: V.tmut, lineHeight: 1.6, margin: "0 auto 22px", maxWidth: 320 }}>
-            Book a charter to start a conversation with a captain.
+            Book a charter or message a shop, marina or guide to start a conversation.
           </p>
           <Link
             to="/dashboard"
@@ -254,7 +264,47 @@ function ThreadList({ activeId }: { activeId: string | null }) {
         </div>
       ) : (
         <div style={{ flex: 1, minHeight: 0, overflowY: "auto" }}>
-          {data.threads.slice(0, listCount).map((t) => {
+          {items.slice(0, listCount).map((it) => {
+            if (it.kind === "shop") {
+              const b = it.t;
+              const bname = b.business?.name || "Business";
+              const on = b.id === activeConvoId;
+              return (
+                <Link
+                  key={`c-${b.id}`}
+                  to="/messages"
+                  search={{ convo: b.id }}
+                  style={{
+                    display: "flex", gap: isMobile ? 9 : 14, padding: isMobile ? "9px 10px" : "16px 20px",
+                    width: "100%", boxSizing: "border-box", textDecoration: "none", color: V.ink,
+                    borderBottom: `1px solid ${V.line}`, borderLeft: `3px solid ${on ? V.sand : "transparent"}`,
+                    background: on ? V.sandsoft : "transparent",
+                  }}
+                >
+                  <CounterpartAvatar url={b.business?.logo_url || b.business?.hero_url} label={bname} size={isMobile ? 40 : 46} />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 8 }}>
+                      <span style={{ fontSize: 14, fontWeight: 700, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{bname}</span>
+                      <span style={{ fontSize: 11, color: V.tmut, flex: "none" }}>{relativeTime(b.lastMessage?.created_at ?? b.lastMessageAt)}</span>
+                    </div>
+                    <div style={{ fontSize: 12.5, color: V.tmut, marginTop: 3, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                      {threadPreview(b.lastMessage)}
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: isMobile ? 4 : 8 }}>
+                      <span style={{ borderRadius: 30, background: V.cyansoft, border: `1px solid ${V.line}`, padding: "2px 9px", fontSize: 10, fontWeight: 700, letterSpacing: ".06em", textTransform: "uppercase", color: V.cyan }}>
+                        {b.business?.category_key?.replace(/_/g, " ") || "Business"}
+                      </span>
+                      {b.unreadCount > 0 && (
+                        <span style={{ marginLeft: "auto", minWidth: 20, height: 20, borderRadius: 20, background: V.sand, color: "#04121B", display: "grid", placeItems: "center", fontSize: 11, fontWeight: 700, padding: "0 6px" }}>
+                          {b.unreadCount}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </Link>
+              );
+            }
+            const t = it.t;
             const active = t.booking.id === activeId;
             const name = counterpartName(t.business, t.captain);
             const snippet = threadPreview(t.lastMessage);
@@ -697,18 +747,33 @@ function ThreadPlaceholder() {
 
 /* ---------------------------------------------------------------- Screen --- */
 
-export function Messages({ bookingId }: { bookingId: string | null }) {
+export function Messages({ bookingId, conversationId = null }: { bookingId: string | null; conversationId?: string | null }) {
   const isMobile = useCompactMessages();
+  const navigate = useNavigate();
+  const convoView = conversationId ? (
+    <div style={{ height: "100%", minHeight: 0, display: "flex", flexDirection: "column", background: "#fff", border: isMobile ? "none" : `1px solid ${V.line}`, borderRadius: isMobile ? 0 : 20, overflow: "hidden" }}>
+      <BusinessInbox
+        key={conversationId}
+        theme="light"
+        fullHeight
+        threadOnly
+        initialConversationId={conversationId}
+        onBack={() => navigate({ to: "/messages" })}
+      />
+    </div>
+  ) : null;
 
   // WhatsApp behaviour on phones and tablets: the list IS the screen, and
   // opening a chat replaces it full-bleed. Wide desktop keeps two panes.
   if (isMobile) {
     return (
       <div style={{ height: "100%", minHeight: 0 }}>
-        {bookingId ? (
+        {convoView ?? (bookingId ? (
           <ThreadView key={bookingId} bookingId={bookingId} mobile />
         ) : (
           <ThreadList activeId={null} />
+        ))}{false && (
+          <span />
         )}
       </div>
     );
@@ -725,8 +790,8 @@ export function Messages({ bookingId }: { bookingId: string | null }) {
         minHeight: 0,
       }}
     >
-      <ThreadList activeId={bookingId} />
-      {bookingId ? <ThreadView key={bookingId} bookingId={bookingId} /> : <ThreadPlaceholder />}
+      <ThreadList activeId={bookingId} activeConvoId={conversationId} />
+      {convoView ?? (bookingId ? <ThreadView key={bookingId} bookingId={bookingId} /> : <ThreadPlaceholder />)}
     </div>
   );
 }
