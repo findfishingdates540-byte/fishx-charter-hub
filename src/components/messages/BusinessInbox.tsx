@@ -45,7 +45,12 @@ export function BusinessInbox({
   businessId,
   initialConversationId,
   fullHeight = false,
+  threadOnly = false,
+  onBack,
 }: {
+  /** render only the open conversation (the list lives in the unified inbox) */
+  threadOnly?: boolean;
+  onBack?: () => void;
   theme?: ChatTheme;
   businessId?: string;
   initialConversationId?: string | null;
@@ -161,7 +166,7 @@ export function BusinessInbox({
     return <div style={{ padding: 28, color: c.mut, fontSize: 13 }}>Loading conversations…</div>;
   }
 
-  if (!threads.length) {
+  if (!threads.length && !threadOnly) {
     return (
       <ChatEmptyState c={c} icon="💬" title="No direct messages yet">
         {side === "business"
@@ -178,7 +183,7 @@ export function BusinessInbox({
       className="fx-inbox"
       style={{
         display: isMobile ? "block" : "grid",
-        gridTemplateColumns: "minmax(240px,320px) 1fr",
+        gridTemplateColumns: threadOnly ? "1fr" : "minmax(240px,320px) 1fr",
         gap: 0,
         border: isMobile || fullHeight ? "none" : `1px solid ${c.line}`,
         borderRadius: isMobile || fullHeight ? 0 : 16,
@@ -191,7 +196,7 @@ export function BusinessInbox({
     >
       <div
         style={{
-          display: isMobile && activeId ? "none" : "block",
+          display: threadOnly || (isMobile && activeId) ? "none" : "block",
           borderRight: isMobile ? "none" : `1px solid ${c.line}`,
           maxHeight: isMobile || fullHeight ? "none" : 640,
           height: fullHeight && !isMobile ? "100%" : undefined,
@@ -280,7 +285,7 @@ export function BusinessInbox({
 
       <div
         style={{
-          display: isMobile && !activeId ? "none" : "flex",
+          display: isMobile && !activeId && !threadOnly ? "none" : "flex",
           flexDirection: "column",
           minHeight: 0,
           height: fullHeight ? "100%" : undefined,
@@ -300,7 +305,7 @@ export function BusinessInbox({
             <button
               type="button"
               aria-label="Back to conversations"
-              onClick={() => setActiveId(null)}
+              onClick={() => (onBack ? onBack() : setActiveId(null))}
               style={{
                 background: "none",
                 border: 0,
