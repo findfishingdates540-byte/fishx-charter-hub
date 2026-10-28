@@ -160,11 +160,11 @@ function LastPathTracker() {
     if (typeof window === "undefined") return;
     if (location.pathname.startsWith("/welcome")) return;
     try {
-      localStorage.setItem("fx-last-path", location.pathname + location.search);
+      localStorage.setItem("fx-last-path", location.pathname + (location.searchStr ?? ""));
     } catch {
       /* storage unavailable */
     }
-  }, [location.pathname, location.search]);
+  }, [location.pathname, location.searchStr]);
 
   return null;
 }

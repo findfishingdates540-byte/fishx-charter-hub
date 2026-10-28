@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useCart, usd } from "@/hooks/use-cart";
 import { C, card, PageShell, primaryBtn } from "@/components/shopping/checkout-ui";
 
-export const Route = createFileRoute("/_authenticated/checkout/success")({
+export const Route = createFileRoute("/_authenticated/checkout_/success")({
   validateSearch: (s: Record<string, unknown>): { orders?: string } =>
     typeof s.orders === "string" && /^[0-9a-f,-]{36,400}$/i.test(s.orders) ? { orders: s.orders } : {},
   head: () => ({
