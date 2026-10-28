@@ -39,7 +39,7 @@ function WelcomePage() {
       } catch {
         /* storage unavailable */
       }
-      if (last && last.startsWith("/") && !last.startsWith("//") && !last.startsWith("/welcome")) {
+      if (last && !last.includes("[object") && last.startsWith("/") && !last.startsWith("//") && !last.startsWith("/welcome")) {
         navigate({ href: last, replace: true });
         return;
       }

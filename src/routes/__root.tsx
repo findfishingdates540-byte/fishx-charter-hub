@@ -164,7 +164,7 @@ function LastPathTracker() {
     } catch {
       /* storage unavailable */
     }
-  }, [location.pathname, location.search]);
+  }, [location.pathname, location.searchStr]);
 
   return null;
 }
